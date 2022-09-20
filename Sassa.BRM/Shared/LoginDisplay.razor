@@ -1,0 +1,47 @@
+﻿@inject BRMDbService db
+@inject NavigationManager navigation
+<AuthorizeView>
+    @if (gsession != null)
+    {
+        <div style="width: 100%;">
+            <div style="float:right; width: 100%; margin-top:4px;">
+                <label class="divUserDetail" style="margin-left: 10px">@gsession.Name</label>
+                <label class="divUserDetail" style="margin-left: 10px">@(gsession.Office.OfficeName + " ("+ gsession.Office.RegionName + ")")</label>
+            </div>
+        </div>
+    }
+</AuthorizeView>
+
+@code
+{
+
+    UserSession gsession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        db.SessionInitialized += new EventHandler(OnSessionChanged);
+        if (db.session == null)
+        {
+            try
+            {
+                await db.GetLocalOffice();
+            }
+           catch
+            {
+                //Initializing error
+            }
+
+        }
+        else
+        {
+            gsession = db.session;
+        }
+    }
+
+    private void OnSessionChanged(object sender, EventArgs args)
+    {
+        gsession = db.session;
+        StateHasChanged();
+    }
+}
+

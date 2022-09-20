@@ -1,0 +1,50 @@
+﻿@page "/boxing"
+@page "/boxing/{boxNo}"
+
+@inject BRMDbService db
+
+<TabControl PageActivate="OnPageActivate" ActivePageId="@tabNo">
+    <TabPage Text="Batching" Id="1" Enabled="true">
+        @if(db.session.Office.OfficeType == "LO")
+        {
+            <LOBatch></LOBatch>
+        }
+        else
+        {
+            <RMCBatch></RMCBatch>
+        }
+    </TabPage>
+    <TabPage Text="Waybills" Id="2" Enabled="true">
+        <BatchWaybill></BatchWaybill>
+    </TabPage>
+    <TabPage Text="Re-Boxing" Id="3" Enabled="@(db.session.Office.OfficeType != "LO")">
+        <ReboxTab boxNo="@boxNo"></ReboxTab>
+    </TabPage>
+</TabControl>
+
+
+@code 
+{
+    [Parameter]
+    public string boxNo { get; set; }
+
+    public int tabNo { get; set; } = 1;
+
+    protected override void OnInitialized()
+    {
+        if(db.session.IsRmc())
+        {
+            tabNo = 3;
+        }
+        else
+        {
+            tabNo = 1;
+        }
+
+    }
+
+    private void OnPageActivate(int e)
+    {
+        tabNo = e;
+    }
+}

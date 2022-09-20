@@ -1,0 +1,118 @@
+﻿@using Microsoft.JSInterop
+@typeparam TItem
+
+<h3>@Title</h3>
+
+@if (props != null)
+{
+    <div style="min-height:400px;">
+        <table class="table table-sm" style="font-size: small; ">
+            <thead>
+                <tr>
+                    @foreach (var prop in props)
+                    {
+                        <th scope="col">@prop.Name</th>
+                    }
+                    @foreach (var propa in props.Where(p => p.Name == "FileName"))
+                    {
+                        <th>Action</th>
+                        <th></th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var u in pagedResult.result)
+                {
+                    <tr>
+                        @foreach (var prop in props)
+                        {
+                        <td scope="col">
+                            @if (prop.PropertyType == typeof(bool))
+                            {
+                                @if (prop.GetValue(u) == null || (bool)prop.GetValue(u) == false)
+                                {
+                                    <span class="oi oi-x" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span class="oi oi-check" aria-hidden="true"></span>
+                                }
+                            }
+                            else
+                            {
+                                @prop.GetValue(u);
+                            }
+                        </td>
+                        }
+                        @foreach (var propa in props.Where(p => p.Name == "FileName"))
+                        {
+                            <td>
+                                <a class="btn btn-primary btn-sm active" href="/brmfiles/@propa.GetValue(u)" download="@propa.GetValue(u)" target="_top">Download</a>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(propa.GetValue(u).ToString()))">Delete</button>
+                            </td>
+                        }
+
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+    <Pager TotalSize="pagedResult.count" Paged="OnPaged" PageSize="PageSize"></Pager>
+}
+else
+{
+    <p>No Data.</p>
+}
+
+@code {
+
+    [Parameter]
+    public PagedResult<TItem> pagedResult { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public EventCallback<int> Paged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnDelete { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 12;
+
+    IList<PropertyInfo>? props;
+
+    int page;
+    protected override void OnInitialized()
+    {
+        if (!pagedResult.result.Any()) return;
+        page = 1;
+        Type myType = pagedResult.result.First().GetType();
+        props = new List<PropertyInfo>(myType.GetProperties());
+    }
+    protected override void OnParametersSet()
+    {
+        if (!pagedResult.result.Any()) return;
+        page = 1;
+        Type myType = pagedResult.result.First().GetType();
+        props = new List<PropertyInfo>(myType.GetProperties());
+        //StateHasChanged();
+    }
+    protected async Task OnPaged(int _page)
+    {
+        page = _page;
+        await Paged.InvokeAsync(page);
+    }
+
+    protected void btnDelete_Click(string fileName)
+    {
+        OnDelete.InvokeAsync(fileName);
+    }
+
+
+}

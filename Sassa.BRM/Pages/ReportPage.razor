@@ -1,0 +1,434 @@
+﻿@page "/reportpage"
+@inject Navigation Navigate
+@inject BRMDbService db
+@inject ProgressService og
+@inject ReportDataService rs
+@inject IAlertService toast
+
+
+<TabControl ActivePageId="1" PageActivate="OnTabActivate">
+    <TabPage Text="Reports" Id="1" Enabled="true">
+
+             <br/>
+             <div class="row">
+                 <div class="col">
+                <table>
+                    <tr>
+                        <td>
+                        
+                            <div class="input-group mb-1">
+                                <span class="input-group-text">Select report</span>
+                                <select class="form-select" @bind="rIndex">
+                                    <option selected>select...</option>
+                                    @foreach (var val in reportList)
+                                    {
+                                        <option value="@val.Key">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary active" @onclick="btnFTPExport_Click">Save Report</button>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <span><strong>Filter Options</strong></span>
+            </div>
+            @if(rIndex == "11")
+            {
+                <div class="mb-3">
+                  <label for="exampleFormControlTextarea1" class="form-label">Custom SQL</label>
+                  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3">@sql</textarea>
+                </div>
+            }
+            else
+            {
+            @if(rIndex == "3" || rIndex == "8")
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">From Quarter</span>
+                            <select class="form-select" @bind="fromQuarter">
+                                <option selected>select...</option>
+                                @foreach (var val in quarterList)
+                                {
+                                    <option value="@val.Key">@val.Key</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">To Quarter</span>
+                            <select class="form-select" @bind="toQuarter">
+                                <option selected>select...</option>
+                                @foreach (var val in quarterList)
+                                {
+                                    <option value="@val.Key">@val.Key</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if(rIndex == "9")
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">For Month</span>
+                            <select class="form-select" @bind="forMonth">
+                                <option selected>select...</option>
+                                @foreach (var val in StaticD.MonthList())
+                                {
+                                    <option value="@val.Key">@val.Value</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">From Date</span>
+                            <input class="form-control" type="date" @bind="period.FromDate">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">To Date</span>
+                            <input class="form-control" type="date" @bind="period.ToDate">
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (rIndex != "9" && rIndex != "10")
+            {
+                <div class="input-group mb-1">
+                    <span class="input-group-text">Region</span>
+                    <select class="form-select" @bind="office.RegionId">
+                        <option value="" selected>All...</option>
+                        @foreach (var region in db.GetRegions())
+                        {
+                            <option value="@region.Key">@region.Value</option>
+                        }
+                    </select>
+                </div>
+            }
+            @if (rIndex != "3" && rIndex != "10")
+            {
+                <div class="input-group mb-1">
+                    <span class="input-group-text">Office</span>
+                    <select class="form-select" @bind="office.OfficeId">
+                        <option value="" selected>All...</option>
+                        @foreach (var val in db.GetOffices(office.RegionId))
+                        {
+                            <option value="@val.OfficeId">@val.OfficeName</option>
+                        }
+                    </select>
+                </div>
+                @if (rIndex != "8" && rIndex != "9" && rIndex != "10" && rIndex != "7")
+                {
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">Grant Type</span>
+                        <select class="form-select" @bind="GrantType">
+                            <option value="" selected>All...</option>
+                            @foreach (var val in db.GetGrantTypes())
+                            {
+
+                                <option value="@val.Key">@val.Value</option>
+                            }
+                        </select>
+                   </div>
+                }
+            }
+            }
+    </TabPage>
+    <TabPage Text="Progress" Id="2" Enabled="true">
+@*        <MissingFiles></MissingFiles>*@
+          <ProgressSummary></ProgressSummary>
+    </TabPage>
+    <TabPage Text="Capture Progress" Id="3" Enabled="true">
+         <OfficeProgress></OfficeProgress>
+     </TabPage>
+    <TabPage Text="Current Wip" Id="4" Enabled="true">
+
+<br/>
+                 <div class="row">
+                    <span><strong>Progress for Region : @db.GetRegion(office.RegionId) Period : @period.FromDate to @period.ToDate</strong></span>
+                    <br/>
+                </div>
+                 <div class="row">
+                    <span><strong>Missing Files (Includes files in 60 day capture window)</strong></span>
+                    <br/>
+                </div>
+            @if (IsMissingDashboardLoaded)
+            {
+                 <div class="row">
+                    <div class="col-12">
+                        <table class="table table-sm" style="font-size:x-small;">
+                            <thead>
+                                @*SELECT r.Region_NAME,g.TYPE_NAME, b.Application_date, b.BENEFICIARY_ID,b.CHILD_ID,b.NAME,b.SURNAME FROM DC_SOCPEN*@
+                                <tr>
+                                    <th scope="col">Grant Type</th>
+                                    <th scope="col">Application Date</th>
+                                    <th scope="col">Beneficiary Id</th>
+                                    <th scope="col">Child Id</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Surname</th>
+                                    <th scope="col">Age(Days)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @foreach (var u in missingFiles.result)
+                                {
+                                    <tr style="background-color:@(u.ApplicationDate < DateTime.Now.AddDays(-60) ? "orange":"white" );">
+                                        <td>@db.GetGrantType(u.GrantType)</td>
+                                        <td>@u.ApplicationDate</td>
+                                        <td>@u.BeneficiaryId</td>
+                                        <td>@u.ChildId</td>
+                                        <td>@u.Name</td>
+                                        <td>@u.Surname</td>
+                                        <td>@DateTime.Now.Subtract((DateTime)u.ApplicationDate).Days</td>
+                                    </tr>
+                                }
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                <span>Loading...</span>
+            }
+                <div class="row">
+                    <Pager TotalSize="@missingFiles.count" Paged="OnMissingPaged" PageSize=24></Pager>
+                </div>
+                <br/>
+
+
+    </TabPage>
+    <TabPage Text="Download reports" Id="5" Enabled="true">
+        <Report Title="Report List" Paged="OnPaged" pagedResult="files" OnDelete="DeleteReport"></Report>
+    </TabPage>
+</TabControl>
+
+@code
+{
+    protected UserOffice office;
+    string rIndex;
+    string fromQuarter;
+    string toQuarter;
+    string forMonth;
+
+    string sql;
+
+    protected bool IsDashboardLoaded;
+    protected bool IsMissingDashboardLoaded;
+
+    ReportPeriod period = new ReportPeriod { FromDate = DateTime.Now.AddMonths(-1), ToDate = DateTime.Now };
+    //DateTime FromDate = DateTime.Now.AddMonths(-1);
+    //DateTime ToDate = DateTime.Now;
+    List<MissingSummary> dashboardData;
+
+    Dictionary<string, string> reportList;
+    Dictionary<string, ReportPeriod> quarterList;
+
+    PagedResult<CsvListItem> files;
+    PagedResult<DcSocpen> missingFiles = new PagedResult<DcSocpen>();
+
+    string GrantType;
+    int page;
+    int missingpage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        office = db.session.Office;
+        page = 1;
+        IsMissingDashboardLoaded = false;
+        IsDashboardLoaded = false;
+        await OnTabActivate(1);
+    }
+
+    private async Task OnTabActivate(int e)
+    {
+        switch (e)
+        {
+            case 1:
+                quarterList = StaticD.QuarterList();
+                reportList = rs.reportList;
+                break;
+            case 2:
+                quarterList = StaticD.QuarterList();
+                break;
+            case 3:
+
+                break;
+            case 4:
+                period = StaticD.AfterLastQuarter;
+                await Task.Delay(100);
+                await OnMissingPaged(missingpage);
+                break;
+            case 5:
+                files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    protected void SelectRegion(ChangeEventArgs e)
+    {
+
+        office.RegionId = (string)e.Value;
+        office.OfficeId = db.GetOffices(office.RegionId).First().OfficeId;
+    }
+
+    private async Task btnFTPExport_Click()
+    {
+        try
+        {
+            await Task.Delay(100);
+            if (rIndex == "7" && string.IsNullOrEmpty(office.OfficeId)) //Performance Report
+            {
+                throw new Exception("Please select an office for this report.");
+            }
+            if(rIndex =="3")
+            {
+                period.FromDate = quarterList[fromQuarter].FromDate;
+                period.ToDate = quarterList[toQuarter].ToDate;
+            }
+
+            toast.Info($"{reportList[rIndex]} queued.");
+            string FileName = db.GetFileName(reportList[rIndex].Replace(" ", "_"));
+            //db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + reportList[rIndex].Replace(" ", "_") + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");
+
+            if (rIndex == "8")
+            {
+                await rs.SaveReport(rIndex, quarterList[fromQuarter],quarterList[toQuarter], office.RegionId, FileName);
+            }
+            else
+            {
+                if(rIndex == "9")
+                {
+                    var monthYear = forMonth.Split('|');
+                    int month = int.Parse(monthYear[0]);
+                    int year = int.Parse(monthYear[1]);
+                    await rs.SaveCsvReport(new DateTime(year, month, 1).ToString("dd/MM/yyyy"),new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MM/yyyy"),rIndex, office.OfficeId, "RMC", office.RegionId, GrantType, FileName);
+                }
+                else if(rIndex == "11")
+                {
+                    string sql = $@"select spn.PENSION_NO as Id,
+                            p.NAME as Name,
+                            p.SURNAME as Surname,
+                            spn.GRANT_TYPE as GrantType,
+                            g.TYPE_NAME as GrantName,
+                            spn.ORIGINAL_APPLICATION_DATE as AppDate,
+                            r.Region_CODE as RegionId,
+                            rg.REGION_CODE as REGIONCODE,
+                            rg.REGION_NAME as REGIONNAME,
+                            spn.PRIM_STATUS as Prim_Status,
+                            spn.SEC_STATUS as Sec_Status,
+                            spn.STATUS_DATE as StatusDate,
+                            c.APPLICATION_DATE as Child_App_Date,
+                            c.STATUS_CODE as Child_Status_Code,
+                            c.STATUS_DATE as Child_Status_Date,
+                            to_char(c.ID_NO) as ChildId,
+                            r.DATE_REVIEWED as LASTREVIEWDATE,
+                            CASE
+                            WHEN spn.PRIM_STATUS IN('B','A','9') AND spn.SEC_STATUS IN('2') THEN 'ACTIVE'
+                                ELSE 'INACTIVE'
+                                END AS AppStatus
+                        from sassa.socpen_personal_grants spn
+                        join sassa.socpen_personal p on p.pension_No = spn.pension_No
+                        join sassa.cust_rescodes r on r.res_code = p.secondary_paypoint
+                        join DC_REGION rg on r.region_code = rg.REGION_ID
+                        join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
+                        left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.PENSION_NO
+                        left join SASSA.SOCPEN_P12_CHILDREN c on spn.GRANT_TYPE in ('6', 'C', '5', '9') and c.PENSION_NO = spn.PENSION_NO and c.GRANT_TYPE = spn.GRANT_TYPE
+                        WHERE spn.PRIM_STATUS IN('B','A','9') AND spn.SEC_STATUS IN('2') AND spn.application_date < to_date('01/JAN/2013')";
+                    await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName,"",sql);
+                }
+                else
+                {
+                    await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName);
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+
+    }
+
+    protected void OnPaged(int _page)
+    {
+        page = _page;
+        files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+    }
+
+    protected async Task OnMissingPaged(int _page)
+    {
+        IsMissingDashboardLoaded = false;
+        missingpage = _page;
+        await Task.Delay(100);
+        missingFiles = await og.GetMissingFiles(period, office.RegionId, missingpage);
+        IsMissingDashboardLoaded = true;
+    }
+
+    protected void DeleteReport(string fileName)
+    {
+        rs.DeleteReport(fileName);
+        files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+    }
+
+    protected void btnResetProgress_Click()
+    {
+        IsDashboardLoaded = false;
+    }
+
+    //protected async Task btnLoadProgress_Click()
+    //{
+    //    await Task.Delay(100);
+    //    if(string.IsNullOrEmpty(fromQuarter) || string.IsNullOrEmpty(toQuarter) || string.IsNullOrEmpty(office.RegionId))
+    //    {
+    //        toast.Info($"Please select report Filter.");
+    //        return;
+    //    }
+    //    toast.Info($"Progress Dashboard loading...");
+    //    dashboardData = await og.GetMissingProgress(quarterList[fromQuarter], quarterList[toQuarter],office.RegionId);
+    //    IsDashboardLoaded = true;
+    //}
+
+    protected async Task btnSaveReport(string quarterName)
+    {
+        try
+        {
+            await Task.Delay(100);
+
+            period.FromDate = quarterList[quarterName].FromDate;
+            period.ToDate = quarterList[quarterName].ToDate;
+            toast.Info($"{reportList["3"]} queued.");
+            string FileName = db.GetFileName(reportList["3"].Replace(" ", "_"));
+            //db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + reportList["3"].Replace(" ", "_") + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");
+            await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), "3", office.OfficeId, "RMC", office.RegionId, GrantType, FileName);
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+    }
+}

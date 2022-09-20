@@ -1,0 +1,41 @@
+﻿@page "/survey"
+@inject SurveyService surveyService
+@inject NavigationManager NavigationManager
+
+<h1 class="mb-4">Sassa Real time surveys</h1>
+
+
+@if (pieData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <PieChart PieData="@pieData"></PieChart>
+}
+
+<button class="btn btn-primary mb-4" enabled="false" @onclick="AddSurvey"><i class="oi oi-plus" /> Add Survey</button>
+
+@code {
+    protected PieData pieData;
+
+    protected override async Task  OnInitializedAsync()
+    {
+#if DEBUG
+        //await Task.Delay(10000);
+#endif
+        pieData = surveyService.GetPieData();
+    }
+
+
+    private void AddSurvey()
+    {
+        NavigationManager.NavigateTo("add-survey");
+    }
+
+    private void GoToSurvey(int surveyId)
+    {
+        NavigationManager.NavigateTo($"survey-details/{surveyId}");
+    }
+
+}

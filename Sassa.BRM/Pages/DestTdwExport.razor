@@ -1,0 +1,212 @@
+﻿@inject BRMDbService db
+@inject IAlertService toast
+
+    <br />
+<h5>Create TDW Destruction list</h5>
+<hr />
+
+<div class="row">
+    <div class="col">
+        <div class="input-group mb-1">
+            <span class="input-group-text">Destruction Year</span>
+            <select class="form-select" @bind="@destructionYear">
+                <option selected>@destructionYear</option>
+                @foreach (var val in StaticD.DestructionYears)
+                {
+                    <option value="@val">@val</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary btn-sm active" @onclick="@(() => Reload_Click())">Reload</button>
+    </div>
+</div>
+<div>
+    <hr />
+    <br />
+    <h5>Approved Batches</h5>
+    <table class="table table-sm" style="font-size:small;">
+        <thead>
+            <tr>
+                <th scope="col">Batch Id</th>
+                <th scope="col">Region</th>
+                <th scope="col">Created by</th>
+                <th scope="col">Approved by</th>
+                <th scope="col">Approved date</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (DcExclusionBatch p in batches.result)
+            {
+                <tr>
+                    <td>@p.BatchId</td>
+                    <td>@db.GetRegion(p.RegionId.ToString())</td>
+                    <td>@p.CreatedBy</td>
+                    <td>@p.ApprovedBy</td>
+                    <td>@p.ApprovedDate</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(p.ApprovedBy))
+                        {
+                            <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Region_Click())">Export</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <Pager Paged="OnApprovedBatchPaged" TotalSize="@batches.count"></Pager>
+    <br />
+    <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Batch_Click())">Export</button>
+</div>
+<!--<div>
+    <br />
+    <h2>Upload results</h2>
+    <hr />
+    <table>
+        <tr>
+            <td>-->
+                @*<asp:FileUpload id=CompletedFile runat="server" />*@
+
+            <!--</td>
+            <td>-->
+                @*<asp:Button id="UploadBtn" Text="Upload File" OnClick="UploadBtn_Click" runat="server" class="btn btn-primary active" Width="105px" />*@
+            <!--</td>
+            <td>
+                <p style="margin-top:10px">Accepts single column .csv file with header DESTROYED or TDWNOTFOUND</p>
+            </td>
+        </tr>
+    </table>
+</div>-->
+
+@code {
+
+    protected int RegionId;
+    protected string destructionYear;
+    protected PagedResult<DcExclusionBatch> batches;
+    int batchpage = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        destructionYear = StaticD.DestructionYears.First();
+        RegionId = int.Parse(db.session.Office.RegionId);
+        await OnApprovedBatchPaged(batchpage);
+    }
+
+    protected async Task Reload_Click()
+    {
+        await OnApprovedBatchPaged(batchpage);
+    }
+    //protected void CommandBtn_Click(object sender, GridViewCommandEventArgs e)
+    //{
+    //    int batchId = (int)GridApproved.DataKeys[int.Parse(e.CommandArgument.ToString())].Value;
+    //    switch (e.CommandName)
+    //    {
+
+    //        case "Download":
+
+    //            divError.Visible = true;
+    //            string Filename = string.Format("{0} - Destruction.csv", batchId);
+    //            lblError.Text = "Downloading file :" + Filename;
+    //            string csv = dProcess.dData.getTDWcsv(batchId);
+
+
+    //            //Download the CSV file.
+    //            Response.Clear();
+    //            Response.Buffer = true;
+    //            Response.AddHeader("content-disposition", "attachment;filename=" + Filename);
+    //            Response.Charset = "";
+    //            Response.ContentType = "application/text";
+    //            Response.Output.Write(csv);
+    //            Response.Flush();
+    //            Response.End();
+    //            divError.Visible = false;
+    //            break;
+
+    //        case "FTP":
+    //            dProcess.dData.getTDWcsvToFTP(batchId);
+    //            divError.Visible = false;
+    //            break;
+    //        default:
+    //            divError.Visible = false;
+    //            break;
+
+    //    }
+
+    //    GridApproved.DataSource = dProcess.dData.GetApprovedBatches();
+    //    GridApproved.DataBind();
+    //}
+
+    //protected void UploadBtn_Click(object sender, EventArgs e)
+    //{
+    //    divError.Visible = false;
+    //    if (CompletedFile.FileContent.Length > 0)
+    //    {
+
+    //        string content;
+
+    //        using (var reader = new StreamReader(CompletedFile.FileContent))
+    //        {
+    //            content = reader.ReadToEnd();
+    //        }
+    //        var rows = content.Replace("\r\n", "|").Split('|');
+    //        string newstatus = rows.First();
+    //        switch (newstatus.ToLower())
+    //        {
+    //            case "destroyed":
+    //                newstatus = "Destroyed";
+    //                break;
+    //            case "tdwnotfound":
+    //                newstatus = "TDWNotFound";
+    //                break;
+    //        }
+    //        try
+    //        {
+    //            dProcess.dData.BatchResult = "";
+    //            foreach (string pension in rows.Skip(1))
+    //            {
+    //                dProcess.dData.UpdateDestructionStatus(pension.Trim(), newstatus);
+    //            }
+    //            if (dProcess.dData.BatchResult != "")
+    //            {
+    //                lblError.Text = dProcess.dData.BatchResult;
+    //                divError.Visible = true;
+    //            }
+    //        }
+    //        catch
+    //        {
+    //            lblError.Text = dProcess.dData.BatchResult;
+    //            divError.Visible = true;
+    //        }
+
+    //    }
+    //}
+
+    protected async Task btnExport_Batch_Click()
+    {
+        toast.Info($"Destruction List queued.");
+        await db.SaveDestructionList();
+    }
+
+    protected async Task btnExport_Region_Click()
+    {
+        try
+        {
+            toast.Info($"Destruction List queued.");
+            await db.SaveDestructionList(db.session.Office.RegionId);
+        }
+        catch( Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+    }
+
+    protected async Task OnApprovedBatchPaged(int _page)
+    {
+        batchpage = _page;
+        batches = await db.GetApprovedBatches(destructionYear, batchpage);
+
+    }
+
+}

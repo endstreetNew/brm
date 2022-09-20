@@ -1,0 +1,65 @@
+﻿@inherits LayoutComponentBase
+@inject BRMDbService db
+@inject NavigationManager navigation
+
+<div class="grid">
+    <div class="user">
+        <p class="site-title" style="text-align:center">
+            <img ID="Logo" src="images/sassa_logoSmall.jpg" style="height: 100px;" />
+        </p>
+    </div>
+    <div class="header">
+        <div class="float-right">
+            <p class="site-title">
+                Beneficiary Records Management
+            </p>
+            <LoginDisplay />
+        </div>
+    </div>
+    <div class="crumbs">
+        <BrmNav></BrmNav>
+    </div>
+    <div class="main">
+        <div class="content px-4">
+            <ToastAlert />
+            @if (@Status == "")
+            {
+                @Body
+            }
+            else
+            {
+                <p> @Status</p>
+            }
+        </div>
+    </div>
+    <!--<div class="footer">-->
+    @*<div style="text-align:left">
+            <p>&copy; @DateTime.Now.Year - SASSA Beneficiary Records Management</p>
+        </div>*@
+    <!--</div>-->
+</div>
+
+@code
+{
+    protected string Status = "Initializing session..";
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(db.session.IsBrmUser())
+            {
+                await db.GetLocalOffice();
+                Status = "";
+            }
+            else
+            {
+                Status = "No Brm Roles for this user;";
+            }
+        }
+        catch(Exception ex)
+        {
+            Status = ex.Message;
+        }
+
+    }
+}

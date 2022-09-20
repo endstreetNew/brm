@@ -1,0 +1,38 @@
+﻿@page "/officeadmin"
+
+<h3>Maintenance</h3>
+
+<TabControl ActivePageId="1" PageActivate="OnTabActivate">
+    <TabPage Text="Socpen Office Links" Id="1" Enabled="true">
+        <OfficeAdmin></OfficeAdmin>
+    </TabPage>
+    <TabPage Text="Brm Offices" Id="2" Enabled="true">
+        <BrmOfficeAdmin></BrmOfficeAdmin>
+    </TabPage>
+</TabControl>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnTabActivate(1);
+    }
+    private async Task OnTabActivate(int e)
+    {
+        switch (e)
+        {
+            case 1:
+
+                break;
+            case 2:
+
+                break;
+            case 3:
+                
+                break;
+            default:
+                break;
+        }
+    }
+
+}
