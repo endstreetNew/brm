@@ -84,9 +84,9 @@ namespace Sassa.BRM.Services
         }
 
         //Returned box detail
-        public void SendTDWIncoming(UserSession session, string tdwOfficemail, string Boxno, List<string> files)
+        public void SendTDWIncoming(UserSession session,  string Boxno, List<string> files)
         {
-            string returnedBox = _config.GetValue<string>("TDWReturnedBox:NatashaT@tdw.co.za");
+            string returnedBox = _config.GetValue<string>("TDWReturnedBox");
             using (EmailClient client = new EmailClient(_SMTPserver, _SMTPPort, new System.Net.NetworkCredential(_SMTPUser, _SMTPPassword)))
             {
                 //send mail to TDW

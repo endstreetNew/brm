@@ -150,7 +150,7 @@ namespace Sassa.BRM.Services
                             C.APPROVAL_DATE,
                             C.STATUS_DATE,
                             CASE
-                                WHEN A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2') THEN 'ACTIVE'
+                                WHEN C.STATUS_CODE = '1' OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'ACTIVE'
                                 ELSE 'INACTIVE'
                             END AS STATUS_CODE,
                             A.ADABAS_ISN||'-'||A.APPLICATION_NO||'-'||LPAD(A.ID_NO,13,0) AS UNIQUE_ID,
@@ -330,7 +330,7 @@ namespace Sassa.BRM.Services
 //    C.APPROVAL_DATE,
 //    C.STATUS_DATE,
 //    CASE
-//        WHEN A.PRIM_STATUS IN('B','A','9') AND A.SEC_STATUS IN('2') THEN 'ACTIVE'
+//        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
 //        ELSE 'INACTIVE'
 //    END AS STATUS_CODE,
 //    NULL AS UNIQUE_ID,
@@ -339,7 +339,9 @@ namespace Sassa.BRM.Services
 //JOIN sassa_archive.SOCPEN_PERSONAL_ARCHIVE B ON A.PENSION_NO = B.PENSION_NO
 //LEFT JOIN sassa_archive.SOCPEN_P12_CHILDREN_ARCHIVE C ON A.PENSION_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE
 //LEFT JOIN sassa.cust_rescodes D ON b.secondary_paypoint = d.res_code;
+
 //            commit;
+
 //            INSERT INTO DC_SOCPENPG(ADABAS_ISN_MAIN, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME, GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID, PAYPOINT)
 //SELECT
 //    A.ADABAS_ISN AS ADABAS_ISN_MAIN,
@@ -353,7 +355,7 @@ namespace Sassa.BRM.Services
 //    C.APPROVAL_DATE,
 //    C.STATUS_DATE,
 //    CASE
-//        WHEN A.PRIM_STATUS IN('B','A','9') AND A.SEC_STATUS IN('2') THEN 'ACTIVE'
+//        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
 //        ELSE 'INACTIVE'
 //    END AS STATUS_CODE,
 //    NULL AS UNIQUE_ID,

@@ -844,8 +844,8 @@ namespace Sassa.BRM.Services
             //send mail to TDW
             try
             {
-                string mailto = Environment.MachineName.ToLower() == "ssvsbrmdrshc02" ? _session.Email : StaticD.RegionEmails[session.Office.RegionName.ToUpper()];
-                _mail.SendTDWIncoming(session, mailto, boxNo, files);
+                //if (!Environment.MachineName.ToLower().Contains("prod")) return;
+                _mail.SendTDWIncoming(session, boxNo, files);
             }
             catch
             {
@@ -1708,7 +1708,7 @@ namespace Sassa.BRM.Services
                         r.DATE_REVIEWED as LASTREVIEWDATE,
                         '' AS ARCHIVE_YEAR,
                         CASE
-                        WHEN spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2') THEN 'MAIN'
+                        WHEN C.STATUS_CODE = '1' OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'MAIN'
                         ELSE 'ARCHIVE'
                         END AS AppStatus,
                         '' As Brm_Barcode,
@@ -1754,59 +1754,59 @@ namespace Sassa.BRM.Services
             }
             return result;
         }
-        public string DcSocpenSql(string SearchId)
-        {
-            //            Select* from DC_Socpen spn
-            //where spn.BENEFICIARY_ID = '8112226059082'
-            //order by spn.STATUS_DATE desc
+        //public string DcSocpenSql(string SearchId)
+        //{
+        //    //Select* from DC_Socpen spn
+        //    //where spn.BENEFICIARY_ID = '8112226059082'
+        //    //order by spn.STATUS_DATE desc
 
 
-            return @$"select 
-                                spn.BENEFICIARY_ID as Id,
-                                spn.NAME as Name,
-                                spn.SURNAME as Surname,
-                                spn.GRANT_TYPE as GrantType,
-                                g.TYPE_NAME as GrantName,
-                                spn.APPLICATION_DATE as AppDate,
-                                spn.Region_id as RegionId,
-                                rg.REGION_CODE as REGIONCODE,
-                                rg.REGION_NAME as REGIONNAME,
-                                null as DOCSPRESENT,
-                                spn.PRIM_STATUS as Prim_Status,
-                                spn.SEC_STATUS as Sec_Status,
-                                spn.STATUS_DATE as StatusDate,
-                                spn.APPLICATION_DATE as Child_App_Date,
-                                spn.STATUS_CODE as Child_Status_Code,
-                                spn.STATUS_DATE as Child_Status_Date,
-                                spn.Child_id as ChildId,
-                                r.DATE_REVIEWED as LASTREVIEWDATE,
-                                '' AS ARCHIVE_YEAR,
-                                Status_code As AppStatus,
-                                '' As Brm_Barcode,
-                                '' As Brm_Parent,
-                                '' As Clm_no,
-                                '' As DateApproved,
-                                0 As IsCombinationCandidate,
-                                0 As IsMergeCandidate,
-                                0 As IsNew,
-                                'Y' AS IsRmc,
-                                0 As Batch_No,
-                                ID As SocpenIsn,
-                                0 As LcType,
-                                0 As RowType,
-                                '' As Srd_No,
-                                0 As StatusCode,
-                                0 As Tdw_BoxNo,
-                                0 As Trans_type,
-                                '' as IdHistory,
-                                'Socpen' as Source
-                        from DC_Socpen spn
-                        inner join DC_REGION rg on spn.Region_ID = rg.REGION_ID
-                        inner join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
-                        left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.BENEFICIARY_ID
-                        where spn.BENEFICIARY_ID = '{SearchId}'
-                        order by spn.STATUS_DATE desc";
-        }
+        //    return @$"select 
+        //                        spn.BENEFICIARY_ID as Id,
+        //                        spn.NAME as Name,
+        //                        spn.SURNAME as Surname,
+        //                        spn.GRANT_TYPE as GrantType,
+        //                        g.TYPE_NAME as GrantName,
+        //                        spn.APPLICATION_DATE as AppDate,
+        //                        spn.Region_id as RegionId,
+        //                        rg.REGION_CODE as REGIONCODE,
+        //                        rg.REGION_NAME as REGIONNAME,
+        //                        null as DOCSPRESENT,
+        //                        spn.PRIM_STATUS as Prim_Status,
+        //                        spn.SEC_STATUS as Sec_Status,
+        //                        spn.STATUS_DATE as StatusDate,
+        //                        spn.APPLICATION_DATE as Child_App_Date,
+        //                        spn.STATUS_CODE as Child_Status_Code,
+        //                        spn.STATUS_DATE as Child_Status_Date,
+        //                        spn.Child_id as ChildId,
+        //                        r.DATE_REVIEWED as LASTREVIEWDATE,
+        //                        '' AS ARCHIVE_YEAR,
+        //                        Status_code As AppStatus,
+        //                        '' As Brm_Barcode,
+        //                        '' As Brm_Parent,
+        //                        '' As Clm_no,
+        //                        '' As DateApproved,
+        //                        0 As IsCombinationCandidate,
+        //                        0 As IsMergeCandidate,
+        //                        0 As IsNew,
+        //                        'Y' AS IsRmc,
+        //                        0 As Batch_No,
+        //                        ID As SocpenIsn,
+        //                        0 As LcType,
+        //                        0 As RowType,
+        //                        '' As Srd_No,
+        //                        0 As StatusCode,
+        //                        0 As Tdw_BoxNo,
+        //                        0 As Trans_type,
+        //                        '' as IdHistory,
+        //                        'Socpen' as Source
+        //                from DC_Socpen spn
+        //                inner join DC_REGION rg on spn.Region_ID = rg.REGION_ID
+        //                inner join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
+        //                left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.BENEFICIARY_ID
+        //                where spn.BENEFICIARY_ID = '{SearchId}'
+        //                order by spn.STATUS_DATE desc";
+        //}
 
         public async Task<List<Application>> SearchOldIds(string SearchId)
         {
@@ -1830,7 +1830,10 @@ namespace Sassa.BRM.Services
                                         null as ChildId,
                                         null as LASTREVIEWDATE,
                                         '' AS ARCHIVE_YEAR,
-                                        '' as AppStatus,
+                                        CASE
+                                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
+                                        ELSE 'ARCHIVE'
+                                        END AS AppStatus,
                                         '' As Brm_Barcode,
                                         '' As Brm_Parent,
                                         '' As Clm_no,
@@ -1856,10 +1859,6 @@ namespace Sassa.BRM.Services
                                 where '{SearchId}' in ( spn.OLD_ID1, spn.OLD_ID2, spn.OLD_ID3, spn.OLD_ID4, spn.OLD_ID5, spn.OLD_ID6, spn.OLD_ID7, spn.OLD_ID8, spn.OLD_ID9, spn.OLD_ID10)
                                 order by spn.STATUS_DATE desc";
             idquery = await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
-            foreach (Application value in idquery)
-            {
-                value.AppStatus = GetStatusFromSocpen(value);
-            }
             return idquery;
         }
         /// <summary>
@@ -1894,8 +1893,8 @@ namespace Sassa.BRM.Services
                         r.DATE_REVIEWED as LASTREVIEWDATE,
                         '' AS ARCHIVE_YEAR,
                         CASE
-                        WHEN A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2') THEN 'ACTIVE'
-                        ELSE 'INACTIVE'
+                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
+                        ELSE 'ARCHIVE'
                         END AS AppStatus,
                         '' As Brm_Barcode,
                         '' As Brm_Parent,
@@ -2747,7 +2746,7 @@ namespace Sassa.BRM.Services
                     if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
                     {
                         result.SocPenRecord = true;
-                        result.SocPenActive = GetStatusFromSocpen(sr).Contains("MAIN");
+                        result.SocPenActive = sr.AppStatus.Contains("MAIN");
                         break;
                     }
                 }
@@ -2800,7 +2799,7 @@ namespace Sassa.BRM.Services
                     {
                         spresult = await SearchSocpenSrd(lsrd);
                         result.SocPenRecord = true;
-                        result.SocPenActive = GetStatusFromSocpen(spresult.First()).Contains("MAIN");
+                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
                     }
 
                 }
@@ -2815,7 +2814,7 @@ namespace Sassa.BRM.Services
                             if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
                             {
                                 result.SocPenRecord = true;
-                                result.SocPenActive = GetStatusFromSocpen(sr).Contains("MAIN");
+                                result.SocPenActive = sr.AppStatus.Contains("MAIN");
                                 break;
                             }
                         }
@@ -2873,7 +2872,7 @@ namespace Sassa.BRM.Services
                     if (spresult.Any())
                     {
                         result.SocPenRecord = true;
-                        result.SocPenActive = GetStatusFromSocpen(spresult.First()).Contains("MAIN");
+                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
                     }
                 }
                 //var socpenresult = await SearchSocPenID(file.ApplicantNo, false);

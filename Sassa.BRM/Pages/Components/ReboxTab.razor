@@ -161,6 +161,10 @@
                     {
                         <div class="row">
                             <div style="float: right;">
+                        @if (showConfirmLock)
+                        {
+                            <Confirmation Title="Confirm Lock box" Message="You are about to finally lock this box! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
+                        }
                                 <div class="input-group mb-3">
                             <button type="button"  class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(boxfiles.count<1)">
                                 Print BoxCover (@(
@@ -248,6 +252,7 @@
 
     bool transferHidden = true;
     bool archiveHidden = true;
+    bool showConfirmLock = false;
 
     int page;
 
@@ -321,9 +326,9 @@
     protected async Task btnClearSearch_Click()
     {
 
-            searchText = "";
-            loaded = false;
-            await btnLoadBox_Click();
+        searchText = "";
+        loaded = false;
+        await btnLoadBox_Click();
 
     }
 
@@ -460,12 +465,7 @@
 
     protected async Task btnLock_Click()
     {
-        BoxLocked = true;
-        await db.LockBox(boxNo);
-        await db.SetBulkReturned(boxNo);
-        boxfiles = new PagedResult<ReboxListItem>();
-        rebox = new Reboxing();
-        //Todo: send data to tdw.
+        showConfirmLock = true;
     }
 
     protected async Task btnPrintCovers_Click(bool NotScanned)
@@ -540,5 +540,23 @@
     {
         page = _page;
         boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
+    }
+
+    private async Task ConfirmLock()
+    {
+        showConfirmLock = false;
+        BoxLocked = true;
+        await db.LockBox(boxNo);
+        await db.SetBulkReturned(boxNo);
+        loaded = false;
+        await btnLoadBox_Click();
+        //boxfiles = new PagedResult<ReboxListItem>();
+        //rebox = new Reboxing();
+    }
+
+    private void CancelLock()
+    {
+        showConfirmLock = false;
+        StateHasChanged();
     }
 }

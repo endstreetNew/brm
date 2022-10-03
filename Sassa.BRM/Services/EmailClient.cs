@@ -26,8 +26,8 @@ namespace Sassa.BRM.Services
             client = new SmtpClient(_smtpServer, _port);
             NetworkCredential basicCredential1 = _credential;
             client.EnableSsl = false;
-            client.UseDefaultCredentials = false;
-            client.Credentials = basicCredential1;
+            client.UseDefaultCredentials = true;// false;
+            //client.Credentials = basicCredential1;
 
             MailMessage message = new MailMessage(from, to);
 

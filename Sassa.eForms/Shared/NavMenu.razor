@@ -17,12 +17,11 @@
                 Grant Customer Support
             </NavLink>
         </li>
-        <li class="nav-item px-3">
+@*        <li class="nav-item px-3" disabled>
             <NavLink class="nav-link" @onclick="ExpandForms">
-                @*<span class="oi oi-document" aria-hidden="true"></span>*@
                 Apply for a Grant
             </NavLink>
-        </li>
+        </li>*@
         @if (expandSubNav)
         {
             @foreach (var eform in ef.eforms)

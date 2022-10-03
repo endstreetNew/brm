@@ -10,7 +10,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Content Remove="wwwroot\CSImages\NewFolder\**" />
+	  <EmbeddedResource Remove="wwwroot\CSImages\NewFolder\**" />
+	  <None Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Watch Remove="wwwroot\CSImages\NewFolder\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Remove="Services\AssetService.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="appsettings.Production.json" />
 	</ItemGroup>
 
 
@@ -19,6 +31,13 @@
     <Folder Include="wwwroot\CSImages\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="wwwroot\Documents\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="appsettings.Production.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 
@@ -48,12 +67,6 @@
 
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="appsettings.Production.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

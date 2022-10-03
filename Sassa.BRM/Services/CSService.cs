@@ -107,6 +107,7 @@ namespace Sassa.BRM.Services
             catch(Exception ex)
             {
                 StaticD.WriteEvent(ex.Message);
+                ota = null;
                 throw new Exception("An error occurred accessing ContentServer");
             }
 

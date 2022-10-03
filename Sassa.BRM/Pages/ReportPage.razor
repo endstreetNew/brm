@@ -347,7 +347,7 @@
                             to_char(c.ID_NO) as ChildId,
                             r.DATE_REVIEWED as LASTREVIEWDATE,
                             CASE
-                            WHEN spn.PRIM_STATUS IN('B','A','9') AND spn.SEC_STATUS IN('2') THEN 'ACTIVE'
+                            WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'ACTIVE'
                                 ELSE 'INACTIVE'
                                 END AS AppStatus
                         from sassa.socpen_personal_grants spn
@@ -357,7 +357,7 @@
                         join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
                         left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.PENSION_NO
                         left join SASSA.SOCPEN_P12_CHILDREN c on spn.GRANT_TYPE in ('6', 'C', '5', '9') and c.PENSION_NO = spn.PENSION_NO and c.GRANT_TYPE = spn.GRANT_TYPE
-                        WHERE spn.PRIM_STATUS IN('B','A','9') AND spn.SEC_STATUS IN('2') AND spn.application_date < to_date('01/JAN/2013')";
+                        WHERE C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN('B','A','9') AND spn.SEC_STATUS IN('2')) AND spn.application_date < to_date('01/JAN/2013')";
                     await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName,"",sql);
                 }
                 else
