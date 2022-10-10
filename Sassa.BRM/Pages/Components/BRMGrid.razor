@@ -53,6 +53,7 @@
                     <th scope="col">Application Date</th>
                     <th scope="col">Batch No</th>
                     <th scope="col">Box No</th>
+                    <th scope="col">Minibox No</th>
                     <th scope="col">Archive Year</th>
                 </tr>
             </thead>
@@ -76,6 +77,7 @@
                         <td>@u.AppDate</td>
                         <td>@u.BATCH_NO</td>
                         <td>@u.TDW_BOXNO</td>
+                        <td>@u.MiniBox</td>
                         <td>@u.ARCHIVE_YEAR</td>
                     </tr>
                     @if (DTMerges.Where(b => b.Brm_Parent == u.Brm_BarCode).Count() > 0)

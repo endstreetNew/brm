@@ -12,7 +12,7 @@ namespace razor.Components.Models
         public int ParentId;
         public int Id;
         public bool NodeType;
-        public string NodeName;
+        public string? NodeName;
         public byte[]? NodeContent;
 
         private List<TreeNode> _files = new List<TreeNode>();

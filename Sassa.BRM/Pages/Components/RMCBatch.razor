@@ -333,7 +333,7 @@
         try
         {
             boxNo = rebox.BoxNo.ToUpper().Trim();
-            boxfiles = await db.GetAllFilesByBoxNo(boxNo, 1);
+            await OnPaged(1);
             if( boxfiles.result.Where(r => r.BoxLocked).Any())
             {
                 throw new Exception("Locked box!");
@@ -351,7 +351,7 @@
             }
             await Task.Delay(50);
         }
-        catch(Exception ex)
+        catch //(Exception ex)
         {
             toast.Error("Invalid Box no");
         }
@@ -470,11 +470,11 @@
 
             string FileName = db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + "Batch_" + batch.BatchNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");//.Replace(":", "-");
 
-            rd.SaveHtmlReport(sb.ToString(), FileName);
+            await rd.SaveHtmlReport(sb.ToString(), FileName);
 
             toast.Success($"Batch cover :{batch.BatchNo} queued.");
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             toast.Error($"Batch cover :{batch.BatchNo} error.");
 

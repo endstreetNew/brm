@@ -69,12 +69,11 @@ else
 }
 
 @code {
+    [Parameter]
+    public PagedResult<TItem> pagedResult { get; set; } = new PagedResult<TItem>();
 
     [Parameter]
-    public PagedResult<TItem> pagedResult { get; set; }
-
-    [Parameter]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     [Parameter]
     public EventCallback<int> Paged { get; set; }
@@ -85,7 +84,7 @@ else
     [Parameter]
     public int PageSize { get; set; } = 12;
 
-    IList<PropertyInfo>? props;
+    IList<PropertyInfo> props = new List<PropertyInfo>();
 
     int page;
     protected override void OnInitialized()

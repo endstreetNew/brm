@@ -97,20 +97,23 @@
 }
 
 @code {
-        [Parameter]
-        public Application br { get; set; }
-        [Parameter]
-        public EventCallback ModalClosed { get; set; }
+    [Parameter]
+    public Application br { get; set; }
+    [Parameter]
+    public string TargetBoxType { get; set; } = null;
 
-        [Parameter]
-        public EventCallback<bool> BrmSave { get; set; }
+    [Parameter]
+    public EventCallback ModalClosed { get; set; }
 
-        bool grantTypeVisible;
-        Dictionary<string, string> grantTypes;
-        //Dictionary<decimal, string> lcTypes;
-        bool childIdVisible;
-        bool ready = false;
-        bool showOverWrite = false;
+    [Parameter]
+    public EventCallback<bool> BrmSave { get; set; }
+
+    bool grantTypeVisible;
+    Dictionary<string, string> grantTypes;
+    //Dictionary<decimal, string> lcTypes;
+    bool childIdVisible;
+    bool ready = false;
+    bool showOverWrite = false;
 
 
     protected override void OnInitialized()
@@ -175,7 +178,13 @@
             {
                 throw new Exception("An Application Date is Required.");
             }
-            
+            if (!string.IsNullOrEmpty(TargetBoxType))
+            {
+                if (br.IsPreservedType && !string.IsNullOrEmpty(br.TDW_BOXNO))
+                {
+                    if (TargetBoxType != br.AppStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
+                }
+            }
             DcFile file = await db.CreateBRM(br,reason);
             br.BATCH_NO = file.BatchNo.ToString();
             br.Clm_No = file.UnqFileNo;
@@ -188,10 +197,11 @@
         }
         catch (TaskCanceledException ex)
         {
+            toast.Error(ex.Message);
             // Check ex.CancellationToken.IsCancellationRequested here.
             // If false, it's pretty safe to assume it was a timeout.
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             toast.Error(ex.Message);
             btnCancel_Click();

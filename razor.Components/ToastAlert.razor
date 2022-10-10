@@ -70,7 +70,7 @@
         StateHasChanged();
     }
 
-    private void OnLocationChange(object sender, LocationChangedEventArgs e)
+    private void OnLocationChange(object? sender, LocationChangedEventArgs e)
     {
         AlertService.Clear(Id);
     }
@@ -98,7 +98,7 @@
         StateHasChanged();
     }
 
-    private string CssClass(AlertModel alert) 
+    private string? CssClass(AlertModel alert) 
     {
         if (alert == null) return null;
 

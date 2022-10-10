@@ -79,6 +79,14 @@ namespace Sassa.BRM.Models
             }
         }
         [NotMapped]
+        public bool IsPreservedType
+        {
+            get
+            {
+                return "MAIN|LC-MAIN|ARCHIVE|LC-ARCHIVE".Contains(ApplicationStatus);
+            }
+        }
+        [NotMapped]
         public string FullName
         {
             get

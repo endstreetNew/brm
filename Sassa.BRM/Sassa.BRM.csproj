@@ -25,6 +25,10 @@
 	  <Content Remove="appsettings.Production.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Watch Remove="Pages\Components\BoxStatus.razor" />
+	</ItemGroup>
+
 
   <ItemGroup>
     <Folder Include="wwwroot\brmFiles\" />
@@ -38,6 +42,7 @@
     <None Include="appsettings.Production.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Include="Pages\Components\BoxStatus.razor" />
   </ItemGroup>
 
 

@@ -14,6 +14,8 @@
             RegType = "";
             PickListNo = "";
             MiniBox = 1;
+            BoxCount = 0;
+            MiniBoxCount = 0;
         }
         public string BoxNo { get; set; }
         public string BatchNo { get; set; }
@@ -26,5 +28,7 @@
         public string AltBoxNo { get; set; }
         public string PickListNo { get; set; }
         public int MiniBox { get; set; }
+        public int BoxCount { get; set; }
+        public int MiniBoxCount { get; set; }
     }
 }

@@ -34,7 +34,7 @@ else
 
 
     [Parameter]
-    public TreeNode Node { get; set; }
+    public TreeNode? Node { get; set; }
     [Parameter]
     public EventCallback<string> Preview { get; set; }
 
@@ -44,7 +44,7 @@ else
 
     }
 
-    protected void OnPreview(string fileName)
+    protected void OnPreview(string? fileName)
     {
         Preview.InvokeAsync(fileName);
     }

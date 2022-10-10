@@ -1,4 +1,6 @@
-﻿namespace Sassa.BRM.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Sassa.BRM.Models
 {
     public class Application
     {
@@ -57,7 +59,13 @@
                 return AppStatus.Contains("MAIN") ? "Active" : "Inactive";
             }
         }
-
+        public bool IsPreservedType
+        {
+            get
+            {
+                return "MAIN|LC-MAIN|ARCHIVE|LC-ARCHIVE".Contains(AppStatus);
+            }
+        }
         public bool IsValid()
         {
             if (string.IsNullOrEmpty(Name))

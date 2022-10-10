@@ -111,7 +111,7 @@ namespace Sassa.eServices.Admin.Services
                     }
 
                 }
-                catch //(Exception ex)
+                catch (Exception ex)
                 {
                     return "UNKNOWN";
                 }

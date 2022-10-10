@@ -962,7 +962,7 @@ namespace Sassa.BRM.Services
                 await _context.SaveChangesAsync();
                 CreateActivity("Reboxing" + GetFileArea(file.SrdNo, file.Lctype), "Rebox file", file.UnqFileNo);
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 throw;
             }
@@ -1708,7 +1708,7 @@ namespace Sassa.BRM.Services
                         r.DATE_REVIEWED as LASTREVIEWDATE,
                         '' AS ARCHIVE_YEAR,
                         CASE
-                        WHEN C.STATUS_CODE = '1' OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'MAIN'
+                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
                         ELSE 'ARCHIVE'
                         END AS AppStatus,
                         '' As Brm_Barcode,
@@ -1831,7 +1831,7 @@ namespace Sassa.BRM.Services
                                         null as LASTREVIEWDATE,
                                         '' AS ARCHIVE_YEAR,
                                         CASE
-                                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
+                                        WHEN spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2') THEN 'MAIN'
                                         ELSE 'ARCHIVE'
                                         END AS AppStatus,
                                         '' As Brm_Barcode,
@@ -2389,7 +2389,7 @@ namespace Sassa.BRM.Services
                 {
                     await _context.SaveChangesAsync();
                 }
-                catch (Exception ex)
+                catch// (Exception ex)
                 {
                     throw;
                 }
@@ -2695,6 +2695,22 @@ namespace Sassa.BRM.Services
             }
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Reboxing> GetBoxCounts(Reboxing rebox)
+        {
+            rebox.BoxCount =  await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo);
+            if(rebox.BoxCount > 0)
+            {
+                rebox.RegType = (await _context.DcFiles.Where(b => b.TdwBoxno == rebox.BoxNo).FirstAsync()).RegType;
+            }
+            else
+            {
+                rebox.RegType = null;
+            }
+            rebox.MiniBoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo && b.MiniBoxno == rebox.MiniBox);
+
+            return rebox;
+        }
         #endregion
 
         #region Enquiry page
@@ -2960,8 +2976,6 @@ namespace Sassa.BRM.Services
             return pd;
         }
         #endregion
-
-
 
         #region Destruction 
 

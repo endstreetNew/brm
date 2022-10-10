@@ -12,225 +12,227 @@
 
 @if (rebox != null && db.session != null)
 {
-            <div class="row">
-                <div class="whiteArea col">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <span style="float: left;">
-                                    <img src="images/scanbox.jpg" />
-                                </span>
-                            </div>
-                            <div class="col">
-                                <div>
-                                    <h4>Re-boxing [@rebox.BoxNo]</h4>
-                                </div>
-                            </div>
+    <div class="whiteArea col">
+        <div class="row">
+            <div class="whiteArea col" style="float: left;">
+                <div class=row>
+                    <div class="col">
+                        <span style="float: left;">
+                            <img src="images/scanbox.jpg" />
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div>
+                            <h4>Re-boxing [@rebox.BoxNo]</h4>
                         </div>
                     </div>
-                    <div class="container" style="float: left;">
-                        <div class="whiteArea">
-                            <div class="row">
-                                <div class="col">
-                                    <div class="whiteArea">
-                                        <div class="row">
-                                            <div class="col">
-                                            <div class="input-group mb-3">
-                                                <span class="input-group-text" style="width: 180px;">TDW Box Number</span>
-                                                <input type="text" class="form-control" @bind-value="@boxNo" disabled="@(loaded)">
-                                                <button class="btn btn-primary active" Text="Load" @onclick="btnLoadBox_Click">Load </button>
-                                            </div>
-                                            </div>
-                                            <div class="col">
-                                              <div class="input-group mb-3">
-                                                <span class="input-group-text" style="width: 180px;">Mini Box Number</span>
-                                                <input type="number" class="form-control" @bind-value="@rebox.MiniBox" min="1" max="4">
-                                            </div>
-                                            </div>
-                                         </div>
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">Registry Type</span>
-                                        <select class="form-select" value="@rebox.RegType" @onchange="@(e => RegTypeChange(e))" disabled="@(!loaded)">
-                                            <option value="" selected>select...</option>
-                                            @foreach (var val in db.GetBoxTypes("N"))
-                                            {
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <BoxStatus rebox="@rebox"></BoxStatus>
+@*                                                <div class="input-group mb-3">
+                            <span class="input-group-text" style="width: 180px;">TDW Box Number</span>
+                            <input type="text" class="form-control" @bind-value="@boxNo" disabled="@(loaded)">
+                            <button class="btn btn-primary active" Text="Load" @onclick="btnLoadBox_Click">Load </button>
+                        </div>*@
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-primary active float-right" Text="Load" @onclick="btnLoadBox_Click">Load </button>
 
-                                            <option value="@val.Key">@val.Value</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="input-group mb-3" hidden="@transferHidden">
-                                        <span class="input-group-text" style="width: 180px;">Transfer To</span>
-                                        <select class="form-select" @bind="@rebox.ToRegionId">
-                                            @foreach (var val in db.GetBoxTypes("Y"))
-                                            {
-                                            <option value="@val.Key">@val.Value</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="input-group mb-3" hidden="@archiveHidden">
-                                        <span class="input-group-text" style="width: 180px;">Archive Year</span>
-                                        <select class="form-select" @bind="@rebox.ArchiveYear">
-                                            @foreach (var val in db.GetYearList())
-                                            {
-                                            <option value="@val.Key">@val.Value</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add file to box.</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
-                                        <input type="text" @ref="brmInput" @bind-value="@rebox.BrmBarcode" @onkeyup="@AddEnter" class="form-control" disabled="@(!loaded)">
-                                        <button ID="btnAddFileToBox" class="btn btn-primary active" @onclick="btnAddFile_Click">Add File</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Remove file.</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
-                                        <input type="text" @bind-value="@RemoveBarcode" class="form-control" disabled="@(!loaded)">
-                                        <button  class="btn btn-primary active" @onclick="btnRemoveFile_Click">Remove</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+@*                                                  <div class="input-group mb-3">
+                            <span class="input-group-text" style="width: 180px;">Mini Box Number</span>
+                            <input type="number" class="form-control" @bind-value="@rebox.MiniBox" min="1" max="4">
+                            </div>*@
                     </div>
-                    <div class="container" style="float: left;">
-                        <div class="container goldArea">
-                            <div class="row">
-                                <div class="col">
-                                    <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add MIS files to box.</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">MIS File Number</span>
-                                        <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.MisFileNo" class="form-control" disabled="@(!loaded)">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">New Barcode</span>
-                                        <input type="text" class="form-control" @bind-value="@rebox.NewBarcode" disabled="@(!loaded)">
-                                        <button class="btn btn-primary active" @onclick="btnAddMISFile_Click">Add MIS File</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container" style="float: left;">
-                        <div class="container greenArea">
+                 </div>
+                 <div class="row">
+                     <div class="col">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" style="width: 180px;">Registry Type</span>
+                            <select class="form-select" value="@selectedType" @onchange="@(e => RegTypeChange(e))" disabled="@(!loaded)">
+                                <option value="" selected>select...</option>
+                                @foreach (var val in db.GetBoxTypes("N"))
+                                {
 
-                            <div class="row">
-                                <div class="col">
-                                    <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add Batch to box.</label>
-                                </div>
+                                <option value="@val.Key">@val.Value</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="row">
+                    <div class="col">
+                            <div class="input-group mb-3" hidden="@transferHidden">
+                                <span class="input-group-text" style="width: 180px;">Transfer To</span>
+                                <select class="form-select" @bind="@rebox.ToRegionId">
+                                    @foreach (var val in db.GetBoxTypes("Y"))
+                                    {
+                                    <option value="@val.Key">@val.Value</option>
+                                    }
+                                </select>
                             </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" style="width: 180px;">Batch No</span>
-                                        <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.BatchNo" class="form-control" disabled="@(!loaded)">
-                                        <button class="btn btn-primary active" @onclick="btnAddBatch_Click">Add Batch</button>
-                                    </div>
-                                </div>
+                      </div>
+                  </div>
+                 <div class="row"> 
+                    <div class="col">
+                        <div class="input-group mb-3" hidden="@archiveHidden">
+                            <span class="input-group-text" style="width: 180px;">Archive Year</span>
+                            <select class="form-select" @bind="@rebox.ArchiveYear">
+                                @foreach (var val in db.GetYearList())
+                                {
+                                <option value="@val.Key">@val.Value</option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add file to box.</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
+                            <input type="text" @ref="brmInput" @bind-value="@rebox.BrmBarcode" @onkeyup="@AddEnter" class="form-control" disabled="@(!loaded)">
+                            <button ID="btnAddFileToBox" class="btn btn-primary active" @onclick="btnAddFile_Click">Add File</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Remove file.</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
+                            <input type="text" @bind-value="@RemoveBarcode" class="form-control" disabled="@(!loaded)">
+                            <button  class="btn btn-primary active" @onclick="btnRemoveFile_Click">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="container goldArea">
+                    <div class="row">
+                        <div class="col">
+                            <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add MIS files to box.</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" style="width: 180px;">MIS File Number</span>
+                                <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.MisFileNo" class="form-control" disabled="@(!loaded)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" style="width: 180px;">New Barcode</span>
+                                <input type="text" class="form-control" @bind-value="@rebox.NewBarcode" disabled="@(!loaded)">
+                                <button class="btn btn-primary active" @onclick="btnAddMISFile_Click">Add MIS File</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="whiteArea col">
-                    @if (boxfiles.result.Any())
-                    {
-                        <div class="row">
-                            <div style="float: right;">
-                        @if (showConfirmLock)
-                        {
-                            <Confirmation Title="Confirm Lock box" Message="You are about to finally lock this box! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
-                        }
-                                <div class="input-group mb-3">
-                            <button type="button"  class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(boxfiles.count<1)">
-                                Print BoxCover (@(
-                                boxfiles.count
-                                ))</button>
-                                    <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrintCovers_Click(false))" disabled="@(boxfiles.count<1)">Print All Covers</button>
-                                    <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick:stopPropagation=true @onclick ="@(() => btnPrintCovers_Click(true))" disabled="@(boxfiles.count<1)">Print Unscanned Covers</button>
-                                    <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
-                                </div>
+                <div class="container greenArea">
+                    <div class="row">
+                        <div class="col">
+                            <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add Batch to box.</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" style="width: 180px;">Batch No</span>
+                                <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.BatchNo" class="form-control" disabled="@(!loaded)">
+                                <button class="btn btn-primary active" @onclick="btnAddBatch_Click">Add Batch</button>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col float-left">
-                                <h5>Box Items</h5>
-                            </div>
-                            <div class="col float-right">
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control input-sm" placeholder="<Id/BRMBarcode>" @bind-value="@searchText" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary btn-sm active" @onclick="@(() => btnSearch_Click())">Search</button>
-                                    </div>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-secondary btn-sm active" @onclick="@(() => btnClearSearch_Click())">Clear</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <table class="table table-sm" style="font-size:small;">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">MiniBox No</th>
-                                        <th scope="col">Id No</th>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Clm No</th>
-                                        <th scope="col">Brm No</th>
-                                        <th scope="col">Scanned</th>
-                                        <th scope="col">Locked</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (ReboxListItem p in boxfiles.result)
-                                    {
-                                        <tr>
-                                            <td>@p.MiniBox</td>
-                                            <td>@p.IdNo</td>
-                                            <td>@p.FullName</td>
-                                            <td>@p.ClmNo</td>
-                                            <td>@p.BrmNo</td>
-                                            <td>
-                                            <span class="@(p.Scanned ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
-                                            </td>
-                                            <td>
-                                            <span class="@(p.BoxLocked ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
-                                            </td>
-                                        <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{NavigationM.BaseUri}/coversheet/{p.BrmNo}")">View Cover</NavLink></td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                            <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
+            @*Right Side*@
+            <div class="whiteArea col">
+                @if (boxfiles.result.Any())
+                {
+                    <div class="row">
+                        <div style="float: right;">
+                    @if (showConfirmLock)
+                    {
+                        <Confirmation Title="Confirm Lock box" Message="You are about to finally lock this box! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
+                    }
+                            <div class="input-group mb-3">
+                        <button type="button"  class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(boxfiles.count<1)">
+                            Print BoxCover (@(
+                            boxfiles.count
+                            ))</button>
+                                <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrintCovers_Click(false))" disabled="@(boxfiles.count<1)">Print All Covers</button>
+                                <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick:stopPropagation=true @onclick ="@(() => btnPrintCovers_Click(true))" disabled="@(boxfiles.count<1)">Print Unscanned Covers</button>
+                                <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col float-left">
+                            <h5>Box Items</h5>
+                        </div>
+                        <div class="col float-right">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control input-sm" placeholder="<Id/BRMBarcode>" @bind-value="@searchText" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-sm active" @onclick="@(() => btnSearch_Click())">Search</button>
+                                </div>
+                                <div class="input-group-append">
+                                    <button class="btn btn-secondary btn-sm active" @onclick="@(() => btnClearSearch_Click())">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <table class="table table-sm" style="font-size:small;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">MiniBox No</th>
+                                    <th scope="col">Id No</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Clm No</th>
+                                    <th scope="col">Brm No</th>
+                                    <th scope="col">Scanned</th>
+                                    <th scope="col">Locked</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (ReboxListItem p in boxfiles.result)
+                                {
+                                    <tr>
+                                        <td>@p.MiniBox</td>
+                                        <td>@p.IdNo</td>
+                                        <td>@p.FullName</td>
+                                        <td>@p.ClmNo</td>
+                                        <td>@p.BrmNo</td>
+                                        <td>
+                                        <span class="@(p.Scanned ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
+                                        </td>
+                                        <td>
+                                        <span class="@(p.BoxLocked ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
+                                        </td>
+                                    <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{NavigationM.BaseUri}/coversheet/{p.BrmNo}")">View Cover</NavLink></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 }
 
 @code {
@@ -250,6 +252,7 @@
 
     PagedResult<ReboxListItem> boxfiles = new PagedResult<ReboxListItem>();
 
+    string selectedType;
     bool transferHidden = true;
     bool archiveHidden = true;
     bool showConfirmLock = false;
@@ -264,6 +267,7 @@
         db.session.BookMark.BoxingTab = 3;
         if (!string.IsNullOrEmpty(boxNo))
         {
+            rebox.BoxNo = boxNo.ToUpper().Trim(); 
             await btnLoadBox_Click();
         }
     }
@@ -272,19 +276,19 @@
     {
         try
         {
-            if (string.IsNullOrEmpty(boxNo) ) 
+            if (string.IsNullOrEmpty(rebox.BoxNo))
             {
-                throw new Exception($"Invalid Box No: {boxNo}.");
+                throw new Exception($"Invalid Box No: {rebox.BoxNo}.");
             }
             if (!loaded)
             {
-                boxNo = boxNo.ToUpper().Trim();
-                boxfiles = await db.GetAllFilesByBoxNo(boxNo, page);
+                rebox.BoxNo = rebox.BoxNo.ToUpper().Trim();
+                await OnPaged(page);
                 //Todo: fix field in db
                 rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
                 BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
-                rebox.RegType = "";
-                rebox.BoxNo = boxNo;
+                //rebox.RegType = "";
+                //rebox.BoxNo = boxNo;
                 loaded = !BoxLocked;
                 if (boxfiles.count > 0)
                 {
@@ -312,7 +316,7 @@
         try
         {
             if (string.IsNullOrEmpty(searchText)) throw new Exception("Nothing to search.");
-            boxfiles = await db.SearchBox(boxNo, page, searchText);
+            boxfiles = await db.SearchBox(rebox.BoxNo, page, searchText);
             //await Task.Delay(100);
             //StateHasChanged();
 
@@ -346,7 +350,7 @@
         {
             rebox.BrmBarcode = rebox.BrmBarcode.ToUpper().Trim();
             if (string.IsNullOrEmpty(rebox.BrmBarcode) || rebox.BrmBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(rebox.RegType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.MisFileNo = string.Empty;
             rebox.NewBarcode = string.Empty;
@@ -367,7 +371,7 @@
             RemoveBarcode = RemoveBarcode.ToUpper().Trim();
             if (string.IsNullOrEmpty(RemoveBarcode) || RemoveBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
             await db.RemoveFileFromBox(RemoveBarcode);
-            boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
+            await OnPaged( page);
             await brmInput.FocusAsync();
         }
         catch (Exception ex)
@@ -382,7 +386,7 @@
         {
             if (string.IsNullOrEmpty(rebox.MisFileNo.Trim()) || rebox.MisFileNo.Trim().Length > 11 || rebox.MisFileNo.Trim().Length < 9) throw new Exception("Invalid MIS File Number");
             if (string.IsNullOrEmpty(rebox.NewBarcode.Trim()) || rebox.NewBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(rebox.RegType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.BrmBarcode = string.Empty;
             await AddFile();
@@ -398,7 +402,7 @@
         try
         {
             if (string.IsNullOrEmpty(rebox.BatchNo)) throw new Exception("Invalid BatchNo");
-            if (string.IsNullOrEmpty(rebox.RegType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
 
             await AddBatch();
@@ -415,7 +419,7 @@
         try
         {
             // if (boxfiles.count > 149) throw new Exception($"Too many files, Maximun allowed: 150.");
-            rebox.ToRegionId = rebox.RegType == "3" ? rebox.ToRegionId : rebox.RegType;
+            rebox.ToRegionId = selectedType == "3" ? rebox.ToRegionId : selectedType;
             await Rebox(rebox);
 
         }
@@ -432,7 +436,7 @@
         {
             List<string> barcodes = await db.GetBatchBarcodes(rebox.BatchNo);
             //if (boxfiles.count + barcodes.Count() > 150) throw new Exception($"Too many files for this box result: {boxfiles.count + barcodes.Count()} Maximun allowed: 150.");
-            rebox.ToRegionId = rebox.RegType == "3" ? rebox.ToRegionId : rebox.RegType;
+            rebox.ToRegionId = selectedType == "3" ? rebox.ToRegionId : selectedType;
             rebox.MisFileNo = string.Empty;
             rebox.NewBarcode = string.Empty;
             foreach (string brmBarCode in barcodes)
@@ -450,10 +454,15 @@
 
     protected void RegTypeChange(ChangeEventArgs e)
     {
+        
         if (string.IsNullOrEmpty((string)e.Value)) return;
-        rebox.RegType = (string)e.Value;
-        transferHidden = !(db.GetBoxTypes()[rebox.RegType]).Contains("Transfer");
-        archiveHidden = !(db.GetBoxTypes()[rebox.RegType]).Contains("Archive");
+        selectedType = (string)e.Value;
+        transferHidden = !(db.GetBoxTypes()[selectedType]).Contains("Transfer");
+        archiveHidden = !(db.GetBoxTypes()[selectedType]).Contains("Archive");
+        if (!string.IsNullOrEmpty(rebox.RegType))
+        {
+            toast.Warn($"Box only accepts {rebox.RegType}");
+        }
     }
 
     protected void btnPrint_Click()
@@ -463,7 +472,7 @@
 
     }
 
-    protected async Task btnLock_Click()
+    protected void btnLock_Click()
     {
         showConfirmLock = true;
     }
@@ -518,10 +527,21 @@
     {
 
         DcFile file = await db.GetReboxCandidate(rebox);
+
+        if (boxfiles.count > 0)
+        {
+            if(file.IsPreservedType && !string.IsNullOrEmpty(rebox.BoxNo))
+            {
+                if (rebox.RegType != file.ApplicationStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+            }
+        }
+
         if (boxfiles.count == 0)
         {
             rebox.AltBoxNo = await db.GetNexRegionAltBoxSequence();
         }
+
+
 
         file.PrintOrder = boxfiles.count;
         await db.Rebox(rebox, file);
@@ -533,21 +553,22 @@
         rebox.BrmBarcode = string.Empty;
         rebox.MisFileNo = string.Empty;
         rebox.NewBarcode = string.Empty;
-        boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
+        await OnPaged(page);
     }
 
     protected async Task OnPaged(int _page)
     {
         page = _page;
         boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
+        rebox = await db.GetBoxCounts(rebox);
     }
 
     private async Task ConfirmLock()
     {
         showConfirmLock = false;
         BoxLocked = true;
-        await db.LockBox(boxNo);
-        await db.SetBulkReturned(boxNo);
+        await db.LockBox(rebox.BoxNo);
+        await db.SetBulkReturned(rebox.BoxNo);
         loaded = false;
         await btnLoadBox_Click();
         //boxfiles = new PagedResult<ReboxListItem>();
