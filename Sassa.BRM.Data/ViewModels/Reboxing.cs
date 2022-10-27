@@ -16,6 +16,7 @@
             MiniBox = 1;
             BoxCount = 0;
             MiniBoxCount = 0;
+            SelectedType = "";
         }
         public string BoxNo { get; set; }
         public string BatchNo { get; set; }
@@ -30,5 +31,6 @@
         public int MiniBox { get; set; }
         public int BoxCount { get; set; }
         public int MiniBoxCount { get; set; }
+        public string SelectedType { get; set; }
     }
 }

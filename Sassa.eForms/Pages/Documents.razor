@@ -127,7 +127,7 @@ else
                             </InputSelect>
                         }
                         <button @onclick="@(() => Preview(doc.DocumentId))" class="btn btn-primary" disabled="@(doc.Status != "Uploaded" )" type="button">Preview</button>
-                        <button @onclick="@(() => ShowUpload(doc))" class="btn btn-primary" disabled="@(doc.Status == "Submitted" ||doc.Status == "Processed" || doc.Status=="QA Passed")" type="button">Upload</button>
+                        <button @onclick="@(() => ShowUpload(doc))" class="btn btn-primary" disabled type="button">Upload</button>
                         @if ("New|Uploaded".Contains(doc.Status))//="@(doc.Status == "Submitted" ||doc.Status == "Processed" || doc.Status=="QA Passed")"
                         {
                             <button @onclick="@(() => RemoveAdditionalDoc(doc.DocumentId))" class="btn btn-primary" type="button">Remove</button>
@@ -154,7 +154,7 @@ else
                         <button type="submit" @onclick="@(() => AddAdditionalDoc())" class="btn btn-primary">Add any Additional document here.</button>
                     }
                     <hr />
-                    <button class="btn btn-primary" type="button" disabled="@(Uploaded())" @onclick="@SubmitDocuments">Submit Documents</button>
+                    <button class="btn btn-primary" type="button" disabled @onclick="@SubmitDocuments">Submit Documents</button> //="@(Uploaded())"
                 }
 
             }

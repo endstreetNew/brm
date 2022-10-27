@@ -49,7 +49,7 @@
                      <div class="col">
                         <div class="input-group mb-3">
                             <span class="input-group-text" style="width: 180px;">Registry Type</span>
-                            <select class="form-select" value="@selectedType" @onchange="@(e => RegTypeChange(e))" disabled="@(!loaded)">
+                            <select class="form-select" value="@rebox.SelectedType" @onchange="@(e => RegTypeChange(e))" disabled="@(!loaded)">
                                 <option value="" selected>select...</option>
                                 @foreach (var val in db.GetBoxTypes("N"))
                                 {
@@ -252,7 +252,6 @@
 
     PagedResult<ReboxListItem> boxfiles = new PagedResult<ReboxListItem>();
 
-    string selectedType;
     bool transferHidden = true;
     bool archiveHidden = true;
     bool showConfirmLock = false;
@@ -350,7 +349,7 @@
         {
             rebox.BrmBarcode = rebox.BrmBarcode.ToUpper().Trim();
             if (string.IsNullOrEmpty(rebox.BrmBarcode) || rebox.BrmBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.MisFileNo = string.Empty;
             rebox.NewBarcode = string.Empty;
@@ -386,7 +385,7 @@
         {
             if (string.IsNullOrEmpty(rebox.MisFileNo.Trim()) || rebox.MisFileNo.Trim().Length > 11 || rebox.MisFileNo.Trim().Length < 9) throw new Exception("Invalid MIS File Number");
             if (string.IsNullOrEmpty(rebox.NewBarcode.Trim()) || rebox.NewBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.BrmBarcode = string.Empty;
             await AddFile();
@@ -402,7 +401,7 @@
         try
         {
             if (string.IsNullOrEmpty(rebox.BatchNo)) throw new Exception("Invalid BatchNo");
-            if (string.IsNullOrEmpty(selectedType)) throw new Exception("Please select a boxtype.");
+            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
 
             await AddBatch();
@@ -419,7 +418,7 @@
         try
         {
             // if (boxfiles.count > 149) throw new Exception($"Too many files, Maximun allowed: 150.");
-            rebox.ToRegionId = selectedType == "3" ? rebox.ToRegionId : selectedType;
+            rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
             await Rebox(rebox);
 
         }
@@ -436,7 +435,7 @@
         {
             List<string> barcodes = await db.GetBatchBarcodes(rebox.BatchNo);
             //if (boxfiles.count + barcodes.Count() > 150) throw new Exception($"Too many files for this box result: {boxfiles.count + barcodes.Count()} Maximun allowed: 150.");
-            rebox.ToRegionId = selectedType == "3" ? rebox.ToRegionId : selectedType;
+            rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
             rebox.MisFileNo = string.Empty;
             rebox.NewBarcode = string.Empty;
             foreach (string brmBarCode in barcodes)
@@ -456,9 +455,9 @@
     {
         
         if (string.IsNullOrEmpty((string)e.Value)) return;
-        selectedType = (string)e.Value;
-        transferHidden = !(db.GetBoxTypes()[selectedType]).Contains("Transfer");
-        archiveHidden = !(db.GetBoxTypes()[selectedType]).Contains("Archive");
+        rebox.SelectedType = (string)e.Value;
+        transferHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Transfer");
+        archiveHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Archive");
         if (!string.IsNullOrEmpty(rebox.RegType))
         {
             toast.Warn($"Box only accepts {rebox.RegType}");

@@ -26,6 +26,7 @@ namespace Sassa.BRM.Services
             return Regions.Where(r => r.RegionId == RegionId).First().RegionName;
         }
         public static List<DcLocalOffice> LocalOffices { get; set; }
+        public static List<DcFixedServicePoint> ServicePoints { get; set; }
         public static List<DcOfficeKuafLink> DcOfficeKuafLinks { get; set; }
         public static Dictionary<string, string> GrantTypes { get; set; }
         public static string GrantName(string GrantId)

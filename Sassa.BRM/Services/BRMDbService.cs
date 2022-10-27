@@ -135,6 +135,15 @@ namespace Sassa.BRM.Services
             }
             return StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
         }
+
+        public List<DcFixedServicePoint> GetServicePoints(string regionID)
+        {
+            if (StaticD.ServicePoints == null)
+            {
+                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            }
+            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
+        }
         public async Task<bool> UpdateUserLocalOffice(string officeId)
         {
             DcOfficeKuafLink officeLink;
@@ -221,6 +230,15 @@ namespace Sassa.BRM.Services
             await _context.SaveChangesAsync();
             StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
+
+        public async Task UpdateServicePoint(DcFixedServicePoint s)
+        {
+            DcFixedServicePoint sp = await _context.DcFixedServicePoints.Where(o => o.Id == s.Id).FirstAsync();
+            sp.ServicePointName = s.ServicePointName;
+            sp.OfficeId = s.OfficeId;
+            await _context.SaveChangesAsync();
+            StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+        }
         public async Task CreateOffice(RegionOffice office)
         {
             DcLocalOffice lo = new DcLocalOffice();
@@ -232,6 +250,14 @@ namespace Sassa.BRM.Services
             _context.DcLocalOffices.Add(lo);
             await _context.SaveChangesAsync();
             StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+        }
+
+        public async Task CreateServicePoint(DcFixedServicePoint s)
+        {
+            _context.DcFixedServicePoints.Add(s);
+            await _context.SaveChangesAsync();
+
+            StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
         }
 
         public List<string> GetOfficeIds(string regionId)
@@ -944,9 +970,9 @@ namespace Sassa.BRM.Services
                 file.MisReboxStatus = "Completed";
                 file.TdwBoxno = rebox.BoxNo;
                 file.MiniBoxno = rebox.MiniBox;
-                file.TdwBoxTypeId = decimal.Parse(rebox.RegType);
+                file.TdwBoxTypeId = decimal.Parse(rebox.SelectedType);
                 //file.FileNumber = rebox.MisFileNo;
-                if ("14|15|16|17|18".Contains(rebox.RegType))
+                if ("14|15|16|17|18".Contains(rebox.SelectedType))
                 {
                     file.TdwBoxArchiveYear = rebox.ArchiveYear;
                 }

@@ -150,7 +150,7 @@ namespace Sassa.BRM.Services
                             C.APPROVAL_DATE,
                             C.STATUS_DATE,
                             CASE
-                                WHEN C.STATUS_CODE = '1' OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'ACTIVE'
+                                WHEN ( A.GRANT_TYPE IN ('5','9','C') AND C.STATUS_CODE = '1') OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'ACTIVE'
                                 ELSE 'INACTIVE'
                             END AS STATUS_CODE,
                             A.ADABAS_ISN||'-'||A.APPLICATION_NO||'-'||LPAD(A.ID_NO,13,0) AS UNIQUE_ID,

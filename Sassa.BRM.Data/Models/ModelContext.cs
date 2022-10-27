@@ -63,6 +63,7 @@ namespace Sassa.BRM.Models
 
         public virtual DbSet<DcSocpen> DcSocpen { get; set; }
         //public virtual DbSet<DcCaptureProgress> DcCaptureProgress { get; set; }
+        public virtual DbSet<DcFixedServicePoint> DcFixedServicePoints { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -3239,6 +3240,32 @@ namespace Sassa.BRM.Models
                     .HasColumnName("UNIQUE_ID");
             });
 
+            modelBuilder.Entity<DcFixedServicePoint>(entity =>
+            {
+                entity.ToTable("DC_FIXED_SERVICE_POINT");
+
+                entity.Property(e => e.Id)
+                    .HasColumnType("NUMBER(38)")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.OfficeId)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("OFFICE_ID");
+
+                entity.Property(e => e.ServicePointName)
+                    .HasMaxLength(30)
+                    .IsUnicode(false)
+                    .HasColumnName("SERVICE_POINT_NAME");
+
+                entity.HasOne(d => d.Office)
+                    .WithMany(p => p.DcFixedServicePoints)
+                    .HasForeignKey(d => d.OfficeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("SYS_C0011143");
+            });
 
             modelBuilder.HasSequence("ACTIVEVIEWOVERRIDESSEQUENCE");
 
