@@ -1012,11 +1012,16 @@ namespace Sassa.BRM.Models
                     .WithMany(p => p.DcFiles)
                     .HasForeignKey(d => d.TransType)
                     .HasConstraintName("FK_DC_FILE_TRANS_TYPE");
+
+                entity.Property(e => e.FspId)
+                    .HasColumnType("NUMBER(38)")
+                    .HasColumnName("FSP_ID");
             });
 
             modelBuilder.Entity<DcFileDeleted>(entity =>
             {
                 entity.HasKey(e => e.UnqFileNo);
+                //entity.HasNoKey();
 
                 entity.ToTable("DC_FILE_DELETED");
 
@@ -1244,6 +1249,10 @@ namespace Sassa.BRM.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("USER_LASTNAME");
+
+                entity.Property(e => e.FspId)
+                .HasColumnType("NUMBER(38)")
+                .HasColumnName("FSP_ID");
             });
 
             modelBuilder.Entity<DcFileRec>(entity =>
@@ -2007,9 +2016,9 @@ namespace Sassa.BRM.Models
                     .ValueGeneratedOnAdd()
                     .HasColumnName("PK");
 
-                entity.Property(e => e.KuafId)
-                    .HasColumnType("NUMBER")
-                    .HasColumnName("KUAF_ID");
+                entity.Property(e => e.FspId)
+                    .HasColumnType("NUMBER(38)")
+                    .HasColumnName("FSP_ID");
 
                 entity.Property(e => e.OfficeId)
                     .HasMaxLength(10)
@@ -3037,41 +3046,25 @@ namespace Sassa.BRM.Models
 
             modelBuilder.Entity<DcSocpen>(entity =>
             {
+                entity.HasNoKey();
+
                 entity.ToTable("DC_SOCPEN");
 
-                entity.HasIndex(e => e.ApplicationDate, "APPLICATION_DATE");
+                entity.HasIndex(e => e.ApplicationDate, "DC_SOCPEN_APPLICATION_DATE");
 
-                entity.HasIndex(e => e.AdabasIsnArchive, "DC_SOCPEN_ADABAS_ISN_ARCHIVE");
-
-                entity.HasIndex(e => e.AdabasIsnMain, "DC_SOCPEN_ADABAS_ISN_MAIN")
+                entity.HasIndex(e => e.BrmBarcode, "DC_SOCPEN_BRM_BARCODE")
                     .IsUnique();
 
-                entity.HasIndex(e => e.AdabasIsnSrd, "DC_SOCPEN_ADABAS_ISN_SRD");
+                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_CLM_NO")
+                    .IsUnique();
 
-                entity.HasIndex(e => e.ApplicationNo, "DC_SOCPEN_APPLICATION_NO");
+                entity.HasIndex(e => new { e.BeneficiaryId, e.GrantType, e.ChildId }, "DC_SOCPEN_ID_GRANT")
+                    .IsUnique();
 
-                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_BENEFICIARY_ID");
+                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_ID_NO");
 
-                entity.HasIndex(e => e.BrmBarcode, "DC_SOCPEN_BRM_BARCODE");
-
-                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_CAPTURE_REFERENCE");
-
-                entity.HasIndex(e => e.GrantType, "DC_SOCPEN_GRANT_TYPE");
-
-                entity.HasIndex(e => e.RegionId, "DC_SOCPEN_REGION_ID");
-
-                entity.Property(e => e.Id)
-                    .HasColumnType("NUMBER")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("ID");
-
-                entity.Property(e => e.AdabasIsnArchive)
-                    .HasColumnType("NUMBER")
-                    .HasColumnName("ADABAS_ISN_ARCHIVE");
-
-                entity.Property(e => e.AdabasIsnMain)
-                    .HasColumnType("NUMBER")
-                    .HasColumnName("ADABAS_ISN_MAIN");
+                entity.HasIndex(e => e.Id, "DC_SOCPEN_KEY")
+                    .IsUnique();
 
                 entity.Property(e => e.AdabasIsnSrd)
                     .HasMaxLength(20)
@@ -3092,11 +3085,8 @@ namespace Sassa.BRM.Models
                     .IsUnicode(false)
                     .HasColumnName("APPLICATION_NO");
 
-                entity.Property(e => e.ApprovalDate)
-                    .HasColumnType("DATE")
-                    .HasColumnName("APPROVAL_DATE");
-
                 entity.Property(e => e.BeneficiaryId)
+                    .IsRequired()
                     .HasMaxLength(13)
                     .IsUnicode(false)
                     .HasColumnName("BENEFICIARY_ID");
@@ -3113,13 +3103,7 @@ namespace Sassa.BRM.Models
                 entity.Property(e => e.CaptureReference)
                     .HasMaxLength(20)
                     .IsUnicode(false)
-                    .ValueGeneratedOnAdd()
                     .HasColumnName("CAPTURE_REFERENCE");
-
-                entity.Property(e => e.ChildBirthDate)
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .HasColumnName("CHILD_BIRTH_DATE");
 
                 entity.Property(e => e.ChildId)
                     .HasMaxLength(13)
@@ -3128,37 +3112,43 @@ namespace Sassa.BRM.Models
 
                 entity.Property(e => e.CsDate)
                     .HasColumnType("DATE")
-                    .ValueGeneratedOnAdd()
                     .HasColumnName("CS_DATE");
 
-                entity.Property(e => e.DateReviewed)
-                    .HasColumnType("DATE")
-                    .HasColumnName("DATE_REVIEWED");
-
-                entity.Property(e => e.Gender)
-                    .HasMaxLength(1)
+                entity.Property(e => e.Documents)
+                    .HasMaxLength(255)
                     .IsUnicode(false)
-                    .HasColumnName("GENDER");
+                    .HasColumnName("DOCUMENTS");
 
-                entity.Property(e => e.GenderDesc)
+                entity.Property(e => e.EcmisFile)
                     .HasMaxLength(20)
                     .IsUnicode(false)
-                    .HasColumnName("GENDER_DESC");
+                    .HasColumnName("ECMIS_FILE");
 
                 entity.Property(e => e.GrantType)
+                    .IsRequired()
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .HasColumnName("GRANT_TYPE");
+
+                entity.Property(e => e.Id)
+                    .HasColumnType("NUMBER")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.IdHistory)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("ID_HISTORY");
 
                 entity.Property(e => e.LocalofficeId)
                     .HasMaxLength(60)
                     .IsUnicode(false)
                     .HasColumnName("LOCALOFFICE_ID");
 
-                entity.Property(e => e.MisFiles)
+                entity.Property(e => e.MisFile)
                     .HasMaxLength(20)
                     .IsUnicode(false)
-                    .HasColumnName("MIS_FILES");
+                    .HasColumnName("MIS_FILE");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
@@ -3170,16 +3160,6 @@ namespace Sassa.BRM.Models
                     .IsUnicode(false)
                     .HasColumnName("PAYPOINT");
 
-                entity.Property(e => e.Prim)
-                    .HasMaxLength(30)
-                    .IsUnicode(false)
-                    .HasColumnName("PRIM");
-
-                entity.Property(e => e.PrimStatus)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .HasColumnName("PRIM_STATUS");
-
                 entity.Property(e => e.RegionId)
                     .HasMaxLength(60)
                     .IsUnicode(false)
@@ -3188,21 +3168,6 @@ namespace Sassa.BRM.Models
                 entity.Property(e => e.ScanDate)
                     .HasColumnType("DATE")
                     .HasColumnName("SCAN_DATE");
-
-                entity.Property(e => e.SchoolGoing)
-                    .HasMaxLength(6)
-                    .IsUnicode(false)
-                    .HasColumnName("SCHOOL_GOING");
-
-                entity.Property(e => e.Sec)
-                    .HasMaxLength(30)
-                    .IsUnicode(false)
-                    .HasColumnName("SEC");
-
-                entity.Property(e => e.SecStatus)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
-                    .HasColumnName("SEC_STATUS");
 
                 entity.Property(e => e.SocpenDate)
                     .HasColumnType("DATE")
@@ -3217,18 +3182,10 @@ namespace Sassa.BRM.Models
                     .IsUnicode(false)
                     .HasColumnName("STATUS_CODE");
 
-                entity.Property(e => e.StatusDate)
-                    .HasColumnType("DATE")
-                    .HasColumnName("STATUS_DATE");
-
                 entity.Property(e => e.Surname)
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("SURNAME");
-
-                entity.Property(e => e.TdwDispatch)
-                    .HasColumnType("DATE")
-                    .HasColumnName("TDW_DISPATCH");
 
                 entity.Property(e => e.TdwRec)
                     .HasColumnType("DATE")

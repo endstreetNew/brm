@@ -54,5 +54,6 @@ namespace Sassa.BRM.Models
         public string Isreview { get; set; }
         public DateTime? Lastreviewdate { get; set; }
         public decimal? Lctype { get; set; }
+        public decimal? FspId { get; set; }
     }
 }

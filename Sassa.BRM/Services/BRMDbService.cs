@@ -102,25 +102,42 @@ namespace Sassa.BRM.Services
                   join lou in StaticD.DcOfficeKuafLinks
                       on lo.OfficeId equals lou.OfficeId
                   where lou.Username == username
-                  select lo).Any())
+                  select new
+                  {
+                      OfficeName = lo.OfficeName,
+                      OfficeId = lo.OfficeId,
+                      OfficeType = lo.OfficeType,
+                      RegionId = lo.RegionId,
+                      FspId = lou.FspId
+
+                  }).Any())
             {
                 DcLocalOffice ioffice = GetOffices("7").FirstOrDefault();
                 //Attach to first or default office in Gauteng.
-                await UpdateUserLocalOffice(ioffice.OfficeId);
+                await UpdateUserLocalOffice(ioffice.OfficeId, null);
                 //try again..
                 await GetLocalOffice();
             }
 
-            DcLocalOffice value = (from lo in StaticD.LocalOffices
-                                   join lou in StaticD.DcOfficeKuafLinks
-                                       on lo.OfficeId equals lou.OfficeId
-                                   where lou.Username == username
-                                   select lo).FirstOrDefault();
+            var value = (from lo in StaticD.LocalOffices
+                         join lou in StaticD.DcOfficeKuafLinks
+                         on lo.OfficeId equals lou.OfficeId
+                         where lou.Username == username
+                         select new
+                         {
+                             OfficeName = lo.OfficeName,
+                             OfficeId = lo.OfficeId,
+                             OfficeType = lo.OfficeType,
+                             RegionId = lo.RegionId,
+                             FspId = lou.FspId
+
+                         }).FirstOrDefault();
 
             _session.Office.OfficeName = value.OfficeName;
             _session.Office.OfficeId = value.OfficeId;
             _session.Office.OfficeType = value.OfficeType;
             _session.Office.RegionId = value.RegionId;
+            _session.Office.FspId = value.FspId;
             _session.Office.RegionName = GetRegion(value.RegionId);
             _session.Office.RegionCode = GetRegionCode(value.RegionId);
             _session.Office.OfficeType = !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO"; //Default to local office
@@ -144,7 +161,24 @@ namespace Sassa.BRM.Services
             }
             return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
         }
-        public async Task<bool> UpdateUserLocalOffice(string officeId)
+        public List<DcFixedServicePoint> GetOfficeServicePoints(string officeID)
+        {
+            if (StaticD.ServicePoints == null)
+            {
+                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            }
+            return StaticD.ServicePoints.Where(sp => sp.OfficeId == officeID).ToList();
+        }
+        public string GetServicePointName(decimal? fspID)
+        {
+            if (StaticD.ServicePoints == null)
+            {
+                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            }
+            if (fspID == null) return "";
+            return StaticD.ServicePoints.Where(sp => sp.Id == fspID).First().ServicePointName;
+        }
+        public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId)
         {
             DcOfficeKuafLink officeLink;
             var query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == session.SamName).ToListAsync();
@@ -162,11 +196,12 @@ namespace Sassa.BRM.Services
             {
                 officeLink = query.First();
                 officeLink.OfficeId = officeId;
+                officeLink.FspId = fspId;
             }
             else
             {
                 string supervisor = session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N";
-                officeLink = new DcOfficeKuafLink() { OfficeId = officeId, KuafId = 0, Username = session.SamName, Supervisor = supervisor };
+                officeLink = new DcOfficeKuafLink() { OfficeId = officeId, FspId = fspId, Username = session.SamName, Supervisor = supervisor };
                 _context.DcOfficeKuafLinks.Add(officeLink);
             }
             try
@@ -487,6 +522,8 @@ namespace Sassa.BRM.Services
             //{
             //    throw new Exception("Cant delete : Existing TDW record");
             //}
+
+            //Removes All duplictes
             await RemoveBRM(brm.Brm_BarCode, reason);
         }
 
@@ -502,6 +539,7 @@ namespace Sassa.BRM.Services
 
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {
+            //Removes all duplicates
             await RemoveBRM(application.Brm_BarCode, reason);
             decimal? batch = null;
 
@@ -519,6 +557,7 @@ namespace Sassa.BRM.Services
                 GrantType = application.GrantType,
                 OfficeId = session.Office.OfficeId,
                 RegionId = session.Office.RegionId,
+                FspId = session.Office.FspId,
                 DocsPresent = application.DocsPresent,
                 UpdatedDate = DateTime.Now,
                 UserFirstname = application.Name,
@@ -797,7 +836,7 @@ namespace Sassa.BRM.Services
             }).ToListAsync();
         }
 
-        public async Task SetBulkReturned(string boxNo)
+        public async Task SetBulkReturned(string boxNo, bool sendTDWMail)
         {
             List<string> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().Select(f => f.BrmBarcode).ToListAsync();
             IQueryable query = _context.DcMerges.AsNoTracking();
@@ -829,8 +868,11 @@ namespace Sassa.BRM.Services
                 await SyncPicklistFromItems(item.UnqPicklist, "Returned");
             }
 
-            //Send tdw email with csf of returned files.
-            await SendTDWReturnedMail(boxNo);
+            //Send tdw email with csf of returned files for LC boxes.
+            if (sendTDWMail)
+            {
+                await SendTDWReturnedMail(boxNo);
+            }
 
         }
 
@@ -913,7 +955,8 @@ namespace Sassa.BRM.Services
                             Isreview = "N",
                             MisBoxno = mis.BoxNumber,
                             OfficeId = session.Office.OfficeId,
-                            RegionId = mis.RegionId,
+                            RegionId = session.Office.RegionId,
+                            FspId = session.Office.FspId,
                             TdwBoxNo = "",//rebox.BoxNo,
                             TransDate = "2016-05-29".ToDate("yyyy-mm-dd"),
                             UpdatedByAd = session.SamName,
@@ -1705,68 +1748,67 @@ namespace Sassa.BRM.Services
                 RegionName = StaticD.RegionName(d.RegionId),
                 AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
                 ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
-                StatusDate = d.StatusDate.ToStandardDateString(),
                 ChildId = d.ChildId,
                 LcType = "0",
                 IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
                 Source = "Socpen"
             }).AsNoTracking().ToListAsync();
 
-            if (!idquery.Any())
-            {
-                string sql = $@"select spn.PENSION_NO as Id,
-                        p.NAME as Name,
-                        p.SURNAME as Surname,
-                        spn.GRANT_TYPE as GrantType,
-                        g.TYPE_NAME as GrantName,
-                        spn.ORIGINAL_APPLICATION_DATE as AppDate,
-                        r.Region_CODE as RegionId,
-                        rg.REGION_CODE as REGIONCODE,
-                        rg.REGION_NAME as REGIONNAME,
-                        '' as DOCSPRESENT,
-                        spn.PRIM_STATUS as Prim_Status,
-                        spn.SEC_STATUS as Sec_Status,
-                        spn.STATUS_DATE as StatusDate,
-                        c.APPLICATION_DATE as Child_App_Date,
-                        c.STATUS_CODE as Child_Status_Code,
-                        c.STATUS_DATE as Child_Status_Date,
-                        to_char(c.ID_NO) as ChildId,
-                        r.DATE_REVIEWED as LASTREVIEWDATE,
-                        '' AS ARCHIVE_YEAR,
-                        CASE
-                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
-                        ELSE 'ARCHIVE'
-                        END AS AppStatus,
-                        '' As Brm_Barcode,
-                        '' As Brm_Parent,
-                        '' As Clm_no,
-                        '' As DateApproved,
-                        0 As IsCombinationCandidate,
-                        0 As IsMergeCandidate,
-                        0 As IsNew,
-                        '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                        0 As Batch_No,
-                        0 As SocpenIsn,
-                        0 As LcType,
-                        0 As RowType,
-                        '' As Srd_No,
-                        0 As StatusCode,
-                        0 As Tdw_BoxNo,
-                        1 As MiniBox,
-                        0 As Trans_type,
-                        '' as IdHistory,
-                        'Socpen' as Source
-                from sassa.socpen_personal_grants spn
-                join sassa.socpen_personal p on p.pension_No = spn.pension_No
-                join sassa.cust_rescodes r on r.res_code = p.secondary_paypoint
-                join DC_REGION rg on r.region_code = rg.REGION_ID
-                join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
-                left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.PENSION_NO
-                left join SASSA.SOCPEN_P12_CHILDREN c on spn.GRANT_TYPE in ('6','C', '5', '9') and c.PENSION_NO = spn.PENSION_NO and c.GRANT_TYPE = spn.GRANT_TYPE
-                where spn.PENSION_NO  = '{SearchId}'";
+            //if (!idquery.Any())
+            //{
+            //    string sql = $@"select spn.PENSION_NO as Id,
+            //            p.NAME as Name,
+            //            p.SURNAME as Surname,
+            //            spn.GRANT_TYPE as GrantType,
+            //            g.TYPE_NAME as GrantName,
+            //            spn.ORIGINAL_APPLICATION_DATE as AppDate,
+            //            r.Region_CODE as RegionId,
+            //            rg.REGION_CODE as REGIONCODE,
+            //            rg.REGION_NAME as REGIONNAME,
+            //            '' as DOCSPRESENT,
+            //            spn.PRIM_STATUS as Prim_Status,
+            //            spn.SEC_STATUS as Sec_Status,
+            //            spn.STATUS_DATE as StatusDate,
+            //            c.APPLICATION_DATE as Child_App_Date,
+            //            c.STATUS_CODE as Child_Status_Code,
+            //            c.STATUS_DATE as Child_Status_Date,
+            //            to_char(c.ID_NO) as ChildId,
+            //            r.DATE_REVIEWED as LASTREVIEWDATE,
+            //            '' AS ARCHIVE_YEAR,
+            //            CASE
+            //            WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
+            //            ELSE 'ARCHIVE'
+            //            END AS AppStatus,
+            //            '' As Brm_Barcode,
+            //            '' As Brm_Parent,
+            //            '' As Clm_no,
+            //            '' As DateApproved,
+            //            0 As IsCombinationCandidate,
+            //            0 As IsMergeCandidate,
+            //            0 As IsNew,
+            //            '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
+            //            0 As Batch_No,
+            //            0 As SocpenIsn,
+            //            0 As LcType,
+            //            0 As RowType,
+            //            '' As Srd_No,
+            //            0 As StatusCode,
+            //            0 As Tdw_BoxNo,
+            //            1 As MiniBox,
+            //            0 As Trans_type,
+            //            '' as IdHistory,
+            //            'Socpen' as Source
+            //    from sassa.socpen_personal_grants spn
+            //    join sassa.socpen_personal p on p.pension_No = spn.pension_No
+            //    join sassa.cust_rescodes r on r.res_code = p.secondary_paypoint
+            //    join DC_REGION rg on r.region_code = rg.REGION_ID
+            //    join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
+            //    left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.PENSION_NO
+            //    left join SASSA.SOCPEN_P12_CHILDREN c on spn.GRANT_TYPE in ('6','C', '5', '9') and c.PENSION_NO = spn.PENSION_NO and c.GRANT_TYPE = spn.GRANT_TYPE
+            //    where spn.PENSION_NO  = '{SearchId}'";
 
-                idquery = await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
-            }
+            //    idquery = await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
+            //}
             if (FullSearch)
             {
                 oldidquery = await SearchOldIds(SearchId);
@@ -2303,32 +2345,32 @@ namespace Sassa.BRM.Services
             return mystatus;
         }
 
-        public DcFile RemoveDuplicateBRM(string brmNo)
-        {
+        //public async Task<DcFile> RemoveDuplicateBRM(string brmNo)
+        //{
 
-            var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
-            if (files.Count() > 1)
-            {
-                foreach (var dcfile in files)
-                {
-                    if (string.IsNullOrEmpty(dcfile.ApplicantNo))
-                    {
-                        BackupDcFileEntry(dcfile);
-                        _context.DcFiles.Remove(dcfile);
-                        _context.SaveChanges();
-                    }
-                }
-            }
-            files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
-            if (files.Any())
-            {
-                return files.FirstOrDefault();
-            }
-            else
-            {
-                return null;
-            }
-        }
+        //    var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
+        //    if (files.Count() > 1)
+        //    {
+        //        foreach (var dcfile in files)
+        //        {
+        //            if (string.IsNullOrEmpty(dcfile.ApplicantNo))
+        //            {
+        //                await BackupDcFileEntry(dcfile);
+        //                _context.DcFiles.Remove(dcfile);
+        //                await _context.SaveChangesAsync();
+        //            }
+        //        }
+        //    }
+        //    files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
+        //    if (files.Any())
+        //    {
+        //        return files.FirstOrDefault();
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //}
 
         private async Task RemoveBRM(string brmNo, string reason)
         {
@@ -2339,7 +2381,7 @@ namespace Sassa.BRM.Services
                 foreach (var dcfile in files)
                 {
                     dcfile.FileComment = reason;
-                    BackupDcFileEntry(dcfile);
+                    await BackupDcFileEntry(dcfile);
                     _context.DcFiles.Remove(dcfile);
                     CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
                 }
@@ -2363,14 +2405,14 @@ namespace Sassa.BRM.Services
         /// Backup DcFile entry for removal
         /// </summary>
         /// <param name="file">Original File</param>
-        public void BackupDcFileEntry(DcFile file)
+        public async Task BackupDcFileEntry(DcFile file)
         {
             DcFileDeleted removed = new DcFileDeleted();
             file.UpdatedByAd = _session.SamName;
             file.UpdatedDate = System.DateTime.Now;
             removed.FromDCFile(file);
             _context.DcFileDeleteds.Add(removed);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         #endregion
 
@@ -2683,6 +2725,12 @@ namespace Sassa.BRM.Services
             return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
         }
 
+        public async Task<List<DcBatch>> GetWaybillBoxes(string brmWaybill)
+        {
+            //todo:Create DC_Box
+            return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+        }
+
         public async Task<List<string>> GetBatchBarcodes(string BatchNo)
         {
             decimal batch;
@@ -2724,8 +2772,8 @@ namespace Sassa.BRM.Services
 
         public async Task<Reboxing> GetBoxCounts(Reboxing rebox)
         {
-            rebox.BoxCount =  await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo);
-            if(rebox.BoxCount > 0)
+            rebox.BoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo);
+            if (rebox.BoxCount > 0)
             {
                 rebox.RegType = (await _context.DcFiles.Where(b => b.TdwBoxno == rebox.BoxNo).FirstAsync()).RegType;
             }
@@ -3273,9 +3321,7 @@ namespace Sassa.BRM.Services
 
         }
 
+        #endregion
     }
-
-    #endregion
-
 }
 

@@ -6,7 +6,7 @@
         <div style="width: 100%;">
             <div style="float:right; width: 100%; margin-top:4px;">
                 <label class="divUserDetail" style="margin-left: 10px">@gsession.Name</label>
-                <label class="divUserDetail" style="margin-left: 10px">@(gsession.Office.OfficeName + " ("+ gsession.Office.RegionName + ")")</label>
+                <label class="divUserDetail" style="margin-left: 10px">@(gsession.Office.OfficeName + $" :{ServicePoint} :"+ gsession.Office.RegionName)</label>
             </div>
         </div>
     }
@@ -16,6 +16,7 @@
 {
 
     UserSession gsession;
+    string ServicePoint;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,6 +26,7 @@
             try
             {
                 await db.GetLocalOffice();
+                ServicePoint = db.GetServicePointName(db.session.Office.FspId);
             }
            catch
             {
@@ -35,12 +37,14 @@
         else
         {
             gsession = db.session;
+            ServicePoint = db.GetServicePointName(db.session.Office.FspId);
         }
     }
 
     private void OnSessionChanged(object sender, EventArgs args)
     {
         gsession = db.session;
+        ServicePoint = db.GetServicePointName(db.session.Office.FspId);
         StateHasChanged();
     }
 }

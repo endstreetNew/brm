@@ -31,8 +31,8 @@ namespace Sassa.BRM
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
-            services.AddScoped<ProgressService>().AddDbContext<eDocumentContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("eDocsConnection")));
+            services.AddScoped<ProgressService>();//.AddDbContext<eDocumentContext>(options =>
+            //options.UseOracle(Configuration.GetConnectionString("eDocsConnection")));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
             options.UseOracle(Configuration.GetConnectionString("SocpenConnection")));
             services.AddSingleton<StaticD>();

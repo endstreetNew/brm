@@ -23,12 +23,20 @@
 
 	<ItemGroup>
 	  <Content Remove="appsettings.Production.json" />
+	  <Content Remove="Pages\Components\BoxTransport.razor" />
+	  <Content Remove="Pages\Print\BoxTransportCover.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Pages\Print\BoxTransportCover.razor.css" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Watch Remove="Pages\Admin\ServicePointAdmin.razor" />
 	  <Watch Remove="Pages\Components\BoxStatus.razor" />
+	  <Watch Remove="Pages\Components\BoxTransport.razor" />
 	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
+	  <Watch Remove="Pages\Print\BoxTransportCover.razor" />
 	</ItemGroup>
 
 
@@ -45,6 +53,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Include="Pages\Components\BoxStatus.razor" />
+    <None Include="Pages\Components\BoxTransport.razor" />
   </ItemGroup>
 
 

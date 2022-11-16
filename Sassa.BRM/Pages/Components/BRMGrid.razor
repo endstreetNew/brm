@@ -166,6 +166,7 @@
         [Parameter]
         public List<Application> DTMerges { get; set; }
 
+
         [Parameter]
         public EventCallback<int> Changed { get; set; }
 
@@ -181,7 +182,7 @@
         //Navigate.NavigateTo($"coversheet/{app.Brm_BarCode}");
         try
         {
-            JSRuntime.InvokeVoidAsync("open", $"{Navigation.BaseUri}coversheet/{app.Brm_BarCode}", "_blank");
+            await JSRuntime.InvokeVoidAsync("open", $"{Navigation.BaseUri}coversheet/{app.Brm_BarCode}", "_blank");
         }
         catch(Exception ex)
         {

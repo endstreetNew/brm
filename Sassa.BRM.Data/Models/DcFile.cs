@@ -55,6 +55,7 @@ namespace Sassa.BRM.Models
         public decimal? Lctype { get; set; }
         public decimal? MiniBoxno { get; set; }
         public decimal? BoxLocked { get; set; }
+        public decimal? FspId { get; set; }
 
         public virtual DcBatch BatchNoNavigation { get; set; }
         public virtual DcGrantType GrantTypeNavigation { get; set; }

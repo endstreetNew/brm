@@ -240,10 +240,19 @@
     private async Task btnNewCover_Click(Application a)
     {
         rebox.BoxNo = rebox.BoxNo.ToUpper();
-        if (!string.IsNullOrEmpty(rebox.BoxNo))
+        if (string.IsNullOrEmpty(rebox.BoxNo))
+        {
+            if(db.session.IsRmc())
+            {
+                toast.Error("a TDW BoxNo is required to capture at the RMC.");
+                return;
+            }
+        }
+        else
         {
             rebox = await db.GetBoxCounts(rebox);
         }
+        
         a.TDW_BOXNO = rebox.BoxNo;
         a.MiniBox = rebox.MiniBox;
 

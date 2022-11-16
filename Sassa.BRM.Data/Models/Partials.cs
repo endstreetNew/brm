@@ -33,6 +33,7 @@ namespace Sassa.BRM.Models
             this.MisReboxStatus = file.MisReboxStatus;
             this.NonCompliant = file.NonCompliant;
             this.OfficeId = file.OfficeId;
+            this.FspId = file.FspId;
             this.QcUserFn = file.QcUserFn;
             this.QcUserLn = file.QcUserLn;
             this.RegionId = file.RegionId;

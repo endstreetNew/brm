@@ -453,14 +453,14 @@
 
     protected void RegTypeChange(ChangeEventArgs e)
     {
-        
+
         if (string.IsNullOrEmpty((string)e.Value)) return;
         rebox.SelectedType = (string)e.Value;
         transferHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Transfer");
         archiveHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Archive");
         if (!string.IsNullOrEmpty(rebox.RegType))
         {
-            toast.Warn($"Box only accepts {rebox.RegType}");
+            toast.Warn($"Box only accepts {(rebox.RegType.Contains("LC") ? "LC" :rebox.RegType)}");
         }
     }
 
@@ -529,9 +529,12 @@
 
         if (boxfiles.count > 0)
         {
-            if(file.IsPreservedType && !string.IsNullOrEmpty(rebox.BoxNo))
+            if(file.IsPreservedType)
             {
-                if (rebox.RegType != file.ApplicationStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                if (!rebox.RegType.Contains("LC") && !file.ApplicationStatus.Contains("LC"))
+                {
+                    if (rebox.RegType != file.ApplicationStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                }
             }
         }
 
@@ -567,7 +570,7 @@
         showConfirmLock = false;
         BoxLocked = true;
         await db.LockBox(rebox.BoxNo);
-        await db.SetBulkReturned(rebox.BoxNo);
+        await db.SetBulkReturned(rebox.BoxNo,rebox.RegType.Contains("LC"));
         loaded = false;
         await btnLoadBox_Click();
         //boxfiles = new PagedResult<ReboxListItem>();
