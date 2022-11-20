@@ -3046,11 +3046,12 @@ namespace Sassa.BRM.Models
 
             modelBuilder.Entity<DcSocpen>(entity =>
             {
-                entity.HasNoKey();
+                entity.Property(e => e.Id)
+                    .HasColumnType("NUMBER")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
 
                 entity.ToTable("DC_SOCPEN");
-
-                entity.HasIndex(e => e.ApplicationDate, "DC_SOCPEN_APPLICATION_DATE");
 
                 entity.HasIndex(e => e.BrmBarcode, "DC_SOCPEN_BRM_BARCODE")
                     .IsUnique();
@@ -3058,12 +3059,15 @@ namespace Sassa.BRM.Models
                 entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_CLM_NO")
                     .IsUnique();
 
-                entity.HasIndex(e => new { e.BeneficiaryId, e.GrantType, e.ChildId }, "DC_SOCPEN_ID_GRANT")
+                entity.HasIndex(e => new { e.BeneficiaryId, e.GrantType, e.ChildId, e.SrdNo }, "DC_SOCPEN_ID_GRANT")
                     .IsUnique();
 
                 entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_ID_NO");
 
                 entity.HasIndex(e => e.Id, "DC_SOCPEN_KEY")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.SrdNo, "DC_SOCPEN_SRD")
                     .IsUnique();
 
                 entity.Property(e => e.AdabasIsnSrd)
@@ -3129,11 +3133,6 @@ namespace Sassa.BRM.Models
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .HasColumnName("GRANT_TYPE");
-
-                entity.Property(e => e.Id)
-                    .HasColumnType("NUMBER")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("ID");
 
                 entity.Property(e => e.IdHistory)
                     .HasMaxLength(255)

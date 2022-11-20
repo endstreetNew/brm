@@ -39,43 +39,43 @@ namespace Sassa.BRM.Services
             }
         }
 
-        public async Task<string> GetSocpenSearchId(long SRDNo)
-        {
+        //public async Task<string> GetSocpenSearchId(long SRDNo)
+        //{
 
-            try
-            {
-                object result;
-                using (OracleConnection connection = new OracleConnection(brmcs))
-                {
+        //    try
+        //    {
+        //        object result;
+        //        using (OracleConnection connection = new OracleConnection(brmcs))
+        //        {
 
-                    connection.Open();
-                    String sql = $"select ID_NO from SASSA.SOCPEN_SRD_BEN where SRD_NO = {SRDNo}";
-                    using (OracleCommand command = new OracleCommand(sql, connection))
-                    {
-                        result = await command.ExecuteScalarAsync();
-                    }
+        //            connection.Open();
+        //            String sql = $"select ID_NO from SASSA.SOCPEN_SRD_BEN where SRD_NO = {SRDNo}";
+        //            using (OracleCommand command = new OracleCommand(sql, connection))
+        //            {
+        //                result = await command.ExecuteScalarAsync();
+        //            }
 
-                }
-                return result.ToString();
-            }
-            catch //(OracleException e)
-            {
+        //        }
+        //        return result.ToString();
+        //    }
+        //    catch //(OracleException e)
+        //    {
 
-                throw new Exception("SRD not found.");
-            }
+        //        throw new Exception("SRD not found.");
+        //    }
 
-            //SocpenSrdBen result = await _context.SocpenSrdBens.Where(s => s.SrdNo == srd).AsNoTracking().FirstOrDefaultAsync();
+        //    //SocpenSrdBen result = await _context.SocpenSrdBens.Where(s => s.SrdNo == srd).AsNoTracking().FirstOrDefaultAsync();
 
-            //if (result == null)
-            //{
-            //    throw new Exception("SRD not found.");
-            //}
-            //if (result.IdNo == null)
-            //{
-            //    throw new Exception("SRD has no Id Number associated and can't be processed.");
-            //}
-            //return result.IdNo.ToString();
-        }
+        //    //if (result == null)
+        //    //{
+        //    //    throw new Exception("SRD not found.");
+        //    //}
+        //    //if (result.IdNo == null)
+        //    //{
+        //    //    throw new Exception("SRD has no Id Number associated and can't be processed.");
+        //    //}
+        //    //return result.IdNo.ToString();
+        //}
 
         //SELECT BRMWAYBIL.NEXTVAL from DUAL
         public string GetNextWayBill()

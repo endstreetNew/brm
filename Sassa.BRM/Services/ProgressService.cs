@@ -25,8 +25,8 @@ namespace Sassa.BRM.Services
         public async Task<List<MissingFile>> MissingProgress(ReportPeriod from, ReportPeriod to, string regionId)
         {
             //List<ProcessedGrant> onlineGrants = await _econtext.ProcessedGrants.Where(d => d.ProcessDate >= from.FromDate && d.ProcessDate <= to.ToDate && d.RegionCode == StaticD.RegionCode(regionId)).AsNoTracking().ToListAsync();
-            int missingStart = await _context.DcSocpen.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null && s.GrantType != "S").AsNoTracking().CountAsync();
-            var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.GrantType != "S" && s.MisFile == null).AsNoTracking().ToListAsync();
+            int missingStart = await _context.DcSocpen.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null).AsNoTracking().CountAsync();
+            var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().ToListAsync();
             List<MissingFile> result = new List<MissingFile>();
             foreach (ReportPeriod period in StaticD.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
             {

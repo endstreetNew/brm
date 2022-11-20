@@ -153,6 +153,7 @@
             {
                 throw new Exception("No search criteria provided.");
             }
+            //Searching on SRD
             if (!string.IsNullOrEmpty(SRDNo))
             {
                 pensionNrValue = await db.GetSocpenSearchId(SRDNo);

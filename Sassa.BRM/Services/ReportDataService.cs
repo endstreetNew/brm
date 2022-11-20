@@ -136,7 +136,7 @@ namespace Sassa.BRM.Services
                                     "INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID " +
                                     "INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID " +
                                     "Where b.status_code = 'ACTIVE'  AND b.CAPTURE_REFERENCE is null " +
-                                    "AND b.TDW_REC IS NULL and b.Mis_files is null AND b.Grant_type <> 'S'" +
+                                    "AND b.TDW_REC IS NULL and b.Mis_files is null" +
                                 $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
                                 $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
                                 (string.IsNullOrEmpty(grant_type) ? "" : $" AND b.GRANT_TYPE = '{grant_type}'") +
@@ -213,20 +213,15 @@ namespace Sassa.BRM.Services
                                 cmd.CommandText = $@"SELECT
                                                     r.Region_name as Region,
                                                     o.Office_name as Office,
-                                                    dc.application_no,
                                                     dc.beneficiary_id,
                                                     dc.name,
                                                     dc.surname,
-                                                    dc.gender_desc as gender,
                                                     g.Type_name as Grant_name,
                                                     dc.Child_id,
                                                     dc.Capture_Reference as CLM_Number,
                                                     dc.Application_Date AS SOCPEN_CAPTURE_DATE,
-                                                    dc.Capture_Date AS BRM_CAPTURE_DATE,
                                                     dc.Scan_Date,
                                                     dc.CS_DATE as Content_Server_Date,
-                                                    'N/A' as TDW_DRIVER_DATE,
-                                                    'N/A' as tdw_Delivery,
                                                     dc.TDW_REC as TDW_RECEIVE_DATE
                                                 FROM
                                                     dc_socpen dc
