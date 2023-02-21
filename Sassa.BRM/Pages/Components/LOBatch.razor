@@ -8,7 +8,7 @@
 @using System.Text
 
 <h3>Batches for @db.session.Office.OfficeName</h3>
-<div id="BrmnGrid">
+<div >
     @if (showConfirmation)
     {
         <Modal Heading="Confirmation" Cancel="OnConfirmationClose" Ok="OnConfirmationOk">
@@ -88,6 +88,19 @@
                     </div>
                 </div>
                 <div class="col">
+                    <div class="input-group mb-1">
+                        <span class="input-group-text" style="width: 180px;">Batch number</span>
+                        <input type="text" @bind-value="@searchBatch" class="form-control" >
+                        <button class="btn btn-primary btn-sm active" @onclick="@(() => FindBatch())"><span class="oi oi-magnifying-glass" aria-hidden="true"></span></button>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-1">
+                        <div class="input-group-text">
+                            <input class="form-check-input" type="checkbox" value="@showMybatches" @onchange="FilterUser">
+                        </div>
+                        <label class="input-group-text">Show my batches</label>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -156,7 +169,6 @@
 
                         </tr>
                     }
-
                 </tbody>
             </table>
             <Pager Paged="OnPaged" TotalSize="@DTBatch.count"></Pager>
@@ -174,11 +186,13 @@
     protected string filterStatus;
 
     protected bool showConfirmation;
+    protected bool showMybatches;
 
     protected bool editBatch;
     protected PagedResult<DcFile> items;
 
     protected string BrmBarCode;
+    protected string searchBatch;
 
     int page = 1;
     int editPage = 1;
@@ -198,9 +212,27 @@
 
     }
 
+    protected async Task FindBatch()
+    {
+        DTBatch = null;
+        page = 1;
+        try
+        {
+            decimal decimalBatch = decimal.Parse(searchBatch);
+
+            DTBatch = await db.FindBatch(decimalBatch, page);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+    }
+
     protected async Task FilterStatus(ChangeEventArgs args)
     {
         filterStatus = args.Value.ToString();
+        DTBatch = null;
         page = 1;
         try
         {
@@ -213,6 +245,21 @@
         }
     }
 
+    protected async Task FilterUser(ChangeEventArgs args)
+    {
+        showMybatches = (bool)args.Value;
+        DTBatch = null;
+        page = 1;
+        try
+        {
+            DTBatch = await db.GetMyBatches(showMybatches, page);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+    }
     protected void btnCloseBatch(DcBatch batch)
     {
         selectedBatch = batch;

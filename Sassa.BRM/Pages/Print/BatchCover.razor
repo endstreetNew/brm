@@ -22,7 +22,7 @@
         </div>
         <div class="col-4">
             <div style="display: inline-block;">
-                    <h5>Batch Inventory<br />@officename</h5>
+                    <h5>Batch Inventory<br />@officename<br/>@fspname</h5>
             </div>
         </div>
         <div class="col-4">
@@ -96,6 +96,7 @@ else
     public string BatchId { get; set; }
 
     protected string officename;
+    protected string fspname = "";
     protected string BarCode;
     //protected string QrCode;
     protected string BatchBarCode;
@@ -106,7 +107,11 @@ else
         await Task.Delay(200);
         items = await db.GetAllFilesByBatchNo(decimal.Parse(BatchId));
         //QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, db.GetGrantType(file.GrantType));
-        if(items.Any())officename = db.GetOfficeName(items.First().OfficeId);
+        if(items.Any())
+        {
+            officename = db.GetOfficeName(items.First().OfficeId);
+            fspname = db.GetFspName(items.First().FspId);
+        }
         BatchBarCode = bcService.GetBarCode(BatchId);
     }
 

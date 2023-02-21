@@ -12,6 +12,7 @@
         public string GrantType { get; set; }
         public bool Scanned { get; set; }
         public bool BoxLocked { get; set; }
+        public string RegType { get; set; }
 
     }
 }

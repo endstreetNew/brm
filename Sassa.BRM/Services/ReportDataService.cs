@@ -136,7 +136,7 @@ namespace Sassa.BRM.Services
                                     "INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID " +
                                     "INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID " +
                                     "Where b.status_code = 'ACTIVE'  AND b.CAPTURE_REFERENCE is null " +
-                                    "AND b.TDW_REC IS NULL and b.Mis_files is null" +
+                                    "AND b.TDW_REC IS NULL and b.Mis_file is null and b.ECMIS_FILE is null" +
                                 $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
                                 $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
                                 (string.IsNullOrEmpty(grant_type) ? "" : $" AND b.GRANT_TYPE = '{grant_type}'") +
@@ -240,7 +240,7 @@ namespace Sassa.BRM.Services
                                     and Updated_date <= to_date('{dateTo}', 'dd/mm/YYYY') ";
                                 break;
                             case "11":
-                                cmd.CommandText = sql;
+                                cmd.CommandText = sql.Replace("[Region]", region_id);
                                 break;
                             default:
 

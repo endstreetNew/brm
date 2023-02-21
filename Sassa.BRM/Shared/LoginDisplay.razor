@@ -26,9 +26,9 @@
             try
             {
                 await db.GetLocalOffice();
-                ServicePoint = db.GetServicePointName(db.session.Office.FspId);
+                GetServicePoint();
             }
-           catch
+            catch
             {
                 //Initializing error
             }
@@ -37,15 +37,25 @@
         else
         {
             gsession = db.session;
-            ServicePoint = db.GetServicePointName(db.session.Office.FspId);
+
+            GetServicePoint();
         }
     }
 
     private void OnSessionChanged(object sender, EventArgs args)
     {
         gsession = db.session;
-        ServicePoint = db.GetServicePointName(db.session.Office.FspId);
+        GetServicePoint();
         StateHasChanged();
+    }
+
+    private void GetServicePoint()
+    {
+        try
+        {
+            ServicePoint = db.GetServicePointName(db.session.Office.FspId);
+        }
+        catch { }
     }
 }
 

@@ -180,12 +180,14 @@
             }
             if (!string.IsNullOrEmpty(TargetBoxType))
             {
-
                 if (br.IsPreservedType && !string.IsNullOrEmpty(br.TDW_BOXNO))
                 {
-                    if (!TargetBoxType.Contains("LC") && !br.AppStatus.Contains("LC"))
+                    if (!(TargetBoxType.Contains("LC") && br.AppStatus.Contains("LC")))
                     {
-                        if (TargetBoxType != br.AppStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
+                        if (TargetBoxType != br.AppStatus)
+                        {
+                            throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
+                        }
                     }
                 }
             }

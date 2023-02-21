@@ -37,6 +37,7 @@ namespace Sassa.BRM.Services
         public string? SassaTeamsUrl { get; set; }
 
         public string fileName;
+        private string sqlPath;
 
         //private PeriodicTimer schedule = null;
         //private Timer _timerTDW = null!;
@@ -47,6 +48,7 @@ namespace Sassa.BRM.Services
         public TimedService(IWebHostEnvironment env,RawSqlService raw)
         {
             fileName = Path.Combine(env.ContentRootPath, "bookmarks") + "\\bookMarks.json";
+            sqlPath = Path.Combine(env.ContentRootPath, "sql");
             _raw = raw;
             //_logger = logger;
         }
@@ -83,114 +85,49 @@ namespace Sassa.BRM.Services
 
         private async void SyncSOCPEN(object? state)
         {
-
+            string sql = "";
             Globals.LastRunDate = DateTime.Now;
             Globals.Progress = "Starting.";
             JsonFileUtils.WriteJson(Globals, fileName);
             bookmark = _raw.GetBookMark("Select max(Capture_date) from dc_socpen");
             bookmark = bookmark.AddDays(-14); //Start two weeks ago.
             try 
-            { 
+            {
                 //New SRD's
-                string sql = $@"INSERT INTO DC_SOCPEN (UNIQUE_ID, ADABAS_ISN_SRD,SRD_NO,BENEFICIARY_ID,NAME,SURNAME,GENDER,GENDER_DESC,GRANT_TYPE,REGION_ID,
-                            APPLICATION_DATE,APPROVAL_DATE,STATUS_CODE,PAYPOINT)
-                            SELECT
-                                A.UNIQUE_ID,
-                                A.ADABAS_ISN,
-                                A.SRD_NO,
-                                A.BENEFICIARY_ID,
-                                A.NAME,
-                                A.SURNAME,
-                                A.GENDER,
-                                A.GENDER_DESC,
-                                'S' AS GRANT_TYPE,
-                                A.PROVINCE AS REGION_ID,
-                                A.APPLICATION_DATE,
-                                A.APPROVAL_DATE,
-                                A.STATUS_CODE,
-                                A.PAYPOINT
-                            FROM
-                                VW_MAX_SRD_TYPE A
-                            WHERE
-                                NOT EXISTS (SELECT B.SRD_NO FROM DC_SOCPEN B WHERE B.SRD_NO = A.SRD_NO)
-                                AND A.Application_date >= to_date('{bookmark.ToString("dd/MMM/yyyy")}')";
+                sql = File.ReadAllText(sqlPath + "\\AddSrds.sql");
+
                 Globals.Progress = "INSERT new SRD.";
                 JsonFileUtils.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
-                //sql = $@"update DC_SOCPEN f set CAPTURE_REFERENCE =
-                //    (
-                //    select unq_file_no from dc_file b
-                //    where b.SRD_NO = f.SRD_NO
-                //    and rownum = 1
-                //    AND b.GRANT_TYPE = 'S'
-                //    AND b.GRANT_TYPE = f.GRANT_TYPE
-                //    and f.APPlication_DATE <= b.updated_date
-                //    and f.CAPTURE_REFERENCE is null
-                //    and brm_barcode is not null
-                //    and not exists(Select capture_reference from DC_SOCPEN dc where dc.capture_reference = b.unq_file_no)
-                //    ) 
-                //    where f.CAPTURE_REFERENCE is null AND f.GRant_Type = 'S' and f.Application_date >= to_date('{bookmark.ToString("dd/MMM/yyyy")}')";
-                //Globals.Progress = "SRD Capture from dc file.";
-                //await _raw.ExecuteNonQuery(sql);
+                sql = File.ReadAllText(sqlPath + "\\AddMainGrants.sql");
 
-                //Insert TRELAtional Apps
-
-                sql = $@"INSERT INTO DC_SOCPEN (ADABAS_ISN_MAIN, APPLICATION_NO, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME,  GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID,PAYPOINT) 
-                        SELECT 
-                            A.ADABAS_ISN AS ADABAS_ISN_MAIN,
-                            A.APPLICATION_NO,
-                            LPAD(A.ID_NO,13,0) AS BENEFICIARY_ID,
-                            LPAD(A.CHILD_ID_NO,13,0) AS CHILD_ID,
-                            B.NAME_EXT,
-                            B.SURNAME_EXT,
-                            A.GRANT_TYPE,
-                            D.REGION_CODE AS REGION_ID,
-                            NVL(A.APPLICATION_DATE,C.APPLICATION_DATE) AS APPLICATION_DATE,
-                            C.APPROVAL_DATE,
-                            C.STATUS_DATE,
-                            CASE
-                                WHEN ( A.GRANT_TYPE IN ('5','9','C') AND C.STATUS_CODE = '1') OR (A.PRIM_STATUS IN ('B','A','9') AND A.SEC_STATUS IN ('2')) THEN 'ACTIVE'
-                                ELSE 'INACTIVE'
-                            END AS STATUS_CODE,
-                            A.ADABAS_ISN||'-'||A.APPLICATION_NO||'-'||LPAD(A.ID_NO,13,0) AS UNIQUE_ID,
-                            B.secondary_paypoint as paypoint  
-                        FROM SOCPEN_DOW_APPLICATIONS_CHEC01 A
-                        JOIN SOCPEN_PERSONAL B ON  A.ID_NO = B.PENSION_NO
-                        LEFT JOIN SOCPEN_P12_CHILDREN C ON A.ID_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE AND LPAD(A.CHILD_ID_NO,13,0) = LPAD(C.ID_NO,13,0)
-                        LEFT JOIN cust_rescodes@sassa_socpen D ON b.secondary_paypoint = d.res_code
-                        WHERE A.Application_date >= to_date('{bookmark.ToString("dd/MMM/yyyy")}') 
-                        AND not exists (SELECT E.ADABAS_ISN_MAIN FROM DC_SOCPEN E WHERE E.ADABAS_ISN_MAIN = A.ADABAS_ISN)";
-
-                Globals.Progress = "Insert new SOCPEN Grants.";
+                Globals.Progress = "Insert new Main Grants.";
                 JsonFileUtils.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
-                sql = @"update dc_socpen a
-                set a.status_code = (select b.status_code from vw_grant_applications b where b.adabas_isn_main = a.adabas_isn_main)
-                WHERE a.adabas_isn_main is not null";
+                sql = File.ReadAllText(sqlPath + "\\AddChildGrants.sql");
 
-                Globals.Progress = "Sync Status.";
+                Globals.Progress = "Insert new Child Grants.";
                 JsonFileUtils.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
-                //Insert TRELAtional Archive Apps
+                sql = File.ReadAllText(sqlPath + "\\RetireSrds.sql");
+                Globals.Progress = "Insert new Child Grants.";
+                JsonFileUtils.WriteJson(Globals, fileName);
+                await _raw.ExecuteNonQuery(sql);
 
-                //sql = $@"update DC_SOCPEN f set CAPTURE_REFERENCE =
-                //(
-                //        select b.unq_file_no from dc_file b
-                //        where b.APPLICANT_NO = f.Beneficiary_id
-                //        and rownum = 1
-                //        AND (b.GRANT_TYPE = f.GRANT_TYPE or b.GRANT_TYPE = '3' AND f.GRANT_TYPE = '0')
-                //        and f.APPlication_DATE <= b.updated_date
-                //        and b.updated_date is not null
-                //        and f.CAPTURE_DATE is null
-                //        and not exists(Select capture_reference from DC_SOCPEN dc where dc.capture_reference = b.unq_file_no)
-                //) 
-                //where CAPTURE_DATE is null
-                //AND Application_date >= to_date('{bookmark.ToString("dd/MMM/yyyy")}')";
-                //Globals.Progress = "Capture ref from dc file.";
+                //Todo: write new routine to update socpen status
+
+                //sql = @"update dc_socpen a
+                //set a.status_code = (select b.status_code from vw_grant_applications b where b.adabas_isn_main = a.adabas_isn_main)
+                //WHERE a.adabas_isn_main is not null";
+
+                //Globals.Progress = "Sync Status.";
+                //JsonFileUtils.WriteJson(Globals, fileName);
                 //await _raw.ExecuteNonQuery(sql);
+
+
 
                 //sql = $@"UPDATE
                 //    (SELECT DC_SOCPEN.LOCALOFFICE_ID as OLD, DC_FILE.OFFICE_ID as NEW
@@ -228,11 +165,16 @@ namespace Sassa.BRM.Services
                 //        var response = await httpClient.SendAsync(request);
                 //    }
                 //}
-                JsonFileUtils.WriteJson(Globals, fileName);
+
             }
             catch (Exception ex)
             {
                 Globals.Progress = $"{Globals.Progress} : {ex.Message}";
+                JsonFileUtils.WriteJson(Globals, fileName);
+            }
+            finally
+            {
+                Globals.NextRefreshDate = DateTime.Now.AddDays(1);
                 JsonFileUtils.WriteJson(Globals, fileName);
             }
         }

@@ -26,7 +26,7 @@ namespace Sassa.BRM.Services
         {
             //List<ProcessedGrant> onlineGrants = await _econtext.ProcessedGrants.Where(d => d.ProcessDate >= from.FromDate && d.ProcessDate <= to.ToDate && d.RegionCode == StaticD.RegionCode(regionId)).AsNoTracking().ToListAsync();
             int missingStart = await _context.DcSocpen.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null).AsNoTracking().CountAsync();
-            var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().ToListAsync();
+            var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null && s.EcmisFile == null).AsNoTracking().ToListAsync();
             List<MissingFile> result = new List<MissingFile>();
             foreach (ReportPeriod period in StaticD.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
             {
@@ -78,8 +78,8 @@ namespace Sassa.BRM.Services
         {
             PagedResult<DcSocpen> result = new PagedResult<DcSocpen>();
             //&& s.GrantType != "S" && s.MisFiles == null
-            result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.GrantType != "S" && s.MisFile == null).AsNoTracking().CountAsync();
-            result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.GrantType != "S" && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
+            result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE"  && s.MisFile == null).AsNoTracking().CountAsync();
+            result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE"  && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             //result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().CountAsync();
             //result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             return result;

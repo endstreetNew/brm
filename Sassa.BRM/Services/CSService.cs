@@ -51,7 +51,7 @@ namespace Sassa.BRM.Services
                 ota = new Sassa.eDocs.CSDocuments.OTAuthentication();
                 ota.AuthenticationToken = await authClient.AuthenticateUserAsync(username, password);
             }
-            catch //(Exception ex)
+            catch(Exception ex)
             {
                 throw new Exception("Failed to Authenticate Contentserver WS.");
             }

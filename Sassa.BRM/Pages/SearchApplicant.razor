@@ -153,13 +153,19 @@
             {
                 throw new Exception("No search criteria provided.");
             }
+            //Clear previous results
+            DTSocPen = null;
+            DTBrm = null;
+            DTBrmParents = null;
+            DTMerged = null;
             //Searching on SRD
             if (!string.IsNullOrEmpty(SRDNo))
             {
+                srdNo = long.Parse(SRDNo);
                 pensionNrValue = await db.GetSocpenSearchId(SRDNo);
                 if (string.IsNullOrEmpty(pensionNrValue))
                 {
-                    srdNo = long.Parse(SRDNo);
+                    
                     pensionNrValue = $"S{SRDNo.PadLeft(12,'0')}";
                     srdWithNoId = true;
                 }

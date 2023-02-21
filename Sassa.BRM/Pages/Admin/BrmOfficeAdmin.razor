@@ -39,10 +39,14 @@
                             <th scope="col">Office Name</th>
                             <th scope="col">Active</th>
                             <th scope="col">Action</th>
+                            <th scope="col">Migrate</th>
                         </tr>
                     </thead>
                     <tbody>
-
+                        @if(showOfficeConfirmation)
+                        {
+                            <Confirmation Title="Confirm Office move" Message="@OfficeConfirmationMessage" Ok="() => btnMove_Click()" Cancel="@(() => showOfficeConfirmation = false)"></Confirmation>
+                        }
                         @foreach (var u in regionOffices)
                         {
                             <tr style="@(u.IsActive ? "background-color:lightgreen;":"background-color:lightgray;")">
@@ -57,6 +61,25 @@
                                 <td>@u.IsActive</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm active" @onclick="@(() => btnActive_Click(u))">Set @(u.IsActive?"In":"")Active</button>
+                                </td>
+                                <td>
+                                    @if(!u.IsActive)
+                                    {
+                                       <div class="input-group input-group-sm">
+
+                                            <span class="input-group-text input-group-sm">Brm Office</span>
+                                                <select class="form-select"   @bind="SelectedOfficeId">
+                                                    @foreach (var bOffice in regionOffices.Where(o => o.IsActive))
+                                                    {
+                                                        <option value="@bOffice.OfficeId">@bOffice.OfficeName</option>
+                                                    }
+                                                </select>
+                                            <div class="input-group-append input-group-sm">
+                                                    <button class="btn btn-primary btn-sm active" @onclick="@(() => ConfirmOfficeMove(u))">Move</button>
+                                            </div>
+                                        
+                                        </div>
+                                    }
                                 </td>
                             </tr>
 
@@ -73,6 +96,11 @@
     protected List<RegionOffice> regionOffices;
     protected string regionId;
     protected bool IsLoaded = false;
+    protected int SelectedOfficeId;
+    protected string fromOfficeId;
+
+    protected bool showOfficeConfirmation;
+    protected string OfficeConfirmationMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,5 +153,23 @@
         IsLoaded = false;
         await GetRegionOffices();
     }
+
+    protected  void ConfirmOfficeMove(RegionOffice u)
+    {
+        fromOfficeId = u.OfficeId.ToString();
+        OfficeConfirmationMessage = $"Are you sure you want to move all data from office {u.OfficeName} to {regionOffices.Where(r => r.OfficeId == SelectedOfficeId).First().OfficeName} " + Environment.NewLine + "This action cannot be undone!";
+        showOfficeConfirmation = true;
+
+    }
+
+    protected async void btnMove_Click()
+    {
+
+        await db.MoveOffice(fromOfficeId, SelectedOfficeId);
+        IsLoaded = false;
+        await GetRegionOffices();
+        showOfficeConfirmation = false;
+    }
+
 
 }

@@ -30,7 +30,7 @@
                 <div class="row">
                     <div class="col">
                         <BoxStatus rebox="@rebox"></BoxStatus>
-@*                                                <div class="input-group mb-3">
+@*                           <div class="input-group mb-3">
                             <span class="input-group-text" style="width: 180px;">TDW Box Number</span>
                             <input type="text" class="form-control" @bind-value="@boxNo" disabled="@(loaded)">
                             <button class="btn btn-primary active" Text="Load" @onclick="btnLoadBox_Click">Load </button>
@@ -292,6 +292,7 @@
                 if (boxfiles.count > 0)
                 {
                     rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
+                    rebox.RegType = boxfiles.result.First().RegType;
                 }
                 else
                 {
@@ -531,9 +532,12 @@
         {
             if(file.IsPreservedType)
             {
-                if (!rebox.RegType.Contains("LC") && !file.ApplicationStatus.Contains("LC"))
+                if (!(rebox.RegType.Contains("LC") && file.ApplicationStatus.Contains("LC")))
                 {
-                    if (rebox.RegType != file.ApplicationStatus) throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                    if (rebox.RegType != file.ApplicationStatus)
+                    {
+                        throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                    }
                 }
             }
         }
@@ -551,6 +555,7 @@
         {
             string scanState = file.ScanDatetime == null ? "Not Scanned" : "Scanned";
             toast.Success($"BRM# {rebox.BrmBarcode} added to TDW box {rebox.BoxNo}. ({scanState})");
+            //rebox.RegType = file.ApplicationStatus.Trim("LC-".ToCharArray());
         }
         rebox.BrmBarcode = string.Empty;
         rebox.MisFileNo = string.Empty;

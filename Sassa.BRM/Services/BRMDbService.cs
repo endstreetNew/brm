@@ -175,8 +175,12 @@ namespace Sassa.BRM.Services
             {
                 StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            if (fspID == null) return "";
-            return StaticD.ServicePoints.Where(sp => sp.Id == fspID).First().ServicePointName;
+            var result = StaticD.ServicePoints.Where(sp => sp.Id == fspID);
+            if (result.Any())
+            {
+                return result.First().ServicePointName;
+            }
+            return "";
         }
         public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId)
         {
@@ -265,7 +269,49 @@ namespace Sassa.BRM.Services
             await _context.SaveChangesAsync();
             StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
+        public async Task MoveOffice(string fromOfficeId, int toOfficeId)
+        {
+            //DC_FIle
+            var oldOfficerecs = await _context.DcFiles.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+            foreach(var file in oldOfficerecs)
+            {
+                file.OfficeId = toOfficeId.ToString();
+            }
+            await _context.SaveChangesAsync();
+            //DC_FIXED_SERVICE_POINT
+            var oldFsprecs = await _context.DcFixedServicePoints.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+            foreach (var fsp in oldFsprecs)
+            {
+                fsp.OfficeId = toOfficeId.ToString();
+            }
+            await _context.SaveChangesAsync();
+            //DC_OFFICE_KUAF_LINK
+            var oldKuafrecs = await _context.DcOfficeKuafLinks.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+            foreach (var kuaf in oldKuafrecs)
+            {
+                kuaf.OfficeId = toOfficeId.ToString();
+            }
+            await _context.SaveChangesAsync();
 
+            //DC_Batches
+            var oldBatchRecs = await _context.DcBatches.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+            foreach (var batch in oldBatchRecs)
+            {
+                batch.OfficeId = toOfficeId.ToString();
+            }
+            await _context.SaveChangesAsync();
+
+            await DeleteLocalOffice(fromOfficeId);
+        }
+
+        public async Task DeleteLocalOffice(string officeId)
+        {
+            var lo = await _context.DcLocalOffices.FirstAsync(o => o.OfficeId == officeId);
+            if (lo == null) return;
+            _context.DcLocalOffices.Remove(lo);
+            await _context.SaveChangesAsync();
+            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+        }
         public async Task UpdateServicePoint(DcFixedServicePoint s)
         {
             DcFixedServicePoint sp = await _context.DcFixedServicePoints.Where(o => o.Id == s.Id).FirstAsync();
@@ -307,6 +353,20 @@ namespace Sassa.BRM.Services
                 StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
             return StaticD.LocalOffices.Where(o => o.OfficeId == officeId).First().OfficeName;
+        }
+
+        public string GetFspName(decimal? fspId)
+        {
+            if (StaticD.ServicePoints == null)
+            {
+                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            }
+            if (fspId == null) return "";
+            if (StaticD.ServicePoints.Where(o => o.Id == fspId).Any())
+            {
+                return StaticD.ServicePoints.Where(o => o.Id == fspId).First().ServicePointName;
+            }
+            return "";
         }
         public string GetOfficeType(string officeId)
         {
@@ -711,7 +771,8 @@ namespace Sassa.BRM.Services
                             AltBoxNo = f.AltBoxNo,
                             Scanned = f.ScanDatetime != null,
                             MiniBox = (int?)f.MiniBoxno,
-                            BoxLocked = f.BoxLocked == null || f.BoxLocked == 0 ? false : true
+                            BoxLocked = f.BoxLocked == null || f.BoxLocked == 0 ? false : true,
+                            RegType = f.ApplicationStatus
                         }).ToListAsync();
             return result;
         }
@@ -2512,7 +2573,41 @@ namespace Sassa.BRM.Services
         //The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator.
         //This may lead to unpredictable results.
         //If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
+        public async Task<PagedResult<DcBatch>> FindBatch(decimal searchBatch, int page = 1)
+        {
 
+            PagedResult<DcBatch> result = new PagedResult<DcBatch>();
+            if (_session.IsRmc())
+            {
+                result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).Count();
+                result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+            }
+            else
+            {
+                 result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
+                 result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+            }
+
+            return result;
+        }
+
+        public async Task<PagedResult<DcBatch>> GetMyBatches( bool myBatches, int page = 1)
+        {
+            PagedResult<DcBatch> result = new PagedResult<DcBatch>();
+
+            if (myBatches)
+            {
+                result.count = _context.DcBatches.Where(b => b.UpdatedByAd == _session.SamName).Count();
+                result.result = await _context.DcBatches.Where(b => b.UpdatedByAd == _session.SamName).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+            }
+            else
+            {
+                result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
+                result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+            }
+
+            return result;
+        }
         public async Task SetBatchCount(string batchIds)
         {
             //if (session.IsRmc()) return;
