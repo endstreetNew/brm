@@ -62,6 +62,18 @@
                                 <input type="text" class="form-control" @bind-value="@br.ChildId">
                             </div>
                         }
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Status</span>
+                            <select class="form-select" @bind="@br.AppStatus">
+                                <option selected>select...</option>
+                                <option value="MAIN">ACTIVE</option>
+                                <option value="ARCHIVE">INACTIVE</option>
+                            </select>
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Application Date</span>
+                            <input type="date" class="form-control" @bind="@SelectedAppDate">
+                        </div>
                         <div class="form-group">
                             <h2 class="text-center form-group"></h2>
                             <p>Please use a new TDW sticker to put onto the file, then scan it - because it will be printed on the File Coversheet.</p>
@@ -114,7 +126,7 @@
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;
-
+    DateTime? SelectedAppDate;
 
     protected override void OnInitialized()
     {
@@ -145,6 +157,7 @@
                 childIdVisible = true;
             }
         }
+        SelectedAppDate = br.AppDate.ToDate("dd/MMM/yy");
         ready = true;
         base.OnInitialized();
 
@@ -158,6 +171,7 @@
 
     private async Task btnOk_Click()
     {
+        br.AppDate = SelectedAppDate.ToStandardDateString();
         if (!IsValid()) return;
         br.Brm_BarCode = br.Brm_BarCode.ToUpper().Trim();
         if (db.checkBRMExists(br.Brm_BarCode))
