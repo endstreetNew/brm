@@ -171,7 +171,13 @@
 
     private async Task btnOk_Click()
     {
+        string socpenDate = br.AppDate;
+        string reason = $"New record created by : {db.session.SamName}";
         br.AppDate = SelectedAppDate.ToStandardDateString();
+        if (socpenDate != br.AppDate)
+        {
+            reason = $"New record with date {br.AppDate} for {socpenDate} by : {db.session.SamName} ";
+        }
         if (!IsValid()) return;
         br.Brm_BarCode = br.Brm_BarCode.ToUpper().Trim();
         if (db.checkBRMExists(br.Brm_BarCode))
@@ -181,7 +187,7 @@
             //StateHasChanged();
             return;
         }
-        await Save($"New record created by : {db.session.SamName}");
+        await Save(reason);
     }
     private async Task Save(string reason)
     {
