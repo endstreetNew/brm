@@ -53,35 +53,35 @@ namespace Sassa.BRM.Services
             //_logger = logger;
         }
 
-        //public Task StartAsync(CancellationToken stoppingToken)
-        //{
-        //    schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-        //    return Task.CompletedTask;
-        //}
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            
-            Globals.Progress = "Stopped.";
-            if (!Globals.Status) return Task.CompletedTask;
-            Globals.Progress = $"Waiting Schedule {Globals.NextRefreshTime}.";
-
-            try
-            {
-                long dueTime = (long)((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds - TimeOnly.FromDateTime(DateTime.Now).ToTimeSpan().TotalMilliseconds);
-                if (dueTime < 0)
-                {
-                    dueTime = (long)(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(1).AddMilliseconds((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds) - DateTime.Now).TotalMilliseconds;
-                }
-                JsonFileUtils.WriteJson(Globals, fileName);
-                schedule = new Timer(SyncSOCPEN, null, dueTime, (long)TimeSpan.FromHours(24).TotalMilliseconds);
-            }
-            catch(Exception ex)
-            {
-                Globals.Progress = "Invalid scedule. (Use todays Date and a startime after current time).";
-            }
-            
+            schedule = new Timer(SyncTDW, null, TimeSpan.Zero, TimeSpan.FromHours(24));
             return Task.CompletedTask;
         }
+        //public Task StartAsync(CancellationToken stoppingToken)
+        //{
+
+        //    Globals.Progress = "Stopped.";
+        //    if (!Globals.Status) return Task.CompletedTask;
+        //    Globals.Progress = $"Waiting Schedule {Globals.NextRefreshTime}.";
+
+        //    try
+        //    {
+        //        long dueTime = (long)((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds - TimeOnly.FromDateTime(DateTime.Now).ToTimeSpan().TotalMilliseconds);
+        //        if (dueTime < 0)
+        //        {
+        //            dueTime = (long)(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(1).AddMilliseconds((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds) - DateTime.Now).TotalMilliseconds;
+        //        }
+        //        JsonFileUtils.WriteJson(Globals, fileName);
+        //        schedule = new Timer(SyncSOCPEN, null, dueTime, (long)TimeSpan.FromHours(24).TotalMilliseconds);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Globals.Progress = "Invalid scedule. (Use todays Date and a startime after current time).";
+        //    }
+
+        //    return Task.CompletedTask;
+        //}
 
         private async void SyncSOCPEN(object? state)
         {
@@ -216,18 +216,18 @@ namespace Sassa.BRM.Services
             try
             {
                 //22/Mar/2017
-                int startyear = 2004;
+                int startyear = 2022;
                 int startmonth = 1;
-                //int startday = 1;
+                int startday = 1;
 
 
-                for (int year = startyear; year <= 2022; year++)
+                for (int year = startyear; year <= 2023; year++)
                 {
                     for (int month = startmonth; month <= 12; month++)
                     {
-                        //for (int day = startday; day <= DateTime.DaysInMonth(year, month); day++)
-                        //{
-                            Globals.Progress = new DateTime(year, month, 1).ToString("dd/MMM/yyyy");
+                        for (int day = startday; day <= DateTime.DaysInMonth(year, month); day++)
+                        {
+                            Globals.Progress = new DateTime(year, month, day).ToString("dd/MMM/yyyy");
                             string sql = "update DC_SOCPEN f set BRM_BARCODE = ( " +
                             " select filefolder_code from tdw_file_location b" +
                             " where b.Description = f.Beneficiary_id" +
@@ -237,14 +237,14 @@ namespace Sassa.BRM.Services
                             " and b.filefolder_code is not null" +
                             //" and not exists(Select BRM_BARCODE from DC_SOCPEN dc where dc.BRM_BARCODE = b.filefolder_code)" +
                             ") " +
-                            $" where f.BRM_BARCODE is null and Application_date >= to_date('{new DateTime(year, month, 1).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
+                            $" where f.BRM_BARCODE is null and Application_date >= to_date('{new DateTime(year, month, day).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
                             await _raw.ExecuteNonQuery(sql);
 
                             sql = $"UPDATE dc_SOCPEN dc SET dc.TDW_REC = Application_date  where dc.BRM_BARCODE is not null and dc.Capture_reference is null AND Application_date >= to_date('{new DateTime(year, month,1).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
                             await _raw.ExecuteNonQuery(sql);
-                           
-                        //}
-                        //startday = 1;
+
+                        }
+                        startday = 1;
 
                     }
                     startmonth = 1;
