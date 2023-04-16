@@ -6,23 +6,23 @@
 @if (ready)
 {
     <div class="modal" tabindex="-1" style="display:block;" role="dialog">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #0973B6">
                     <h5 class="modal-title">Application details.</h5>
                 </div>
                 <div class="modal-body">
-                        <div class="input-group mb-1">
-                            <!--!--><span class="input-group-text">Id Number</span>
-                            <span type="text" class="form-control">@br.Id</span>
-                        </div><!--!-->
-                        <div class="input-group mb-1">
-                            <!--!--><span class="input-group-text">Srd Number</span>
-                            <span type="text" class="form-control">@br.Srd_No</span>
-                        </div><!--!-->
+                    <div class="input-group mb-1">
+                        <!--!--><span class="input-group-text">Id Number</span>
+                        <span type="text" class="form-control">@br.Id</span>
+                    </div><!--!-->
+                    <div class="input-group mb-1">
+                        <!--!--><span class="input-group-text">Srd Number</span>
+                        <span type="text" class="form-control">@br.Srd_No</span>
+                    </div><!--!-->
                     <div class="input-group mb-1">
                         <span class="input-group-text">Grant Type</span>
-                        <select class="form-select" @bind="br.GrantType">
+                        <select class="form-select" @bind="@br.GrantType" disabled>
                             <option value="" selected>All...</option>
                             @foreach (var val in db.GetGrantTypes())
                             {
@@ -33,7 +33,7 @@
                     </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Region</span>
-                            <select class="form-select" @bind="br.RegionId">
+                            <select class="form-select" @bind="br.RegionId" disabled>
                                 <option value="" selected>All...</option>
                                 @foreach (var region in db.GetRegions())
                                 {
@@ -186,24 +186,24 @@
         base.OnInitialized();
 
     }
-    protected async Task OnDocsChanged()
+    private void OnDocsChanged(string docspresent)
     {
-        
+        br.DocsPresent = docspresent;
     }
     protected async Task btnOverwrite_Click()
     {
         if (!IsValid()) return;
-        await Save($"Manual capture Overwrite selected by : {db.session.SamName}");
+        await Save($"Freecapture Overwrite selected by : {db.session.SamName}");
     }
 
     private async Task btnOk_Click()
     {
         string socpenDate = br.AppDate;
-        string reason = $"Manual capture by : {db.session.SamName}";
+        string reason = $"Freecapture by : {db.session.SamName}";
         br.AppDate = SelectedAppDate.ToStandardDateString();
         if (socpenDate != br.AppDate)
         {
-            reason = $"Manual capture with date {br.AppDate} for {socpenDate} by : {db.session.SamName} ";
+            reason = $"Freecapture with date {br.AppDate} for {socpenDate} by : {db.session.SamName} ";
         }
         if (!IsValid()) return;
         br.Brm_BarCode = br.Brm_BarCode.ToUpper().Trim();
@@ -271,6 +271,7 @@
     {
         try //Catch from validation errors in thistry
         {
+            if (string.IsNullOrEmpty(br.Name) || string.IsNullOrEmpty(br.SurName)) throw new Exception("Beneficiary name and surname is required.");
             if (string.IsNullOrEmpty(br.Brm_BarCode) || br.Brm_BarCode.Trim().Length != 8) throw new Exception("Invalid Brm Barcode.");
             br.Brm_BarCode = br.Brm_BarCode.ToUpper();
             if (grantTypeVisible)
@@ -294,7 +295,7 @@
                     br.AppStatus = "LC-" + br.AppStatus;
                 }
             }
-            br.Source = "Capture";
+            br.Source = "ManualCapture";
 
             return true;
         }

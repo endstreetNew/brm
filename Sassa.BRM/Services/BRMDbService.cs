@@ -687,11 +687,20 @@ namespace Sassa.BRM.Services
                 dc_socpen.CaptureDate = DateTime.Now;
                 dc_socpen.RegionId = session.Office.RegionId;
                 dc_socpen.LocalofficeId = session.Office.OfficeId;
+                dc_socpen.Documents = file.DocsPresent;
 
                 _context.DcSocpen.Add(dc_socpen);
 
             }
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                throw;
+            }
+
             return file;
         }
 

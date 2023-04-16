@@ -10,6 +10,10 @@
     <Newbrm br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></Newbrm>
 
 }
+@if(showManualCapture)
+{
+    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
+}
 @if(showConfirmRegion)
 {
     <Confirmation Title="Confirm Region Change" Message="@regionChangeMessage" Cancel="CancelRegion" Ok="ConfirmedRegion"></Confirmation>
@@ -26,6 +30,30 @@
     <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
         <button type="button" class="btn btn-primary btn-sm form-control" @onclick="@(async () => await Search())"><span class="oi oi-magnifying-glass" aria-hidden="true"></span></button>
     </div>
+    </div>
+    <div class="col">
+        <div class="input-group mb-1" >
+            <span class="input-group-text" style="width:120px;">Grant Type</span>
+            <select class="form-select" @bind="@manualGrantType" style="max-width:220px;">
+                <option value="" selected>All...</option>
+                @foreach (var val in db.GetGrantTypes())
+                {
+
+                    <option value="@val.Key">@val.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col">
+        @if (DTSocPen != null && !string.IsNullOrEmpty(manualGrantType))//a search has been done and a grantype selected
+        {
+            @if (!DTSocPen.Where(a => a.GrantType == manualGrantType).Any())
+            {
+                <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+                <button class="btn btn-primary btn-sm active" data-bs-toggle="modal" data-bs-target="#myModal" @onclick="@(() => btnManualCapture_Click())">Manual Capture</button>
+                </div>
+            }
+        }
     </div>
     @if (db.session.IsRmc())
     {
@@ -116,6 +144,7 @@
     //bool chkSearchMv = false;
     bool showConfirmRegion = false;
     string regionChangeMessage = "";
+    string manualGrantType = "";
 
     protected List<Application> DTSocPen;
     protected List<Application> DTBrm;
@@ -126,6 +155,7 @@
     protected Application SelectedApplication;
 
     bool showBrmModal = false;
+    bool showManualCapture = false;
 
     string pensionNrValue;
     string SRDNo;
@@ -165,7 +195,7 @@
                 pensionNrValue = await db.GetSocpenSearchId(SRDNo);
                 if (string.IsNullOrEmpty(pensionNrValue))
                 {
-                    
+
                     pensionNrValue = $"S{SRDNo.PadLeft(12,'0')}";
                     srdWithNoId = true;
                 }
@@ -259,7 +289,7 @@
         {
             rebox = await db.GetBoxCounts(rebox);
         }
-        
+
         a.TDW_BOXNO = rebox.BoxNo;
         a.MiniBox = rebox.MiniBox;
 
@@ -287,6 +317,42 @@
         }
     }
 
+    private async Task btnManualCapture_Click()
+    {
+
+        rebox.BoxNo = rebox.BoxNo.ToUpper();
+        if (string.IsNullOrEmpty(rebox.BoxNo))
+        {
+            if (db.session.IsRmc())
+            {
+                toast.Error("a TDW BoxNo is required to capture at the RMC.");
+                return;
+            }
+        }
+        else
+        {
+            rebox = await db.GetBoxCounts(rebox);
+            if (rebox.MiniBox > 5)
+            {
+                toast.Error("Only 5 Miniboxes allowed.");
+                return;
+            }
+        }
+        SelectedApplication = new Application();
+        SelectedApplication.TRANS_TYPE = 0;
+        SelectedApplication.TDW_BOXNO = rebox.BoxNo;
+        SelectedApplication.MiniBox = rebox.MiniBox;
+        SelectedApplication.GrantType = manualGrantType;
+        SelectedApplication.RegionId = db.session.Office.RegionId;
+        SelectedApplication.Id = txtSearchId;
+        SelectedApplication.Srd_No = txtSearchSRD;
+        SelectedApplication.LcType = "0";
+        SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
+        SelectedApplication.AppStatus = "MAIN";
+
+        showManualCapture = true;
+    }
+
     private void ConfirmedRegion()
     {
         showConfirmRegion = false;
@@ -304,6 +370,7 @@
     private async Task OnBrmSaved(bool merge)
     {
         showBrmModal = false;
+        showManualCapture = false;
         await OnChanged();
         if (merge)
         {
@@ -322,6 +389,7 @@
 
         SelectedApplication = null;
         showBrmModal = false;
+        showManualCapture = false;
         StateHasChanged();
     }
 
