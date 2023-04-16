@@ -639,8 +639,6 @@ namespace Sassa.BRM.Services
             _context.DcFiles.Add(file);
             try
             {
-
-
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -681,6 +679,7 @@ namespace Sassa.BRM.Services
                 dc_socpen.BeneficiaryId = application.Id;
                 dc_socpen.RegionId = application.RegionId;
                 dc_socpen.GrantType = application.GrantType;
+                dc_socpen.ChildId = application.ChildId;
                 dc_socpen.Name = application.Name;
                 dc_socpen.Surname = application.SurName;
                 dc_socpen.CaptureReference = file.UnqFileNo;

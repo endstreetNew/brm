@@ -12,30 +12,42 @@
                     <h5 class="modal-title">Application details.</h5>
                 </div>
                 <div class="modal-body">
-
                         <div class="input-group mb-1">
                             <!--!--><span class="input-group-text">Id Number</span>
-                            <span type="text" class="form-control"></span>
+                            <span type="text" class="form-control">@br.Id</span>
                         </div><!--!-->
                         <div class="input-group mb-1">
                             <!--!--><span class="input-group-text">Srd Number</span>
-                            <span type="text" class="form-control"></span>
+                            <span type="text" class="form-control">@br.Srd_No</span>
                         </div><!--!-->
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">Grant Type</span>
+                        <select class="form-select" @bind="br.GrantType">
+                            <option value="" selected>All...</option>
+                            @foreach (var val in db.GetGrantTypes())
+                            {
+
+                                <option value="@val.Key">@val.Value</option>
+                            }
+                        </select>
+                    </div>
                         <div class="input-group mb-1">
-                            <!--!--><span class="input-group-text">Grant Type</span>
-                            <span type="text" class="form-control">Old Age Grant</span>
-                        </div><!--!-->
-                        <div class="input-group mb-1">
-                            <!--!--><span class="input-group-text">Region</span>
-                            <select class="form-select" disabled=""><option value="" selected="">Select...</option><option value="2">Eastern Cape</option><option value="4">Free State</option><option value="7">Gauteng</option><option value="5">Kwazulu Natal</option><option value="9">Limpopo</option><option value="8">Mpumalanga</option><option value="6">North West</option><option value="3">Northern Cape</option><option value="1">Western Cape</option></select>
-                        </div><!--!-->
+                            <span class="input-group-text">Region</span>
+                            <select class="form-select" @bind="br.RegionId">
+                                <option value="" selected>All...</option>
+                                @foreach (var region in db.GetRegions())
+                                {
+                                    <option value="@region.Key">@region.Value</option>
+                                }
+                            </select>
+                        </div>
                         <div class="input-group mb-1">
                             <!--!--><span class="input-group-text">Name</span>
-                            <input type="text" class="form-control">
+                        <input type="text" class="form-control" @bind-value="@br.Name">
                         </div><!--!-->
                         <div class="input-group mb-1">
                             <!--!--><span class="input-group-text">Surname</span>
-                            <input type="text" class="form-control">
+                        <input type="text" class="form-control" @bind-value="@br.SurName">
                         </div><!--!-->
                     <div>
                         <label class="control-label font-weight-bold" Text="Please select the Application Type:"></label>
@@ -62,20 +74,6 @@
                                     @foreach (var lctype in db.GetLcTypes())
                                     {
                                         <option value=@lctype.Key>@lctype.Value</option>
-                                    }
-                                </select>
-                            </div>
-                        }
-                        @if (grantTypeVisible)
-                        {
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Grant type</span>
-                                <select class="form-select" @bind="@br.GrantType">
-                                    <option selected>select...</option>
-                                    @foreach (var grant in grantTypes)
-                                    {
-
-                                        <option value=@grant.Key>@grant.Value</option>
                                     }
                                 </select>
                             </div>
