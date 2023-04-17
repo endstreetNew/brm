@@ -192,10 +192,16 @@
             if (!string.IsNullOrEmpty(SRDNo))
             {
                 srdNo = long.Parse(SRDNo);
-                pensionNrValue = await db.GetSocpenSearchId(SRDNo);
+                try
+                {
+                    pensionNrValue = await db.GetSocpenSearchId(SRDNo);
+                }
+                catch
+                {
+                    toast.Info("No Socpen results");
+                }
                 if (string.IsNullOrEmpty(pensionNrValue))
                 {
-
                     pensionNrValue = $"S{SRDNo.PadLeft(12,'0')}";
                     srdWithNoId = true;
                 }
@@ -344,8 +350,8 @@
         SelectedApplication.MiniBox = rebox.MiniBox;
         SelectedApplication.GrantType = manualGrantType;
         SelectedApplication.RegionId = db.session.Office.RegionId;
-        SelectedApplication.Id = txtSearchId;
-        SelectedApplication.Srd_No = txtSearchSRD;
+        SelectedApplication.Id = pensionNrValue;
+        SelectedApplication.Srd_No = SRDNo;
         SelectedApplication.LcType = "0";
         SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
         SelectedApplication.AppStatus = "MAIN";

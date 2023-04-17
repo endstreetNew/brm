@@ -672,24 +672,47 @@ namespace Sassa.BRM.Services
             }
             else
             {
-                dc_socpen = new DcSocpen();
-                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
-                dc_socpen.BeneficiaryId = application.Id;
-                //dc_socpen.RegionId = application.RegionId;
-                dc_socpen.GrantType = application.GrantType;
-                dc_socpen.ChildId = application.ChildId;
-                dc_socpen.Name = application.Name;
-                dc_socpen.Surname = application.SurName;
-                dc_socpen.CaptureReference = file.UnqFileNo;
-                dc_socpen.BrmBarcode = file.BrmBarcode;
-                dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = session.Office.RegionId;
-                dc_socpen.LocalofficeId = session.Office.OfficeId;
-                dc_socpen.Documents = file.DocsPresent;
+                long? srd;
 
-                _context.DcSocpen.Add(dc_socpen);
+                try
+                {
+                    srd = long.Parse(application.Srd_No);
+                }
+                catch
+                {
+                    srd = null;
+                }
+                var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
+                if(result.Any())
+                {
+                    dc_socpen = result.First();
+                    dc_socpen.CaptureReference = file.UnqFileNo;
+                    dc_socpen.BrmBarcode = file.BrmBarcode;
+                    dc_socpen.CaptureDate = DateTime.Now;
+                    dc_socpen.RegionId = session.Office.RegionId;
+                    dc_socpen.LocalofficeId = session.Office.OfficeId;
+                }
+                else
+                {
+                    dc_socpen = new DcSocpen();
+                    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+                    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+                    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
+                    dc_socpen.BeneficiaryId = application.Id;
+                    dc_socpen.SrdNo = srd;
+                    dc_socpen.GrantType = application.GrantType;
+                    dc_socpen.ChildId = application.ChildId;
+                    dc_socpen.Name = application.Name;
+                    dc_socpen.Surname = application.SurName;
+                    dc_socpen.CaptureReference = file.UnqFileNo;
+                    dc_socpen.BrmBarcode = file.BrmBarcode;
+                    dc_socpen.CaptureDate = DateTime.Now;
+                    dc_socpen.RegionId = session.Office.RegionId;
+                    dc_socpen.LocalofficeId = session.Office.OfficeId;
+                    dc_socpen.Documents = file.DocsPresent;
+
+                    _context.DcSocpen.Add(dc_socpen);
+                }
 
             }
             try
@@ -2017,246 +2040,88 @@ namespace Sassa.BRM.Services
         /// <param name="SearchId"></param>
         /// <param name="FullSearch"></param>
         /// <returns></returns>
-        public async Task<List<Application>> SearchSocpenIdxx(string SearchId, bool FullSearch = true)
-        {
-            List<Application> idquery;
-            List<Application> srdsquery;
-            string sql;
 
-            sql = $@"select spn.PENSION_NO as Id,
-                        p.NAME as Name,
-                        p.SURNAME as Surname,
-                        spn.GRANT_TYPE as GrantType,
-                        g.TYPE_NAME as GrantName,
-                        spn.ORIGINAL_APPLICATION_DATE as AppDate,
-                        r.Region_CODE as RegionId,
-                        rg.REGION_CODE as REGIONCODE,
-                        rg.REGION_NAME as REGIONNAME,
-                        '' as DOCSPRESENT,
-                        spn.PRIM_STATUS as Prim_Status,
-                        spn.SEC_STATUS as Sec_Status,
-                        spn.STATUS_DATE as StatusDate,
-                        c.APPLICATION_DATE as Child_App_Date,
-                        c.STATUS_CODE as Child_Status_Code,
-                        c.STATUS_DATE as Child_Status_Date,
-                        to_char(c.ID_NO) as ChildId,
-                        r.DATE_REVIEWED as LASTREVIEWDATE,
-                        '' AS ARCHIVE_YEAR,
-                        CASE
-                        WHEN C.STATUS_CODE = '1' OR (spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2')) THEN 'MAIN'
-                        ELSE 'ARCHIVE'
-                        END AS AppStatus,
-                        '' As Brm_Barcode,
-                        '' As Brm_Parent,
-                        '' As Clm_no,
-                        '' As DateApproved,
-                        0 As IsCombinationCandidate,
-                        0 As IsMergeCandidate,
-                        0 As IsNew,
-                        '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                        0 As Batch_No,
-                        0 As SocpenIsn,
-                        0 As LcType,
-                        0 As RowType,
-                        '' As Srd_No,
-                        0 As StatusCode,
-                        0 As Tdw_BoxNo,
-                        1 As MiniBox,
-                        0 As Trans_type,
-                        '' as IdHistory,
-                        'Socpen' as Source
-                from sassa.socpen_personal_grants spn
-                join sassa.socpen_personal p on p.pension_No = spn.pension_No
-                join sassa.cust_rescodes r on r.res_code = p.secondary_paypoint
-                join DC_REGION rg on r.region_code = rg.REGION_ID
-                join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
-                left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.PENSION_NO
-                left join SASSA.SOCPEN_P12_CHILDREN c on spn.GRANT_TYPE in ('6','C', '5', '9') and c.PENSION_NO = spn.PENSION_NO and c.GRANT_TYPE = spn.GRANT_TYPE
-                where spn.PENSION_NO  = '{SearchId}'";
-
-            idquery = await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
-            //Add records from SOCPENGRANTS
-            if (!idquery.Any())
-            {
-                // SearchResult.Add("No SocPenResults.<br/>");
-            }
-            foreach (Application value in idquery)
-            {
-                if (value.RegionId == "0")
-                {
-                    value.RegionId = session.Office.RegionId;
-                }
-
-                //value.AppStatus = GetStatusFromSocpen(value);
-                try
-                {
-                    if ("6C59".Contains(value.GrantType))//(filePrep.GRANT_TYPE == "C")
-                    {
-                        try
-                        {
-                            value.AppDate = value.Child_App_Date != null ? ((DateTime)value.Child_App_Date.ToDate("dd/MMM/yy")).ToString("dd/MMM/yy") : ((DateTime)value.AppDate.ToDate("yyyymmdd")).ToString("dd/MMM/yy");//29/OCT/04
-                        }
-                        catch
-                        {
-                            //Exception Child record missing
-                        }
-                        value.StatusDate = value.Child_Status_Date != null ? ((DateTime)value.Child_Status_Date.ToDate("dd/MMM/yy")).ToString("dd/MMM/yy") : ((DateTime)value.StatusDate.ToDate("yyyymmdd")).ToString("dd/MMM/yy");//29/OCT/04
-                    }
-                    else
-                    {
-
-                        try
-                        {
-                            value.AppDate = ((DateTime)value.AppDate.ToDate("yyyyMMdd")).ToString("dd/MMM/yy");//20130430
-                        }
-                        catch
-                        {
-                            //Exception Missin App Date
-                        }
-                        value.StatusDate = ((DateTime)value.StatusDate.ToDate("yyyymmdd")).ToString("dd/MMM/yy");
-                    }
-                }
-                catch
-                {
-                    //var ss = "";
-                }
-                value.IsMergeCandidate = idquery.Where(s => s.AppDate == value.AppDate).Count() > 1;
-                if (!value.AppStatus.Contains("ARCHIVE")) continue;
-                if ("6C59".Contains(value.GrantType))//(filePrep.GRANT_TYPE == "C")
-                {
-                    try
-                    {
-                        value.ARCHIVE_YEAR = value.Child_App_Date != null ? ((DateTime)value.Child_Status_Date.ToDate("dd/MMM/yy")).ToString("yyyy") : ((DateTime)value.Child_Status_Date.ToDate("dd/MMM/yy")).ToString("yyyy");//29/OCT/04
-                    }
-                    catch
-                    {
-                        //Child App date and child status date is null
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        //updated from statusdate to appdate on 07 12 2021 (Hope)
-                        value.ARCHIVE_YEAR = ((DateTime)value.AppDate.ToDate("yyyyMMdd")).ToString("yyyy");//20130430
-                    }
-                    catch
-                    {
-                        //Status date is null
-                    }
-                }
-            }
-            srdsquery = await _context.Applications.FromSqlRaw
-           ($@"select srdben.ID_NO as ID,
-                    srdben.NAME as Name,
-                    srdben.SURNAME as Surname,
-                    srdtype.APPLICATION_DATE as APPDATE,
-                    srdtype.DATE_APPROVED as DATEAPPROVED,
-                    'S' as GRANTTYPE,
-                    'Social Relief Of Distress Grant' as GrantName,
-                    srdben.PROVINCE as REGIONID,
-                    rg.REGION_CODE as REGIONCODE,
-                    rg.REGION_NAME as REGIONNAME,
-                    case when srdtype.APPLICATION_STATUS ='2' then 'MAIN' ELSE 'ARCHIVE' END as AppStatus,
-                    srdben.SRD_NO,
-                    '' as DOCSPRESENT,
-                    '' as Prim_Status,
-                    '' as Sec_Status,
-                    null as StatusDate,
-                    null as Child_App_Date,
-                    null as Child_Status_Code,
-                    null as Child_Status_Date,
-                    null as ChildId,
-                    null as LASTREVIEWDATE,
-                    '' AS ARCHIVE_YEAR,
-                    '' As Brm_Barcode,
-                    '' As Brm_Parent,
-                    '' As Clm_no,
-                    0 As IsCombinationCandidate,
-                    0 As IsMergeCandidate,
-                    0 As IsNew,
-                     '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                    0 As Batch_No,
-                    0 As SocpenIsn,
-                    0 As LcType,
-                    0 As RowType,
-                    0 As StatusCode,
-                    0 As Tdw_BoxNo,
-                    1 As Minibox,
-                    0 As Trans_type,
-                    '' AS IdHistory,
-                    'Socpen' as Source
-                    from SASSA.SOCPEN_SRD_BEN srdben
-                    inner join DC_REGION rg on srdben.PROVINCE = rg.REGION_ID
-                            left join SASSA.SOCPEN_SRD_TYPE srdtype on srdtype.SOCIAL_RELIEF_NO = srdben.SRD_NO
-                            where srdben.ID_NO = '{SearchId}' 
-                            order by srdtype.APPLICATION_DATE desc").AsNoTracking().ToListAsync();
-
-            //Add SRD's
-            var result = idquery.Union(srdsquery).ToList();
-            foreach (var item in result)
-            {
-                //key++;
-                //item.Key = key;
-                item.IsMergeCandidate = idquery.Where(s => s.AppDate == item.AppDate).Count() > 1;
-                //item.DocsPresent = await GetDocsPresent(item.Id, item.GrantType, item.AppDate);
-            }
-            return result;
-        }
         public async Task<List<Application>> SearchSocpenSrd(long srd)
         {
-            List<Application> srdsquery = await _context.Applications.FromSqlRaw
-                    ($@"select srdben.ID_NO as ID,
-                    srdben.NAME as Name,
-                    srdben.SURNAME as Surname,
-                    srdtype.APPLICATION_DATE as APPDATE,
-                    srdtype.DATE_APPROVED as DATEAPPROVED,
-                    'S' as GRANTTYPE,
-                    'Social Relief Of Distress Grant' as GrantName,
-                    srdben.PROVINCE as REGIONID,
-                    rg.REGION_CODE as REGIONCODE,
-                    rg.REGION_NAME as REGIONNAME,
-                    case when srdtype.APPLICATION_STATUS ='2' then 'MAIN' ELSE 'ARCHIVE' END as AppStatus,
-                    srdben.SRD_NO,
-                    '' as DOCSPRESENT,
-                    '' as Prim_Status,
-                    '' as Sec_Status,
-                    null as StatusDate,
-                    null as Child_App_Date,
-                    null as Child_Status_Code,
-                    null as Child_Status_Date,
-                    null as ChildId,
-                    null as LASTREVIEWDATE,
-                    '' AS ARCHIVE_YEAR,
-                    '' As Brm_Barcode,
-                    '' As Brm_Parent,
-                    '' As Clm_no,
-                    0 As IsCombinationCandidate,
-                    0 As IsMergeCandidate,
-                    0 As IsNew,
-                     '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                    0 As Batch_No,
-                    0 As SocpenIsn,
-                    0 As LcType,
-                    0 As RowType,
-                    0 As StatusCode,
-                    0 As Tdw_BoxNo,
-                    1 As MiniBox,
-                    0 As Trans_type,
-                    '' AS IdHistory,
-                    'Socpen' as Source
-                    from SASSA.SOCPEN_SRD_BEN srdben
-                    inner join DC_REGION rg on srdben.PROVINCE = rg.REGION_ID
-                            left join SASSA.SOCPEN_SRD_TYPE srdtype on srdtype.SOCIAL_RELIEF_NO = srdben.SRD_NO
-                            where srdben.SRD_NO = {srd} 
-                            order by srdtype.APPLICATION_DATE desc").AsNoTracking().ToListAsync();
-            foreach (var app in srdsquery)
+            List<Application> srdsquery = await _context.DcSocpen.Where(d => d.SrdNo == srd).Select(d => new Application
             {
-                app.Id = "S" + srd.ToString();
-            }
+                SocpenIsn = d.Id,
+                Id = d.BeneficiaryId,
+                Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
+                Name = d.Name,
+                SurName = d.Surname,
+                GrantType = d.GrantType,
+                GrantName = StaticD.GrantTypes[d.GrantType],
+                AppDate = d.ApplicationDate.ToStandardDateString(),
+                RegionId = d.RegionId,
+                RegionCode = StaticD.RegionCode(d.RegionId),
+                RegionName = StaticD.RegionName(d.RegionId),
+                AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
+                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                ChildId = d.ChildId,
+                LcType = "0",
+                IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
+                DocsPresent = d.Documents,
+                IdHistory = d.IdHistory,
+                Source = "Socpen"
+            }).AsNoTracking().ToListAsync();
 
             return srdsquery;
         }
+       //public async Task<List<Application>> DeleteSearchSocpenSrd(long srd)
+       // {
+       //     List<Application> srdsquery = await _context.Applications.FromSqlRaw
+       //             ($@"select srdben.ID_NO as ID,
+       //             srdben.NAME as Name,
+       //             srdben.SURNAME as Surname,
+       //             srdtype.APPLICATION_DATE as APPDATE,
+       //             srdtype.DATE_APPROVED as DATEAPPROVED,
+       //             'S' as GRANTTYPE,
+       //             'Social Relief Of Distress Grant' as GrantName,
+       //             srdben.PROVINCE as REGIONID,
+       //             rg.REGION_CODE as REGIONCODE,
+       //             rg.REGION_NAME as REGIONNAME,
+       //             case when srdtype.APPLICATION_STATUS ='2' then 'MAIN' ELSE 'ARCHIVE' END as AppStatus,
+       //             srdben.SRD_NO,
+       //             '' as DOCSPRESENT,
+       //             '' as Prim_Status,
+       //             '' as Sec_Status,
+       //             null as StatusDate,
+       //             null as Child_App_Date,
+       //             null as Child_Status_Code,
+       //             null as Child_Status_Date,
+       //             null as ChildId,
+       //             null as LASTREVIEWDATE,
+       //             '' AS ARCHIVE_YEAR,
+       //             '' As Brm_Barcode,
+       //             '' As Brm_Parent,
+       //             '' As Clm_no,
+       //             0 As IsCombinationCandidate,
+       //             0 As IsMergeCandidate,
+       //             0 As IsNew,
+       //              '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
+       //             0 As Batch_No,
+       //             0 As SocpenIsn,
+       //             0 As LcType,
+       //             0 As RowType,
+       //             0 As StatusCode,
+       //             0 As Tdw_BoxNo,
+       //             1 As MiniBox,
+       //             0 As Trans_type,
+       //             '' AS IdHistory,
+       //             'Socpen' as Source
+       //             from SASSA.SOCPEN_SRD_BEN srdben
+       //             inner join DC_REGION rg on srdben.PROVINCE = rg.REGION_ID
+       //                     left join SASSA.SOCPEN_SRD_TYPE srdtype on srdtype.SOCIAL_RELIEF_NO = srdben.SRD_NO
+       //                     where srdben.SRD_NO = {srd} 
+       //                     order by srdtype.APPLICATION_DATE desc").AsNoTracking().ToListAsync();
+       //     foreach (var app in srdsquery)
+       //     {
+       //         app.Id = "S" + srd.ToString();
+       //     }
+
+       //     return srdsquery;
+       // }
         public async Task<List<Application>> SearchBRMID(string SearchId)
         {
             string sql = $@"select f.APPLICANT_NO as Id,
