@@ -675,9 +675,9 @@ namespace Sassa.BRM.Services
                 dc_socpen = new DcSocpen();
                 dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
                 dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.StatusCode = application.AppStatus;
+                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
                 dc_socpen.BeneficiaryId = application.Id;
-                dc_socpen.RegionId = application.RegionId;
+                //dc_socpen.RegionId = application.RegionId;
                 dc_socpen.GrantType = application.GrantType;
                 dc_socpen.ChildId = application.ChildId;
                 dc_socpen.Name = application.Name;
