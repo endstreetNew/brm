@@ -643,6 +643,7 @@ namespace Sassa.BRM.Services
             }
             catch (Exception ex)
             {
+                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0,200), file.UnqFileNo);
                 throw;
             }
 
@@ -660,60 +661,60 @@ namespace Sassa.BRM.Services
             //await SetBatchCount((decimal)file.BatchNo);
             CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
             DcSocpen dc_socpen;
-            if (application.SocpenIsn > 0)
+            //if (application.SocpenIsn > 0)
+            //{
+            //    dc_socpen = await _context.DcSocpen.FindAsync(application.SocpenIsn);
+            //    dc_socpen.CaptureReference = file.UnqFileNo;
+            //    dc_socpen.BrmBarcode = file.BrmBarcode;
+            //    dc_socpen.CaptureDate = DateTime.Now;
+            //    dc_socpen.RegionId = session.Office.RegionId;
+            //    dc_socpen.LocalofficeId = session.Office.OfficeId;
+
+            //}
+            //else
+            //{
+            long? srd;
+            try
             {
-                dc_socpen = await _context.DcSocpen.FindAsync(application.SocpenIsn);
+                srd = long.Parse(application.Srd_No);
+            }
+            catch
+            {
+                srd = null;
+            }
+            var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
+            if(result.Any())
+            {
+                dc_socpen = result.First();
                 dc_socpen.CaptureReference = file.UnqFileNo;
                 dc_socpen.BrmBarcode = file.BrmBarcode;
                 dc_socpen.CaptureDate = DateTime.Now;
                 dc_socpen.RegionId = session.Office.RegionId;
                 dc_socpen.LocalofficeId = session.Office.OfficeId;
-
+                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
+                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
             }
             else
             {
-                long? srd;
+                dc_socpen = new DcSocpen();
+                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
+                dc_socpen.BeneficiaryId = application.Id;
+                dc_socpen.SrdNo = srd;
+                dc_socpen.GrantType = application.GrantType;
+                dc_socpen.ChildId = application.ChildId;
+                dc_socpen.Name = application.Name;
+                dc_socpen.Surname = application.SurName;
+                dc_socpen.CaptureReference = file.UnqFileNo;
+                dc_socpen.BrmBarcode = file.BrmBarcode;
+                dc_socpen.CaptureDate = DateTime.Now;
+                dc_socpen.RegionId = session.Office.RegionId;
+                dc_socpen.LocalofficeId = session.Office.OfficeId;
+                dc_socpen.Documents = file.DocsPresent;
 
-                try
-                {
-                    srd = long.Parse(application.Srd_No);
-                }
-                catch
-                {
-                    srd = null;
-                }
-                var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
-                if(result.Any())
-                {
-                    dc_socpen = result.First();
-                    dc_socpen.CaptureReference = file.UnqFileNo;
-                    dc_socpen.BrmBarcode = file.BrmBarcode;
-                    dc_socpen.CaptureDate = DateTime.Now;
-                    dc_socpen.RegionId = session.Office.RegionId;
-                    dc_socpen.LocalofficeId = session.Office.OfficeId;
-                }
-                else
-                {
-                    dc_socpen = new DcSocpen();
-                    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
-                    dc_socpen.BeneficiaryId = application.Id;
-                    dc_socpen.SrdNo = srd;
-                    dc_socpen.GrantType = application.GrantType;
-                    dc_socpen.ChildId = application.ChildId;
-                    dc_socpen.Name = application.Name;
-                    dc_socpen.Surname = application.SurName;
-                    dc_socpen.CaptureReference = file.UnqFileNo;
-                    dc_socpen.BrmBarcode = file.BrmBarcode;
-                    dc_socpen.CaptureDate = DateTime.Now;
-                    dc_socpen.RegionId = session.Office.RegionId;
-                    dc_socpen.LocalofficeId = session.Office.OfficeId;
-                    dc_socpen.Documents = file.DocsPresent;
-
-                    _context.DcSocpen.Add(dc_socpen);
-                }
-
+                _context.DcSocpen.Add(dc_socpen);
             }
             try
             {
@@ -721,6 +722,7 @@ namespace Sassa.BRM.Services
             }
             catch(Exception ex)
             {
+                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
                 throw;
             }
 
@@ -2258,39 +2260,39 @@ namespace Sassa.BRM.Services
         //    return null;
         //}
 
-        private string GetWhereclause(string SearchId, bool FullSearch)
-        {
-            return FullSearch ? $" where '{SearchId}' in (spn.PENSION_NO, spn.OLD_ID1, spn.OLD_ID2, spn.OLD_ID3, spn.OLD_ID4, spn.OLD_ID5, spn.OLD_ID6, spn.OLD_ID7, spn.OLD_ID8, spn.OLD_ID9, spn.OLD_ID10) " : $" where spn.PENSION_NO  = '{SearchId}' ";
-        }
+        //private string GetWhereclause(string SearchId, bool FullSearch)
+        //{
+        //    return FullSearch ? $" where '{SearchId}' in (spn.PENSION_NO, spn.OLD_ID1, spn.OLD_ID2, spn.OLD_ID3, spn.OLD_ID4, spn.OLD_ID5, spn.OLD_ID6, spn.OLD_ID7, spn.OLD_ID8, spn.OLD_ID9, spn.OLD_ID10) " : $" where spn.PENSION_NO  = '{SearchId}' ";
+        //}
 
-        private string GetStatusFromSocpen(Application application)
-        {
-            string mystatus;
+        //private string GetStatusFromSocpen(Application application)
+        //{
+        //    string mystatus;
 
-            switch (application.Child_Status_Code)
-            {
-                case null:
-                    string checkstatus = application.Prim_Status == null ? "" : application.Prim_Status.Trim() + (application.Sec_Status == null ? "" : application.Sec_Status.Trim());
-                    if (checkstatus == "B2" || checkstatus == "A2" || checkstatus == "92")
-                    {
-                        mystatus = "MAIN";
-                    }
-                    else
-                    {
-                        mystatus = "ARCHIVE";
-                    }
-                    break;
+        //    switch (application.Child_Status_Code)
+        //    {
+        //        case null:
+        //            string checkstatus = application.Prim_Status == null ? "" : application.Prim_Status.Trim() + (application.Sec_Status == null ? "" : application.Sec_Status.Trim());
+        //            if (checkstatus == "B2" || checkstatus == "A2" || checkstatus == "92")
+        //            {
+        //                mystatus = "MAIN";
+        //            }
+        //            else
+        //            {
+        //                mystatus = "ARCHIVE";
+        //            }
+        //            break;
 
-                case "1":
-                    mystatus = "MAIN";
-                    break;
+        //        case "1":
+        //            mystatus = "MAIN";
+        //            break;
 
-                default:
-                    mystatus = "ARCHIVE";
-                    break;
-            }
-            return mystatus;
-        }
+        //        default:
+        //            mystatus = "ARCHIVE";
+        //            break;
+        //    }
+        //    return mystatus;
+        //}
 
         //public async Task<DcFile> RemoveDuplicateBRM(string brmNo)
         //{

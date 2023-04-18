@@ -389,11 +389,13 @@
             if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.BrmBarcode = string.Empty;
-            await AddFile();
+            DcFile file = await AddFile();
+            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"File Created from MIS {rebox.MisFileNo.Trim()}", file.UnqFileNo);
         }
         catch (Exception ex)
         {
             toast.Error(ex.Message);
+            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"Error from MIS {rebox.MisFileNo.Trim()} :" + ex.Message.Substring(0,200), "");
         }
     }
 
@@ -414,18 +416,19 @@
         }
     }
 
-    protected async Task AddFile()
+    protected async Task<DcFile> AddFile()
     {
         try
         {
             // if (boxfiles.count > 149) throw new Exception($"Too many files, Maximun allowed: 150.");
             rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
-            await Rebox(rebox);
+            return await Rebox(rebox);
 
         }
         catch (Exception ex)
         {
             toast.Error(ex.Message);
+            throw;
         }
 
     }
@@ -523,7 +526,7 @@
     //    pdf.SavePage($"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}",FileName);
     //}
 
-    public async Task Rebox(Reboxing rebox)
+    public async Task<DcFile> Rebox(Reboxing rebox)
     {
 
         DcFile file = await db.GetReboxCandidate(rebox);
@@ -561,6 +564,7 @@
         rebox.MisFileNo = string.Empty;
         rebox.NewBarcode = string.Empty;
         await OnPaged(page);
+        return file;
     }
 
     protected async Task OnPaged(int _page)

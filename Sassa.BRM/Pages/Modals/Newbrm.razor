@@ -76,7 +76,7 @@
                         </div>
                         <div class="form-group">
                             <h2 class="text-center form-group"></h2>
-                            <p>Please use a new TDW sticker to put onto the file, then scan it - because it will be printed on the File Coversheet.</p>
+                            <p>Please scan a new TDW sticker to put onto the file.</p>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">BRM Barcode</span>
@@ -152,10 +152,10 @@
             grantTypeVisible = true;
             //Allow capture of missing child Id
             //•	When the child ID is not showing, you can scan it(then column under child Id No is blank)
-            if (string.IsNullOrEmpty(br.ChildId))
-            {
+            //if (string.IsNullOrEmpty(br.ChildId))
+            //{
                 childIdVisible = true;
-            }
+            //}
         }
         SelectedAppDate = br.AppDate.ToDate("dd/MMM/yy");
         ready = true;
