@@ -5,7 +5,6 @@ namespace Sassa.BRM.Models
 {
     public partial class DcSocpen
     {
-        public decimal Id { get; set; }
         public string ApplicationNo { get; set; }
         public string BeneficiaryId { get; set; }
         public string ChildId { get; set; }
@@ -32,5 +31,8 @@ namespace Sassa.BRM.Models
         public string EcmisFile { get; set; }
         public string IdHistory { get; set; }
         public string Documents { get; set; }
+        public decimal Id { get; set; }
+        public string Exception { get; set; }
+        public DateTime? OgaDate { get; set; }
     }
 }

@@ -222,7 +222,9 @@ namespace Sassa.BRM.Services
                                                     dc.Application_Date AS SOCPEN_CAPTURE_DATE,
                                                     dc.Scan_Date,
                                                     dc.CS_DATE as Content_Server_Date,
-                                                    dc.TDW_REC as TDW_RECEIVE_DATE
+                                                    dc.TDW_REC as TDW_RECEIVE_DATE,
+                                                    dc.OGA_Date, 
+                                                    dc.Exception
                                                 FROM
                                                     dc_socpen dc
                                                     join DC_REGION r on r.Region_ID = dc.region_id 

@@ -47,7 +47,7 @@ namespace Sassa.BRM.Services
             catch (Exception ex)
             {
                 _session = null;
-                WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
+                //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
             }
         }
 
@@ -1041,6 +1041,8 @@ namespace Sassa.BRM.Services
                             UnqFileNo = "",
                             ApplicantNo = mis.IdNumber.GetDigitId(),
                             ApplicationStatus = mis.RegistryType.ApplicationStatusFromMIS(),
+                            TransType = 0,
+                            BatchAddDate = DateTime.Now,
                             BrmBarcode = rebox.NewBarcode,
                             FileComment = "Added from TDW/MIS on reboxing.",
                             FileNumber = mis.FileNumber,
@@ -2810,19 +2812,11 @@ namespace Sassa.BRM.Services
             result.TdwRecord = tdwresult.Any();
 
             //SocPen
-            var socpenresult = await SearchSocpenId(file.ApplicantNo, false);
+            var socpenresult = await _context.DcSocpen.Where(s => s.BeneficiaryId == file.ApplicantNo && s.GrantType == file.GrantType).ToListAsync();//SearchSocpenId(file.ApplicantNo, false);
             if (socpenresult.Any())
             {
-                foreach (Application sr in socpenresult)
-                {
-                    if (string.IsNullOrEmpty(result.AppDate)) continue;
-                    if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
-                    {
-                        result.SocPenRecord = true;
-                        result.SocPenActive = sr.AppStatus.Contains("MAIN");
-                        break;
-                    }
-                }
+                result.SocPenRecord = true;
+                result.SocPenActive = socpenresult.Where( s => s.StatusCode =="ACTIVE").Any();
             }
             return result;
         }

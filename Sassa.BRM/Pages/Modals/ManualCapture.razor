@@ -176,10 +176,10 @@
             grantTypeVisible = true;
             //Allow capture of missing child Id
             //•	When the child ID is not showing, you can scan it(then column under child Id No is blank)
-            if (string.IsNullOrEmpty(br.ChildId))
-            {
+            //if (string.IsNullOrEmpty(br.ChildId))
+            //{
                 childIdVisible = true;
-            }
+            //}
         }
         SelectedAppDate = br.AppDate.ToDate("dd/MMM/yy");
         ready = true;

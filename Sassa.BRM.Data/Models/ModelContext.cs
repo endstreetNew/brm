@@ -4,7 +4,7 @@
 
 namespace Sassa.BRM.Models
 {
-    //Scaffold-DbContext "DATA SOURCE=10.117.122.120:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;" Oracle.EntityFrameworkCore -OutputDir Context -Tables TDW_FILE_LOCATION -f
+    //Scaffold-DbContext "DATA SOURCE=10.117.123.20:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;" Oracle.EntityFrameworkCore -OutputDir Context -Tables TDW_FILE_LOCATION -f
     public partial class ModelContext : DbContext
     {
         public ModelContext()
@@ -70,7 +70,7 @@ namespace Sassa.BRM.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseOracle("DATA SOURCE=10.117.122.120:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;");
+                optionsBuilder.UseOracle("DATA SOURCE=10.117.123.20:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;");
             }
         }
 
@@ -3046,29 +3046,25 @@ namespace Sassa.BRM.Models
 
             modelBuilder.Entity<DcSocpen>(entity =>
             {
-                entity.Property(e => e.Id)
-                    .HasColumnType("NUMBER")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("ID");
-
                 entity.ToTable("DC_SOCPEN");
 
                 entity.HasIndex(e => e.BrmBarcode, "DC_SOCPEN_BRM_BARCODE")
                     .IsUnique();
 
-                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_CLM_NO")
-                    .IsUnique();
+                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_IDX01");
+
+                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_IDX02");
 
                 entity.HasIndex(e => new { e.BeneficiaryId, e.GrantType, e.ChildId, e.SrdNo }, "DC_SOCPEN_ID_GRANT")
                     .IsUnique();
 
-                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_ID_NO");
-
-                entity.HasIndex(e => e.Id, "DC_SOCPEN_KEY")
-                    .IsUnique();
-
                 entity.HasIndex(e => e.SrdNo, "DC_SOCPEN_SRD")
                     .IsUnique();
+
+                entity.Property(e => e.Id)
+                    .HasColumnType("NUMBER")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("ID");
 
                 entity.Property(e => e.AdabasIsnSrd)
                     .HasMaxLength(20)
@@ -3128,6 +3124,11 @@ namespace Sassa.BRM.Models
                     .IsUnicode(false)
                     .HasColumnName("ECMIS_FILE");
 
+                entity.Property(e => e.Exception)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("EXCEPTION");
+
                 entity.Property(e => e.GrantType)
                     .IsRequired()
                     .HasMaxLength(1)
@@ -3153,6 +3154,10 @@ namespace Sassa.BRM.Models
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("NAME");
+
+                entity.Property(e => e.OgaDate)
+                    .HasColumnType("DATE")
+                    .HasColumnName("OGA_DATE");
 
                 entity.Property(e => e.Paypoint)
                     .HasMaxLength(6)

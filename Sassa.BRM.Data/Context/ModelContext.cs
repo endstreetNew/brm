@@ -39,13 +39,12 @@ namespace Sassa.BRM.Data.Context
                 entity.HasIndex(e => e.BrmBarcode, "DC_SOCPEN_BRM_BARCODE")
                     .IsUnique();
 
-                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_CLM_NO")
-                    .IsUnique();
+                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_IDX01");
+
+                entity.HasIndex(e => e.CaptureReference, "DC_SOCPEN_IDX02");
 
                 entity.HasIndex(e => new { e.BeneficiaryId, e.GrantType, e.ChildId, e.SrdNo }, "DC_SOCPEN_ID_GRANT")
                     .IsUnique();
-
-                entity.HasIndex(e => e.BeneficiaryId, "DC_SOCPEN_ID_NO");
 
                 entity.HasIndex(e => e.SrdNo, "DC_SOCPEN_SRD")
                     .IsUnique();
@@ -113,6 +112,11 @@ namespace Sassa.BRM.Data.Context
                     .IsUnicode(false)
                     .HasColumnName("ECMIS_FILE");
 
+                entity.Property(e => e.Exception)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("EXCEPTION");
+
                 entity.Property(e => e.GrantType)
                     .IsRequired()
                     .HasMaxLength(1)
@@ -138,6 +142,10 @@ namespace Sassa.BRM.Data.Context
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("NAME");
+
+                entity.Property(e => e.OgaDate)
+                    .HasColumnType("DATE")
+                    .HasColumnName("OGA_DATE");
 
                 entity.Property(e => e.Paypoint)
                     .HasMaxLength(6)
