@@ -229,13 +229,17 @@
             {
                 if (br.IsPreservedType && !string.IsNullOrEmpty(br.TDW_BOXNO))
                 {
-                    if (!(TargetBoxType.Contains("LC") && br.AppStatus.Contains("LC")))
+                    if ((TargetBoxType.Contains("LC") && !br.AppStatus.Contains("LC")) || (!TargetBoxType.Contains("LC") && br.AppStatus.Contains("LC")))
                     {
-                        if (TargetBoxType != br.AppStatus)
-                        {
-                            throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
-                        }
+                        throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
                     }
+                    //if (!(TargetBoxType.Contains("LC") && br.AppStatus.Contains("LC")))
+                    //{
+                    //    if (TargetBoxType != br.AppStatus)
+                    //    {
+                    //        throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
+                    //    }
+                    //}
                 }
             }
             DcFile file = await db.CreateBRM(br,reason);

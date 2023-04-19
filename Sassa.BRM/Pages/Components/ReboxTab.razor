@@ -535,12 +535,13 @@
         {
             if(file.IsPreservedType)
             {
-                if (!(rebox.RegType.Contains("LC") && file.ApplicationStatus.Contains("LC")))
+                if ((rebox.RegType.Contains("LC") && !file.ApplicationStatus.Contains("LC")) || (!rebox.RegType.Contains("LC") && file.ApplicationStatus.Contains("LC")))
                 {
-                    if (rebox.RegType != file.ApplicationStatus)
-                    {
-                        throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
-                    }
+                    throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                    //if (rebox.RegType != file.ApplicationStatus)
+                    //{
+                    //    throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
+                    //}
                 }
             }
         }
