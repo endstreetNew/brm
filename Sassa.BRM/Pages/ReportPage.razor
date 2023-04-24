@@ -41,10 +41,16 @@
             </div>
             @if(rIndex == "11")
             {
-                <div class="mb-3">
-                  <label for="exampleFormControlTextarea1" class="form-label">Custom SQL</label>
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" @bind="customSql" @bind:event="oninput">@customSql</textarea>
-                </div>
+            <div class="input-group mb-1">
+                <span class="input-group-text">Region</span>
+                <select class="form-select" @bind="office.RegionId">
+                    <option value="" selected>All...</option>
+                    @foreach (var region in db.GetRegions())
+                    {
+                        <option value="@region.Key">@region.Value</option>
+                    }
+                </select>
+            </div>
             }
             else
             {

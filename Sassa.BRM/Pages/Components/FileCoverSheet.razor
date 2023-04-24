@@ -34,6 +34,7 @@
                 <div class="col-5">
                     <div>@file.FullName</div>
                     <div>@(db.GetRegion(file.RegionId))</div>
+                    <div>@file.Office.OfficeName</div>
                     <div>Transaction Date: </div>
                     <div>Date Last Reviewed: @(file.Lastreviewdate == null? ""  : ((DateTime)file.Lastreviewdate).ToString("yyyy/MM/dd"))</div>
                     @if (file.Lctype != null)

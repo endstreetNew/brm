@@ -58,7 +58,7 @@ namespace Sassa.BRM.Services
             reportList.Add("8", "Missing File Summary");
             reportList.Add("9", "Monthly Scanning Report");
             reportList.Add("10", "Deleted files Report");
-            reportList.Add("11", "Custom Report");
+            reportList.Add("11", "Manual Capture Report");
 
             db = _db;
 
@@ -242,7 +242,12 @@ namespace Sassa.BRM.Services
                                     and Updated_date <= to_date('{dateTo}', 'dd/mm/YYYY') ";
                                 break;
                             case "11":
-                                cmd.CommandText = sql.Replace("[Region]", region_id);
+                                cmd.CommandText = $@"select ACTIVITY_DATE,USERNAME,f.UNQ_FILE_NO,ACTIVITY,r.Region_Name as LOCATION,f.Applicant_no as ID,BRM_BARCODE,f.scan_datetime as SCANDATE,f.File_Comment as DESCRIPTION
+                                                    from dc_file f
+                                                    join dc_activity a on a.UNQ_FILE_NO =  f.UNQ_FILE_NO 
+                                                    join dc_region r on r.region_id = f.Region_id
+                                                    where f.File_Comment Like 'Freecapture%'
+                                                    AND f.Region_id = '{region_id}'";
                                 break;
                             default:
 
