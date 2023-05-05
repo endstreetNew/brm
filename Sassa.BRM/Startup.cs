@@ -34,7 +34,7 @@ namespace Sassa.BRM
             services.AddScoped<ProgressService>();//.AddDbContext<eDocumentContext>(options =>
             //options.UseOracle(Configuration.GetConnectionString("eDocsConnection")));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("SocpenConnection")));
+            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
             services.AddSingleton<StaticD>();
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
+using static Sassa.BRM.Services.TimedService;
 
 namespace Sassa.BRM.Services
 {
@@ -17,6 +18,8 @@ namespace Sassa.BRM.Services
                 Directory.CreateDirectory(fileName.Substring(0, fileName.LastIndexOf("\\")));
             }
             File.WriteAllText(fileName, jsonString);
+            GlobalVars entry = (GlobalVars)obj;
+            File.AppendAllText(fileName.Substring(0, fileName.LastIndexOf("\\")) + "\\logFile.json",entry.Progress + " " + System.DateTime.Now.ToShortTimeString() + Environment.NewLine  );
         }
 
         public static T ReadJson<T>(string fileName) where T : new()

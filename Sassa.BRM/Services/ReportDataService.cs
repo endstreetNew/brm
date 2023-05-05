@@ -242,10 +242,11 @@ namespace Sassa.BRM.Services
                                     and Updated_date <= to_date('{dateTo}', 'dd/mm/YYYY') ";
                                 break;
                             case "11":
-                                cmd.CommandText = $@"select ACTIVITY_DATE,USERNAME,f.UNQ_FILE_NO,ACTIVITY,r.Region_Name as LOCATION,f.Applicant_no as ID,BRM_BARCODE,f.scan_datetime as SCANDATE,f.File_Comment as DESCRIPTION
+                                cmd.CommandText = $@"select ACTIVITY_DATE,USERNAME,f.UNQ_FILE_NO as CLM_NO,ACTIVITY,r.Region_Name as LOCATION,f.Applicant_no as ID,Child_ID_No as CHILD_ID, BRM_BARCODE,g.Type_name as Grant_type,f.scan_datetime as SCANDATE,f.File_Comment as DESCRIPTION
                                                     from dc_file f
                                                     join dc_activity a on a.UNQ_FILE_NO =  f.UNQ_FILE_NO 
                                                     join dc_region r on r.region_id = f.Region_id
+                                                    join dc_grant_type  g on f.grant_Type = g.type_id
                                                     where f.File_Comment Like 'Freecapture%'
                                                     AND f.Region_id = '{region_id}'";
                                 break;

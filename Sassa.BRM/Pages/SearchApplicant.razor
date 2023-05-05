@@ -306,7 +306,7 @@
         SelectedApplication = a;
         if(a.RegionId == db.session.Office.RegionId)
         {
-            ConfirmedRegion();
+            ConfirmedRegion();//Save normal capture
         }
         else
         {
@@ -336,6 +336,11 @@
                 toast.Error("Only 5 Miniboxes allowed.");
                 return;
             }
+        }
+        if (manualGrantType == "S" && string.IsNullOrEmpty(SRDNo))
+        {
+            toast.Error("a Srd record requires an SRD no.");
+            return;
         }
         SelectedApplication = new Application();
         SelectedApplication.TRANS_TYPE = 0;

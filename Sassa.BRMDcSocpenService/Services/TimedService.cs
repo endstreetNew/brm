@@ -53,11 +53,29 @@ namespace Sassa.BRM.Services
             //_logger = logger;
         }
 
-        public Task StartAsync(CancellationToken stoppingToken)
+        public Task Start()
         {
-            schedule = new Timer(SyncTDW, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+            Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
+            schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             return Task.CompletedTask;
         }
+        public Task StartAsync(CancellationToken stoppingToken)
+        {
+            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+            if (Globals.Status)
+            {
+                Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
+                schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+            }
+            else
+            {
+                Globals.Progress = $"Stopped";
+            }
+            return Task.CompletedTask;
+        }
+
+
         //public Task StartAsync(CancellationToken stoppingToken)
         //{
 
@@ -96,7 +114,7 @@ namespace Sassa.BRM.Services
                 //New SRD's
                 sql = File.ReadAllText(sqlPath + "\\AddSrds.sql");
 
-                Globals.Progress = "INSERT new SRD.";
+                Globals.Progress = "Insert new SRDs.";
                 JsonFileUtils.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
@@ -113,7 +131,7 @@ namespace Sassa.BRM.Services
                 await _raw.ExecuteNonQuery(sql);
 
                 sql = File.ReadAllText(sqlPath + "\\RetireSrds.sql");
-                Globals.Progress = "Insert new Child Grants.";
+                Globals.Progress = "Retire Srds.";
                 JsonFileUtils.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
