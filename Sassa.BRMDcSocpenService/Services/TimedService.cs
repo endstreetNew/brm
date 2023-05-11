@@ -1,30 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Sassa.BRM.Models;
-using Sassa.BRMDcSocpenService.Data;
-using System;
-using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Security.Policy;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using System.Xml.Linq;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Http;
-using System.Xml;
-
-namespace Sassa.BRM.Services
+﻿namespace Sassa.BRM.Services
 {
 
     public class TimedService : IHostedService, IDisposable
     {
         private int executionCount = 0;
-        private readonly ILogger<TimedService> _logger;
+        //private readonly ILogger<TimedService> _logger;
+        JsonFileUtils _fu;
 
         public GlobalVars Globals = new GlobalVars();
 
@@ -45,28 +26,45 @@ namespace Sassa.BRM.Services
         //private Timer _timerLO = null!;
         //private Timer _timerProgress = null!;
 
-        public TimedService(IWebHostEnvironment env,RawSqlService raw)
+        public TimedService(IWebHostEnvironment env,JsonFileUtils fu,RawSqlService raw)
         {
             fileName = Path.Combine(env.ContentRootPath, "bookmarks") + "\\bookMarks.json";
             sqlPath = Path.Combine(env.ContentRootPath, "sql");
             _raw = raw;
-            //_logger = logger;
+            _fu = fu;
         }
 
         public Task Start()
         {
+
             TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+            if (delayTime.Ticks < 0 && schedule == null)//Overdue
+            {
+                schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+                return Task.CompletedTask;
+            }
             Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
-            schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+            if (schedule == null)
+            {
+                schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+            }
             return Task.CompletedTask;
         }
+        /// <summary>
+        /// Autostart
+        /// </summary>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
             TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
             if (Globals.Status)
             {
-                Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
-                schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+                if (delayTime.Ticks < 0)//Overdue
+                {
+                    schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+                    return Task.CompletedTask;
+                }
             }
             else
             {
@@ -106,7 +104,7 @@ namespace Sassa.BRM.Services
             string sql = "";
             Globals.LastRunDate = DateTime.Now;
             Globals.Progress = "Starting.";
-            JsonFileUtils.WriteJson(Globals, fileName);
+            _fu.WriteJson(Globals, fileName);
             bookmark = _raw.GetBookMark("Select max(Capture_date) from dc_socpen");
             bookmark = bookmark.AddDays(-14); //Start two weeks ago.
             try 
@@ -115,24 +113,24 @@ namespace Sassa.BRM.Services
                 sql = File.ReadAllText(sqlPath + "\\AddSrds.sql");
 
                 Globals.Progress = "Insert new SRDs.";
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
                 sql = File.ReadAllText(sqlPath + "\\AddMainGrants.sql");
 
                 Globals.Progress = "Insert new Main Grants.";
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
                 sql = File.ReadAllText(sqlPath + "\\AddChildGrants.sql");
 
                 Globals.Progress = "Insert new Child Grants.";
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
                 sql = File.ReadAllText(sqlPath + "\\RetireSrds.sql");
                 Globals.Progress = "Retire Srds.";
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
                 //Todo: write new routine to update socpen status
@@ -188,12 +186,12 @@ namespace Sassa.BRM.Services
             catch (Exception ex)
             {
                 Globals.Progress = $"{Globals.Progress} : {ex.Message}";
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
             }
             finally
             {
                 Globals.NextRefreshDate = DateTime.Now.AddDays(1);
-                JsonFileUtils.WriteJson(Globals, fileName);
+                _fu.WriteJson(Globals, fileName);
             }
         }
 

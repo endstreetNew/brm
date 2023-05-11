@@ -13,6 +13,7 @@ builder.Services.AddSingleton<RawSqlService>();
 //builder.Services.AddSingleton<IHostedService, TimedService>();
 builder.Services.AddSingleton<TimedService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<TimedService>());
+builder.Services.AddSingleton<JsonFileUtils>();
 
 var app = builder.Build();
 

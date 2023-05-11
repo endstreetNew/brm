@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject TimedService ts;
 @inject IConfiguration config;
+@inject JsonFileUtils fu;
 
 <PageTitle>Progress page</PageTitle>
 
@@ -29,7 +30,7 @@ Current Task:<span>@ts.Globals.Progress</span>
     TimeOnly Scheduletime { get; set; } = TimeOnly.FromDateTime(DateTime.Now);
     protected override void OnInitialized()
     {
-        ts.Globals = JsonFileUtils.ReadJson<TimedService.GlobalVars>(ts.fileName);
+        ts.Globals = fu.ReadJson<TimedService.GlobalVars>(ts.fileName);
         if(ts.Globals.Status)
         {
             ts.Start();
@@ -40,7 +41,7 @@ Current Task:<span>@ts.Globals.Progress</span>
         ts.Globals.Status = !ts.Globals.Status;
         ts.Globals.NextRefreshDate = new DateTime(ts.Globals.NextRefreshDate.Year, ts.Globals.NextRefreshDate.Month, ts.Globals.NextRefreshDate.Day, Scheduletime.Hour, Scheduletime.Minute, 0);
         ts.Globals.NextRefreshTime = Scheduletime;
-        JsonFileUtils.WriteJson(ts.Globals,ts.fileName);
+        fu.WriteJson(ts.Globals,ts.fileName);
         if (ts.Globals.Status)
         {
             ts.Start();
