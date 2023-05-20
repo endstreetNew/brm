@@ -39,6 +39,7 @@ namespace Sassa.BRM.Services
             connectionString = _config.GetConnectionString("CsConnection");
             _context = context;
             imagePath = $"{_env.WebRootPath}\\{config.GetValue<string>("Folders:CS")}\\";
+            //new System.ServiceModel.EndpointAddress("http://ssvsprdsphc01.sassa.local:18080/cws/services/Authentication");
         }
         /// <summary>
         /// CS Webservice authentication
@@ -49,6 +50,7 @@ namespace Sassa.BRM.Services
             try
             {
                 ota = new Sassa.eDocs.CSDocuments.OTAuthentication();
+                //authClient.Endpoint = new System.ServiceModel.EndpointAddress("http://ssvsprdsphc01.sassa.local:18080/cws/services/Authentication");
                 ota.AuthenticationToken = await authClient.AuthenticateUserAsync(username, password);
             }
             catch(Exception ex)
@@ -60,7 +62,7 @@ namespace Sassa.BRM.Services
                 await authClient.CloseAsync();
             }
         }
-
+         
         public async Task GetCSDocuments(string _idNumber)
         {
             idNumber = _idNumber;

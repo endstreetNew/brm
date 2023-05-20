@@ -962,7 +962,7 @@ namespace Sassa.BRM.Services
                 await SyncPicklistFromItems(item.UnqPicklist, "Returned");
             }
 
-            //Send tdw email with csf of returned files for LC boxes.
+            //Send tdw email with csv of returned files for LC boxes.
             if (sendTDWMail)
             {
                 await SendTDWReturnedMail(boxNo);
@@ -1013,6 +1013,51 @@ namespace Sassa.BRM.Services
             {
                 //ignore confirmation errors
             }
+        }
+
+        public async Task SendTDWBulkReturnedMail(int tdwBatchNo)
+        {
+            //List<TDWRequestMain> tpl = new List<TDWRequestMain>();
+            //List<DcFile> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
+            //TDWRequestMain TdwFormat;
+            //foreach (DcFile parent in parentlist)
+            //{
+            //    TdwFormat = new TDWRequestMain
+            //    {
+            //        BRM_No = parent.BrmBarcode,
+            //        CLM_No = parent.UnqFileNo,
+            //        Folder_ID = parent.UnqFileNo,
+            //        Grant_Type = parent.GrantType,
+            //        Firstname = parent.UserFirstname,
+            //        Surname = parent.UserLastname,
+            //        ID_Number = parent.ApplicantNo,
+            //        Year = parent.UpdatedDate.Value.ToString("YYYY"),
+            //        Location = parent.TdwBoxno,
+            //        Reg = parent.RegType,
+            //        //Bin  = parent. ,
+            //        Box = parent.MiniBoxno.ToString(),
+            //        //Pos  = parent. ,
+            //        UserPicked = ""
+            //    };
+            //    tpl.Add(TdwFormat);
+
+            //}
+            //string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+            ////attachment list
+            //List<string> files = new List<string>();
+            ////write attachments for manual download/add to mail
+            //File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+            //files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+            ////send mail to TDW
+            //try
+            //{
+            //    //if (!Environment.MachineName.ToLower().Contains("prod")) return;
+            //    _mail.SendTDWIncoming(session, boxNo, files);
+            //}
+            //catch
+            //{
+            //    //ignore confirmation errors
+            //}
         }
 
         public async Task<DcFile> GetReboxCandidate(Reboxing rebox)

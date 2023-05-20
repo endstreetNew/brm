@@ -40,15 +40,23 @@
             TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
             if (delayTime.Ticks < 0 && schedule == null)//Overdue
             {
-                schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-                return Task.CompletedTask;
+                //schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+                //return Task.CompletedTask;
+                delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
             }
             Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
             if (schedule == null)
             {
+                Globals.Progress = $"Sceduling.  delay - {delayTime}";
+                _fu.WriteJson(Globals, fileName);
                 schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             }
             return Task.CompletedTask;
+        }
+
+        public void Run()
+        {
+            SyncSOCPEN(null);
         }
         /// <summary>
         /// Autostart
@@ -57,20 +65,20 @@
         /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+            //TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
             if (Globals.Status)
             {
-                if (delayTime.Ticks < 0)//Overdue
-                {
-                    schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-                    return Task.CompletedTask;
-                }
+                //if (delayTime.Ticks < 0)//Overdue
+                //{
+                //    SyncSOCPEN(stoppingToken);
+                //}
+                
             }
             else
             {
                 Globals.Progress = $"Stopped";
             }
-            return Task.CompletedTask;
+            return Start();
         }
 
 
@@ -133,17 +141,6 @@
                 _fu.WriteJson(Globals, fileName);
                 await _raw.ExecuteNonQuery(sql);
 
-                //Todo: write new routine to update socpen status
-
-                //sql = @"update dc_socpen a
-                //set a.status_code = (select b.status_code from vw_grant_applications b where b.adabas_isn_main = a.adabas_isn_main)
-                //WHERE a.adabas_isn_main is not null";
-
-                //Globals.Progress = "Sync Status.";
-                //JsonFileUtils.WriteJson(Globals, fileName);
-                //await _raw.ExecuteNonQuery(sql);
-
-
 
                 //sql = $@"UPDATE
                 //    (SELECT DC_SOCPEN.LOCALOFFICE_ID as OLD, DC_FILE.OFFICE_ID as NEW
@@ -170,17 +167,7 @@
                 //Update Status from Trelational
 
                 Globals.Progress = "Done.";
-                //string message = $"'text':'BRM {DateTime.Now.ToShortTimeString()}: Socpen data from TRelational sucessfully refreshed.'";
-                //using (var httpClient = new HttpClient())
-                //{
-                //    using (var request = new HttpRequestMessage(new HttpMethod("POST"), SassaTeamsUrl))
-                //    {
-                //        request.Content = new StringContent($"{message}");
-                //        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 
-                //        var response = await httpClient.SendAsync(request);
-                //    }
-                //}
 
             }
             catch (Exception ex)

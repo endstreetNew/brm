@@ -14,10 +14,12 @@
         <div class="input-group-prepend"><span class="input-group-text">Next Update :</span></div>
         <input @bind=ts.Globals.NextRefreshDate class="form-control" type="date" />
         <input class="form-control" type="time" @bind=Scheduletime />
+        <button type="button" class="btn btn-primary btn-sm form-control" @onclick="@(() => Start_Click())">@(ts.Globals.Status ? "Stop" : "Start")</button>
+        <button type="button" class="btn btn-primary btn-sm form-control" @onclick="@(() => Run_Click())">Run Once</button>
     </div>
 </div>
 
-<button type="button" class="btn btn-primary btn-sm form-control" @onclick="@(() => Start_Click())">@(ts.Globals.Status ? "Stop" : "Start")</button>
+
 
 Last update :<span>@ts.Globals.LastRunDate.ToString()</span>
 Current Task:<span>@ts.Globals.Progress</span>
@@ -36,20 +38,13 @@ Current Task:<span>@ts.Globals.Progress</span>
             ts.Start();
         }
     }
+    protected void Run_Click()
+    {
+        ts.Run();
+    }
     protected void Start_Click()
     {
-        ts.Globals.Status = !ts.Globals.Status;
-        ts.Globals.NextRefreshDate = new DateTime(ts.Globals.NextRefreshDate.Year, ts.Globals.NextRefreshDate.Month, ts.Globals.NextRefreshDate.Day, Scheduletime.Hour, Scheduletime.Minute, 0);
-        ts.Globals.NextRefreshTime = Scheduletime;
-        fu.WriteJson(ts.Globals,ts.fileName);
-        if (ts.Globals.Status)
-        {
-            ts.Start();
-        }
-        else
-        {
-            ts.StopAsync(CancellationToken.None);
-        }
+        ts.Start();
     }
 
 

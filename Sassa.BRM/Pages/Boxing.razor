@@ -20,6 +20,9 @@
     <TabPage Text="Re-Boxing" Id="3" Enabled="@(db.session.Office.OfficeType != "LO")">
         <ReboxTab boxNo="@boxNo"></ReboxTab>
     </TabPage>
+    <TabPage Text="TDW Dispatch" Id="4" Enabled="@(db.session.Office.OfficeType != "LO")">
+        <TdwBatch></TdwBatch>
+    </TabPage>
 </TabControl>
 
 

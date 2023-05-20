@@ -35,6 +35,7 @@
 	  <Watch Remove="Pages\Admin\ServicePointAdmin.razor" />
 	  <Watch Remove="Pages\Components\BoxStatus.razor" />
 	  <Watch Remove="Pages\Components\BoxTransport.razor" />
+	  <Watch Remove="Pages\Components\TdwBatch.razor" />
 	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
 	  <Watch Remove="Pages\Modals\ManualCapture.razor" />
 	  <Watch Remove="Pages\Print\BoxTransportCover.razor" />

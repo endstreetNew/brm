@@ -14,169 +14,20 @@
 {
     <div class="whiteArea col">
         <div class="row">
-            <div class="whiteArea col" style="float: left;">
-                <div class=row>
-                    <div class="col">
-                        <span style="float: left;">
-                            <img src="images/scanbox.jpg" />
-                        </span>
-                    </div>
-                    <div class="col">
-                        <div>
-                            <h4>Re-boxing [@rebox.BoxNo]</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <BoxStatus rebox="@rebox"></BoxStatus>
-@*                           <div class="input-group mb-3">
-                            <span class="input-group-text" style="width: 180px;">TDW Box Number</span>
-                            <input type="text" class="form-control" @bind-value="@boxNo" disabled="@(loaded)">
-                            <button class="btn btn-primary active" Text="Load" @onclick="btnLoadBox_Click">Load </button>
-                        </div>*@
-                    </div>
-                    <div class="col-2">
-                        <button class="btn btn-primary active float-right" Text="Load" @onclick="btnLoadBox_Click">Load </button>
-
-@*                                                  <div class="input-group mb-3">
-                            <span class="input-group-text" style="width: 180px;">Mini Box Number</span>
-                            <input type="number" class="form-control" @bind-value="@rebox.MiniBox" min="1" max="4">
-                            </div>*@
-                    </div>
-                 </div>
-                 <div class="row">
-                     <div class="col">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" style="width: 180px;">Registry Type</span>
-                            <select class="form-select" value="@rebox.SelectedType" @onchange="@(e => RegTypeChange(e))" disabled="@(!loaded)">
-                                <option value="" selected>select...</option>
-                                @foreach (var val in db.GetBoxTypes("N"))
-                                {
-
-                                <option value="@val.Key">@val.Value</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
-                 </div>
-                 <div class="row">
-                    <div class="col">
-                            <div class="input-group mb-3" hidden="@transferHidden">
-                                <span class="input-group-text" style="width: 180px;">Transfer To</span>
-                                <select class="form-select" @bind="@rebox.ToRegionId">
-                                    @foreach (var val in db.GetBoxTypes("Y"))
-                                    {
-                                    <option value="@val.Key">@val.Value</option>
-                                    }
-                                </select>
-                            </div>
-                      </div>
-                  </div>
-@*                 <div class="row"> 
-                    <div class="col">
-                        <div class="input-group mb-3" hidden="@archiveHidden">
-                            <span class="input-group-text" style="width: 180px;">Archive Year</span>
-                            <select class="form-select" @bind="@rebox.ArchiveYear">
-                                @foreach (var val in db.GetYearList())
-                                {
-                                <option value="@val.Key">@val.Value</option>
-                                }
-                            </select>
-                        </div>
-
-                    </div>
-                </div>*@
-                <div class="row">
-                    <div class="col">
-                        <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add file to box.</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
-                            <input type="text" @ref="brmInput" @bind-value="@rebox.BrmBarcode" @onkeyup="@AddEnter" class="form-control" disabled="@(!loaded)">
-                            <button ID="btnAddFileToBox" class="btn btn-primary active" @onclick="btnAddFile_Click">Add File</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Remove file.</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" style="width: 180px;">BRM Barcode</span>
-                            <input type="text" @bind-value="@RemoveBarcode" class="form-control" disabled="@(!loaded)">
-                            <button  class="btn btn-primary active" @onclick="btnRemoveFile_Click">Remove</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="container goldArea">
-                    <div class="row">
-                        <div class="col">
-                            <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add MIS files to box.</label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" style="width: 180px;">MIS File Number</span>
-                                <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.MisFileNo" class="form-control" disabled="@(!loaded)">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" style="width: 180px;">New Barcode</span>
-                                <input type="text" class="form-control" @bind-value="@rebox.NewBarcode" disabled="@(!loaded)">
-                                <button class="btn btn-primary active" @onclick="btnAddMISFile_Click">Add MIS File</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="container greenArea">
-                    <div class="row">
-                        <div class="col">
-                            <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add Batch to box.</label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" style="width: 180px;">Batch No</span>
-                                <input type="text" ID="txtMISFileToRebox" @bind-value="@rebox.BatchNo" class="form-control" disabled="@(!loaded)">
-                                <button class="btn btn-primary active" @onclick="btnAddBatch_Click">Add Batch</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @*Right Side*@
             <div class="whiteArea col">
                 @if (boxfiles.result.Any())
                 {
                     <div class="row">
-                        <div style="float: right;">
+                        <div>
                     @if (showConfirmLock)
                     {
-                        <Confirmation Title="Confirm Lock box" Message="You are about to finally lock this box! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
+                        <Confirmation Title="Confirm Lock box" Message="You are about to lock and dispatch this batch! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
                     }
-                            <div class="input-group mb-3">
-                        <button type="button"  class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(boxfiles.count<1)">
-                            Print BoxCover (@(
-                            boxfiles.count
-                            ))</button>
-                                <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrintCovers_Click(false))" disabled="@(boxfiles.count<1)">Print All Covers</button>
-                                <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick:stopPropagation=true @onclick ="@(() => btnPrintCovers_Click(true))" disabled="@(boxfiles.count<1)">Print Unscanned Covers</button>
-                                <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
-                            </div>
-                        </div>
+                     <div class="input-group mb-3">
+                        <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
                     </div>
+                </div>
+            </div>
                     <div class="row">
                         <div class="col float-left">
                             <h5>Box Items</h5>
