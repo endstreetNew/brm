@@ -36,7 +36,7 @@
 
         public Task Start()
         {
-
+            
             TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
             if (delayTime.Ticks < 0 && schedule == null)//Overdue
             {
@@ -45,9 +45,11 @@
                 delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
             }
             Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
+            _fu.WriteJson(Globals, fileName);
             if (schedule == null)
             {
                 Globals.Progress = $"Sceduling.  delay - {delayTime}";
+                Globals.Status = true;
                 _fu.WriteJson(Globals, fileName);
                 schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             }
@@ -109,6 +111,8 @@
 
         private async void SyncSOCPEN(object? state)
         {
+            if (!Globals.Status) return;
+            Globals.Status = false;
             string sql = "";
             Globals.LastRunDate = DateTime.Now;
             Globals.Progress = "Starting.";
@@ -166,9 +170,8 @@
 
                 //Update Status from Trelational
 
-                Globals.Progress = "Done.";
-
-
+                
+                Globals.Status = true;//Continue running after scheduled run
             }
             catch (Exception ex)
             {
@@ -178,6 +181,7 @@
             finally
             {
                 Globals.NextRefreshDate = DateTime.Now.AddDays(1);
+                Globals.Progress = "Done.";
                 _fu.WriteJson(Globals, fileName);
             }
         }
