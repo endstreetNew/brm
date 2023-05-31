@@ -9,38 +9,19 @@
 
 @using System.Text
 @using System.IO;
+@using Sassa.BRM.Data.ViewModels;
 
 @if (rebox != null && db.session != null)
 {
     <div class="whiteArea col">
         <div class="row">
             <div class="whiteArea col">
-                @if (boxfiles.result.Any())
+                @if (boxfiles.count > 0)
                 {
                     <div class="row">
                         <div>
-                    @if (showConfirmLock)
-                    {
-                        <Confirmation Title="Confirm Lock box" Message="You are about to lock and dispatch this batch! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
-                    }
-                     <div class="input-group mb-3">
-                        <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
-                    </div>
-                </div>
-            </div>
-                    <div class="row">
-                        <div class="col float-left">
-                            <h5>Box Items</h5>
-                        </div>
-                        <div class="col float-right">
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control input-sm" placeholder="<Id/BRMBarcode>" @bind-value="@searchText" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary btn-sm active" @onclick="@(() => btnSearch_Click())">Search</button>
-                                </div>
-                                <div class="input-group-append">
-                                    <button class="btn btn-secondary btn-sm active" @onclick="@(() => btnClearSearch_Click())">Clear</button>
-                                </div>
+                             <div class="input-group mb-3">
+                                <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(!boxfiles.result.Where(b => b.IsSelected).Any())">Dispatch</button>
                             </div>
                         </div>
                     </div>
@@ -48,38 +29,72 @@
                         <table class="table table-sm" style="font-size:small;">
                             <thead>
                                 <tr>
-                                    <th scope="col">MiniBox No</th>
-                                    <th scope="col">Id No</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Clm No</th>
-                                    <th scope="col">Brm No</th>
-                                    <th scope="col">Scanned</th>
-                                    <th scope="col">Locked</th>
-                                    <th scope="col">Action</th>
+                                    <th scope="col">Select</th>
+                                    <th scope="col">Box No</th>
+                                    <th scope="col">MiniBoxes</th>
+                                    <th scope="col">Files</th>
+                                    <th scope="col">Region</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (ReboxListItem p in boxfiles.result)
+                                @foreach (TdwBatchViewModel p in boxfiles.result)
                                 {
                                     <tr>
-                                        <td>@p.MiniBox</td>
-                                        <td>@p.IdNo</td>
-                                        <td>@p.FullName</td>
-                                        <td>@p.ClmNo</td>
-                                        <td>@p.BrmNo</td>
                                         <td>
-                                        <span class="@(p.Scanned ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
+                                            <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+                                                <input type="checkbox" @bind="@p.IsSelected" />
+                                            </div>
                                         </td>
-                                        <td>
-                                        <span class="@(p.BoxLocked ? "oi oi-check" : "oi oi-x")" aria-hidden="true"></span>
-                                        </td>
-                                    <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{NavigationM.BaseUri}/coversheet/{p.BrmNo}")">View Cover</NavLink></td>
+                                        <td>@p.BoxNo</td>
+                                        <td>@p.MiniBoxes</td>
+                                        <td>@p.Files</td>
+                                        <td>@p.Region</td>
+
                                     </tr>
                                 }
                             </tbody>
                         </table>
                         <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
                     </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col">
+                            <h5>No Closed Boxes ready for dispatch.</h5>
+                        </div>
+                    </div>
+                    @if (batchedfiles.count > 0)
+                    {
+                        <div class="row">
+                            <table class="table table-sm" style="font-size:small;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Box No</th>
+                                        <th scope="col">MiniBoxes</th>
+                                        <th scope="col">Files</th>
+                                        <th scope="col">Region</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TdwBatchViewModel p in boxfiles.result)
+                                    {
+                                        <tr>
+                                            <td>@p.User</td>
+                                            <td>@p.BoxNo</td>
+                                            <td>@p.MiniBoxes</td>
+                                            <td>@p.Files</td>
+                                            <td>@p.Region</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
+                        </div>
+                    }
                 }
             </div>
         </div>
@@ -101,11 +116,9 @@
     protected Reboxing rebox = new Reboxing();
     bool loaded = false;
 
-    PagedResult<ReboxListItem> boxfiles = new PagedResult<ReboxListItem>();
+    PagedResult<TdwBatchViewModel> boxfiles = new PagedResult<TdwBatchViewModel>();
+    PagedResult<TdwBatchViewModel> batchedfiles = new PagedResult<TdwBatchViewModel>();
 
-    bool transferHidden = true;
-    bool archiveHidden = true;
-    bool showConfirmLock = false;
 
     int page;
 
@@ -114,333 +127,27 @@
     {
 
         page = 1;
-        db.session.BookMark.BoxingTab = 3;
-        if (!string.IsNullOrEmpty(boxNo))
-        {
-            rebox.BoxNo = boxNo.ToUpper().Trim(); 
-            await btnLoadBox_Click();
-        }
-    }
-
-    protected async Task btnLoadBox_Click()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(rebox.BoxNo))
-            {
-                throw new Exception($"Invalid Box No: {rebox.BoxNo}.");
-            }
-            if (!loaded)
-            {
-                rebox.BoxNo = rebox.BoxNo.ToUpper().Trim();
-                await OnPaged(page);
-                //Todo: fix field in db
-                rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
-                BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
-                //rebox.RegType = "";
-                //rebox.BoxNo = boxNo;
-                loaded = !BoxLocked;
-                if (boxfiles.count > 0)
-                {
-                    rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
-                    rebox.RegType = boxfiles.result.First().RegType;
-                }
-                else
-                {
-                    toast.Warn("Box not found (Creating new box).");
-                }
-                await Task.Delay(100);
-                StateHasChanged();
-                return;
-            }
-            loaded = false;
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-
-    }
-
-    protected async Task btnSearch_Click()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(searchText)) throw new Exception("Nothing to search.");
-            boxfiles = await db.SearchBox(rebox.BoxNo, page, searchText);
-            //await Task.Delay(100);
-            //StateHasChanged();
-
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-
-    }
-    protected async Task btnClearSearch_Click()
-    {
-
-        searchText = "";
-        loaded = false;
-        await btnLoadBox_Click();
-
-    }
-
-    public async Task AddEnter(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "NumpadEnter" || rebox.BrmBarcode.Trim().Length >= 8)
-        {
-            await btnAddFile_Click();
-        }
-    }
-
-    protected async Task btnAddFile_Click()
-    {
-        try
-        {
-            rebox.BrmBarcode = rebox.BrmBarcode.ToUpper().Trim();
-            if (string.IsNullOrEmpty(rebox.BrmBarcode) || rebox.BrmBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
-            if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
-            rebox.MisFileNo = string.Empty;
-            rebox.NewBarcode = string.Empty;
-            await AddFile();
-            //boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
-            await brmInput.FocusAsync();
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-    }
-
-    protected async Task btnRemoveFile_Click()
-    {
-        try
-        {
-            RemoveBarcode = RemoveBarcode.ToUpper().Trim();
-            if (string.IsNullOrEmpty(RemoveBarcode) || RemoveBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            await db.RemoveFileFromBox(RemoveBarcode);
-            await OnPaged( page);
-            await brmInput.FocusAsync();
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-    }
-
-    protected async Task btnAddMISFile_Click()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(rebox.MisFileNo.Trim()) || rebox.MisFileNo.Trim().Length > 11 || rebox.MisFileNo.Trim().Length < 9) throw new Exception("Invalid MIS File Number");
-            if (string.IsNullOrEmpty(rebox.NewBarcode.Trim()) || rebox.NewBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
-            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
-            if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
-            rebox.BrmBarcode = string.Empty;
-            DcFile file = await AddFile();
-            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"File Created from MIS {rebox.MisFileNo.Trim()}", file.UnqFileNo);
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"Error from MIS {rebox.MisFileNo.Trim()} :" + ex.Message.Substring(0,200), "");
-        }
-    }
-
-    protected async Task btnAddBatch_Click()
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(rebox.BatchNo)) throw new Exception("Invalid BatchNo");
-            if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
-            if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
-
-            await AddBatch();
-
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-    }
-
-    protected async Task<DcFile> AddFile()
-    {
-        try
-        {
-            // if (boxfiles.count > 149) throw new Exception($"Too many files, Maximun allowed: 150.");
-            rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
-            return await Rebox(rebox);
-
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-            throw;
-        }
-
-    }
-
-    protected async Task AddBatch()
-    {
-        try
-        {
-            List<string> barcodes = await db.GetBatchBarcodes(rebox.BatchNo);
-            //if (boxfiles.count + barcodes.Count() > 150) throw new Exception($"Too many files for this box result: {boxfiles.count + barcodes.Count()} Maximun allowed: 150.");
-            rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
-            rebox.MisFileNo = string.Empty;
-            rebox.NewBarcode = string.Empty;
-            foreach (string brmBarCode in barcodes)
-            {
-                rebox.BrmBarcode = brmBarCode;
-                await Rebox(rebox);
-            }
-            toast.Success("Batch No " + rebox.BatchNo + " added to TDW box " + rebox.BoxNo + ".");
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-    }
-
-    protected void RegTypeChange(ChangeEventArgs e)
-    {
-
-        if (string.IsNullOrEmpty((string)e.Value)) return;
-        rebox.SelectedType = (string)e.Value;
-        transferHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Transfer");
-        archiveHidden = !(db.GetBoxTypes()[rebox.SelectedType]).Contains("Archive");
-        if (!string.IsNullOrEmpty(rebox.RegType))
-        {
-            toast.Warn($"Box only accepts {(rebox.RegType.Contains("LC") ? "LC" :rebox.RegType)}");
-        }
-    }
-
-    protected void btnPrint_Click()
-    {
-
-        Navigate.NavigateTo($"reboxcover/{rebox.BoxNo}/{rebox.AltBoxNo}");
-
-    }
-
-    protected void btnLock_Click()
-    {
-        showConfirmLock = true;
-    }
-
-    protected async Task btnPrintCovers_Click(bool NotScanned)
-    {
-        try
-        {
-            List<RequiredDocsView> docs;
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(BulkPrint.Header());
-
-            List<ReboxListItem> sheets  = await db.GetAllFilesByBoxNo(rebox.BoxNo,NotScanned);
-
-            foreach (var rebox in sheets)
-            {
-                DcFile file = await db.GetBRMRecord(rebox.BrmNo);
-
-                docs = db.GetGrantDocuments(file.GrantType);
-                string lcType = null;
-                if (file.Lctype != null && file.Lctype > 0) lcType = db.GetLcType((decimal)file.Lctype);
-                sb.Append(BulkPrint.CreateFileCover(file, db.GetGrantType(file.GrantType), db.GetRegion(file.RegionId), NavigationM.BaseUri, lcType, docs));
-            }
-
-            sb.Append(BulkPrint.Footer());
-            toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
-
-            await rd.SaveHtmlReport(sb.ToString(), db.GetFileName($"Box_{rebox.BoxNo}"));
-            //await File.WriteAllTextAsync("brmFiles\\test", "Test.html");
-
-
-            //toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
-
-        }
-        catch (Exception ex)
-        {
-            toast.Error($"Box :{rebox.BoxNo} Coversheets error.");
-
-        }
-        //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}", "_blank");
-    }
-
-    //protected void SaveToPdf()
-    //{
-    //    string FileName = db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + "Batch_" + rebox.BoxNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-    //    pdf.SavePage($"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}",FileName);
-    //}
-
-    public async Task<DcFile> Rebox(Reboxing rebox)
-    {
-
-        DcFile file = await db.GetReboxCandidate(rebox);
-
-        if (boxfiles.count > 0)
-        {
-            if(file.IsPreservedType)
-            {
-                if ((rebox.RegType.Contains("LC") && !file.ApplicationStatus.Contains("LC")) || (!rebox.RegType.Contains("LC") && file.ApplicationStatus.Contains("LC")))
-                {
-                    throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
-                    //if (rebox.RegType != file.ApplicationStatus)
-                    //{
-                    //    throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
-                    //}
-                }
-            }
-        }
-
-        if (boxfiles.count == 0)
-        {
-            rebox.AltBoxNo = await db.GetNexRegionAltBoxSequence();
-        }
-
-
-
-        file.PrintOrder = boxfiles.count;
-        await db.Rebox(rebox, file);
-        if (string.IsNullOrEmpty(rebox.BatchNo))
-        {
-            string scanState = file.ScanDatetime == null ? "Not Scanned" : "Scanned";
-            toast.Success($"BRM# {rebox.BrmBarcode} added to TDW box {rebox.BoxNo}. ({scanState})");
-            //rebox.RegType = file.ApplicationStatus.Trim("LC-".ToCharArray());
-        }
-        rebox.BrmBarcode = string.Empty;
-        rebox.MisFileNo = string.Empty;
-        rebox.NewBarcode = string.Empty;
+        db.session.BookMark.BoxingTab = 4;
         await OnPaged(page);
-        return file;
+
+
     }
+
+    protected async Task btnPrint_Click()
+    {
+        int tdwBatch = await db.CreateTdwBatch(boxfiles.result.Where(b => b.IsSelected).ToList());
+        Navigate.NavigateTo($"tdwbatchcover/{tdwBatch}");
+    }
+
 
     protected async Task OnPaged(int _page)
     {
         page = _page;
-        boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
-        rebox = await db.GetBoxCounts(rebox);
+        boxfiles = await db.GetAllBoxes(page);
+        if(!boxfiles.result.Any())
+        {
+            batchedfiles = await db.GetAllBoxes(page,true);
+        }
     }
 
-    private async Task ConfirmLock()
-    {
-        showConfirmLock = false;
-        BoxLocked = true;
-        await db.LockBox(rebox.BoxNo);
-        await db.SetBulkReturned(rebox.BoxNo,rebox.RegType.Contains("LC"));
-        loaded = false;
-        await btnLoadBox_Click();
-        //boxfiles = new PagedResult<ReboxListItem>();
-        //rebox = new Reboxing();
-    }
-
-    private void CancelLock()
-    {
-        showConfirmLock = false;
-        StateHasChanged();
-    }
 }

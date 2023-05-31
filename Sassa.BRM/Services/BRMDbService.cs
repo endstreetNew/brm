@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DocumentFormat.OpenXml.VariantTypes;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
+using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
+using Sassa.BRM.Pages.Components;
 using Sassa.BRM.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -14,6 +17,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace Sassa.BRM.Services
 {
@@ -574,18 +578,6 @@ namespace Sassa.BRM.Services
             //return _context.DcFiles.Where(k => k.BrmBarcode.ToLower() == brmno.ToLower()).Any();
         }
 
-        public async Task RemoveDuplicate(Application brm, string reason)
-        {
-            //CR:P1612 Delete anyways
-            //var query = _context.TdwFileLocations.Where(t => t.FilefolderCode == brm.Brm_BarCode);
-            //if (await query.AnyAsync())
-            //{
-            //    throw new Exception("Cant delete : Existing TDW record");
-            //}
-
-            //Removes All duplictes
-            await RemoveBRM(brm.Brm_BarCode, reason);
-        }
 
         public async Task EditBarCode(Application brm, string barCode)
         {
@@ -633,7 +625,8 @@ namespace Sassa.BRM.Services
                 TdwBoxno = application.TDW_BOXNO,
                 MiniBoxno = application.MiniBox,
                 FileComment = reason,
-                UpdatedByAd = session.SamName
+                UpdatedByAd = session.SamName,
+                TdwBatch = 0
             };
             _context.ChangeTracker.Clear();
             _context.DcFiles.Add(file);
@@ -682,6 +675,10 @@ namespace Sassa.BRM.Services
             {
                 srd = null;
             }
+            //Remove existing Barcode for this id/grant
+            _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
+            await _context.SaveChangesAsync();
+
             var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
             if(result.Any())
             {
@@ -713,6 +710,7 @@ namespace Sassa.BRM.Services
                 dc_socpen.RegionId = session.Office.RegionId;
                 dc_socpen.LocalofficeId = session.Office.OfficeId;
                 dc_socpen.Documents = file.DocsPresent;
+
 
                 _context.DcSocpen.Add(dc_socpen);
             }
@@ -804,9 +802,47 @@ namespace Sassa.BRM.Services
                             AltBoxNo = f.AltBoxNo,
                             Scanned = f.ScanDatetime != null,
                             MiniBox = (int?)f.MiniBoxno,
-                            BoxLocked = f.BoxLocked == null || f.BoxLocked == 0 ? false : true,
-                            RegType = f.ApplicationStatus
+                            RegType = f.ApplicationStatus,
+                            TdwBatch = (int)f.TdwBatch
                         }).ToListAsync();
+            return result;
+        }
+
+        public async Task<PagedResult<TdwBatchViewModel>> GetAllBoxes(int page,bool batched = false)
+        {
+
+            PagedResult<TdwBatchViewModel> result = new PagedResult<TdwBatchViewModel>();
+            List<DcFile> dcFiles;
+            if (batched)
+            {
+                result.count = _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Count();
+                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+            }
+            else
+            {
+                result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Count();
+                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+            }
+            var boxes = dcFiles.GroupBy(t => t.TdwBoxno)
+                   .Select(grp => grp.First())
+                   .ToList();
+
+                foreach(var box in boxes)
+                {
+                    result.result.Add(
+                        new TdwBatchViewModel
+                        {
+                            BoxNo = box.TdwBoxNo,
+                            Region = GetRegion(box.RegionId),
+                            MiniBoxes = (int)dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.MiniBoxno),
+                            Files = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Count(),
+                            User = _session.SamName,
+                            TdwSendDate = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatchDate)
+
+                        });
+
+                }
+
             return result;
         }
 
@@ -832,7 +868,7 @@ namespace Sassa.BRM.Services
                             AltBoxNo = f.AltBoxNo,
                             Scanned = f.ScanDatetime != null,
                             MiniBox = (int?)f.MiniBoxno,
-                            BoxLocked = f.BoxLocked == null || f.BoxLocked == 0 ? false : true
+                            TdwBatch = (int)f.TdwBatch
                         }).ToListAsync();
             return result;
         }
@@ -844,6 +880,22 @@ namespace Sassa.BRM.Services
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// TDW Bat submit reboxing change
+        /// </summary>
+        /// <param name="boxNo"></param>
+        /// <param name="IsOpen"></param>
+        /// <returns></returns>
+        public async Task<bool> OpenCloseBox(string boxNo,bool IsOpen)
+        {
+            int tdwBatch = IsOpen ? 1 : 0;
+
+            await _context.DcFiles.Where(b => b.TdwBoxno == boxNo).ForEachAsync(f => f.TdwBatch = tdwBatch);
+
+            await _context.SaveChangesAsync();
+
+            return !IsOpen;
+        }
         public async Task<bool> IsBoxLocked(string boxNo)
         {
             return await _context.DcFiles.Where(b => b.TdwBoxno == boxNo && b.BoxLocked == 1).AnyAsync();
@@ -1015,49 +1067,59 @@ namespace Sassa.BRM.Services
             }
         }
 
+        /// <summary>
+        /// New TDW Batch feature
+        /// </summary>
+        /// <param name="tdwBatchNo"></param>
+        /// <returns></returns>
         public async Task SendTDWBulkReturnedMail(int tdwBatchNo)
         {
-            //List<TDWRequestMain> tpl = new List<TDWRequestMain>();
-            //List<DcFile> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
-            //TDWRequestMain TdwFormat;
-            //foreach (DcFile parent in parentlist)
-            //{
-            //    TdwFormat = new TDWRequestMain
-            //    {
-            //        BRM_No = parent.BrmBarcode,
-            //        CLM_No = parent.UnqFileNo,
-            //        Folder_ID = parent.UnqFileNo,
-            //        Grant_Type = parent.GrantType,
-            //        Firstname = parent.UserFirstname,
-            //        Surname = parent.UserLastname,
-            //        ID_Number = parent.ApplicantNo,
-            //        Year = parent.UpdatedDate.Value.ToString("YYYY"),
-            //        Location = parent.TdwBoxno,
-            //        Reg = parent.RegType,
-            //        //Bin  = parent. ,
-            //        Box = parent.MiniBoxno.ToString(),
-            //        //Pos  = parent. ,
-            //        UserPicked = ""
-            //    };
-            //    tpl.Add(TdwFormat);
+            List<TDWRequestMain> tpl = new List<TDWRequestMain>();
+            List<DcFile> parentlist;
+            TDWRequestMain TdwFormat;
+            foreach (string boxNo in await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchNo).AsNoTracking().Select(b => b.TdwBoxno).Distinct().ToListAsync())
+            {
 
-            //}
-            //string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-            ////attachment list
-            //List<string> files = new List<string>();
-            ////write attachments for manual download/add to mail
-            //File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
-            //files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
-            ////send mail to TDW
-            //try
-            //{
-            //    //if (!Environment.MachineName.ToLower().Contains("prod")) return;
-            //    _mail.SendTDWIncoming(session, boxNo, files);
-            //}
-            //catch
-            //{
-            //    //ignore confirmation errors
-            //}
+                parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
+                foreach (DcFile parent in parentlist)
+                {
+                    TdwFormat = new TDWRequestMain
+                    {
+                        BRM_No = parent.BrmBarcode,
+                        CLM_No = parent.UnqFileNo,
+                        Folder_ID = parent.UnqFileNo,
+                        Grant_Type = parent.GrantType,
+                        Firstname = parent.UserFirstname,
+                        Surname = parent.UserLastname,
+                        ID_Number = parent.ApplicantNo,
+                        Year = parent.UpdatedDate.Value.ToString("YYYY"),
+                        Location = parent.TdwBoxno,
+                        Reg = parent.RegType,
+                        //Bin  = parent. ,
+                        Box = parent.MiniBoxno.ToString(),
+                        //Pos  = parent. ,
+                        UserPicked = ""
+                    };
+                    tpl.Add(TdwFormat);
+                }
+
+            }
+            string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBatch_{tdwBatchNo}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+            //attachment list
+            List<string> files = new List<string>();
+            //write attachments for manual download/add to mail
+            File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+            files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+            //send mail to TDW
+            try
+            {
+                //if (!Environment.MachineName.ToLower().Contains("prod")) return;
+                _mail.SendTDWIncoming(session, tdwBatchNo, files);
+            }
+            catch
+            {
+                //ignore confirmation errors
+            }
         }
 
         public async Task<DcFile> GetReboxCandidate(Reboxing rebox)
@@ -1180,58 +1242,59 @@ namespace Sassa.BRM.Services
         public async Task<string> GetNexRegionAltBoxSequence()
         {
             return session.Office.RegionCode + await _raw.GetNextAltbox(session.Office.RegionCode);
-            //var result = await _context.IdResults.FromSqlRaw($"select CAST(SEQ_DC_ALT_BOX_NO_{session.Office.RegionCode}.NEXTVAL AS NVARCHAR2(20)) from DUAL").FirstOrDefaultAsync();
-            //return $"{session.Office.RegionCode}" + result.IdString.Trim();
         }
-        //public decimal? GetNexPrintSequence(string boxno)
-        //{
-        //    var poqs = _context.DcFiles.Where(f => f.TdwBoxNo == boxno);
-        //    if (!poqs.Any())
-        //    {
-        //        return 1;
-        //    }
-        //    var poq = poqs.Select(f => f.PrintOrder).First().Value;
-        //    return poq++;
-        //}
 
-        //public async Task<string> UpdateFullBox(string boxno)
-        //{
-        //    string sAltBoxNo = "";
+        /// <summary>
+        /// Create TDW batch and send mail
+        /// </summary>
+        /// <param name="boxes"></param>
+        /// <returns></returns>
+        public async Task<int> CreateTdwBatch(List<TdwBatchViewModel> boxes)
+        {
+            int tdwBatch = await _raw.GetNextTdwBatch();
+            foreach (var box in boxes)
+            {
+                box.TdwSendDate = DateTime.Now;
+                box.TdwBatchNo = tdwBatch;
+                box.User = _session.SamName;
+                await _context.DcFiles.Where(f => f.TdwBoxno == box.BoxNo).ForEachAsync(f => f.TdwBatch = tdwBatch);
+            }
+            await _context.SaveChangesAsync();
+            await SendTDWBulkReturnedMail(tdwBatch);
+            return tdwBatch;
+        }
 
-        //    var y = await _context.DcFiles.Where(f => f.TdwBoxNo == boxno && !string.IsNullOrEmpty(f.AltBoxNo)).OrderByDescending(g => g.UpdatedDate).FirstOrDefaultAsync();
+        /// <summary>
+        /// Get TDW batch and send mail
+        /// </summary>
+        /// <param name="boxes"></param>
+        /// <returns></returns>
+        public async Task<List<TdwBatchViewModel>> GetTdwBatch(int tdwBatchno)
+        {
+            List<TdwBatchViewModel> boxes = new List<TdwBatchViewModel>();
+            var dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchno).AsNoTracking().ToListAsync();
 
-        //    if (y == null)
-        //    {
-        //        var x = await _context.DcFiles.Where(f => f.TdwBoxNo == boxno).OrderByDescending(g => g.UpdatedDate).FirstOrDefaultAsync();
-        //        if (x != null)
-        //        {
-        //            if (x.UnqFileNo.Substring(0, 3) == session.Office.RegionCode)
-        //            {
-        //                sAltBoxNo = await GetNexRegionAltBoxSequence();
-        //                x.AltBoxNo = sAltBoxNo;
-        //                x.UpdatedDate = DateTime.Now;
-        //                x.UpdatedByAd = session.SamName;
-        //                await _context.SaveChangesAsync();
-        //                CreateActivity("Reboxing", "Box Full Update");
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //if (y.UNQ_FILE_NO.Substring(0, 3) == y.ALT_BOX_NO.Substring(0, 3))//Compare file region
-        //        //{
-        //        sAltBoxNo = y.AltBoxNo;
-        //        //}
-        //    }
-        //    CreateActivity("Reboxing", "Print box Cover");
-        //    return sAltBoxNo;
+            var batchFiles = dcFiles.GroupBy(t => t.TdwBoxno)
+               .Select(grp => grp.First())
+               .ToList();
 
-        //}
+                foreach(var box in batchFiles)
+                {
+                    boxes.Add(
+                    new TdwBatchViewModel
+                    {
+                        BoxNo = box.TdwBoxNo,
+                        Region = GetRegion(box.RegionId),
+                        MiniBoxes = (int) dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.MiniBoxno),
+                        Files = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Count(),
+                        User = _session.SamName,
+                        TdwSendDate = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatchDate)
+                    });
 
-        //private class POResult
-        //{
-        //    public int? PO { get; set; }
-        //}
+                }
+                return boxes;
+        }
+
         #endregion
 
         #region File Requests
@@ -2368,7 +2431,7 @@ namespace Sassa.BRM.Services
         //    }
         //}
 
-        private async Task RemoveBRM(string brmNo, string reason)
+        public async Task RemoveBRM(string brmNo, string reason)
         {
 
             var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
@@ -2407,8 +2470,15 @@ namespace Sassa.BRM.Services
             file.UpdatedByAd = _session.SamName;
             file.UpdatedDate = System.DateTime.Now;
             removed.FromDCFile(file);
-            _context.DcFileDeleteds.Add(removed);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.DcFileDeleteds.Add(removed);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                //throw new Exception("Error backing up file: " + ex.Message);
+            }
         }
         #endregion
 
@@ -2802,16 +2872,21 @@ namespace Sassa.BRM.Services
 
         public async Task<Reboxing> GetBoxCounts(Reboxing rebox)
         {
-            rebox.BoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo);
-            if (rebox.BoxCount > 0)
+            var boxFiles = await _context.DcFiles.Where(f => f.TdwBoxno == rebox.BoxNo).ToListAsync();
+            if (boxFiles.Any())
             {
-                rebox.RegType = (await _context.DcFiles.Where(b => b.TdwBoxno == rebox.BoxNo).FirstAsync()).RegType;
+                rebox.BoxCount = boxFiles.Count();
+                rebox.RegType = boxFiles.First().RegType;
+                rebox.MiniBoxCount = boxFiles.Where(b => b.MiniBoxno == rebox.MiniBox).Count();
             }
             else
             {
+                rebox.BoxCount = 0;
                 rebox.RegType = null;
+                rebox.MiniBoxCount = 0;
             }
-            rebox.MiniBoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo && b.MiniBoxno == rebox.MiniBox);
+
+            //rebox.MiniBoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo && b.MiniBoxno == rebox.MiniBox);
 
             return rebox;
         }

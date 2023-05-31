@@ -43,3 +43,23 @@ Retire Srds. 11:26
 Done. 11:27
 Waiting schedule 2023/05/21 11:27:54 11:28
 Waiting schedule 2023/05/21 11:27:54 11:28
+Waiting schedule 2023/05/23 08:56:24 08:56
+Waiting schedule 2023/05/23 08:56:24 09:02
+Starting. 09:03
+Insert new SRDs. 09:03
+Insert new Main Grants. 09:03
+Insert new Child Grants. 09:05
+Retire Srds. 09:08
+Done. 09:08
+Waiting schedule 2023/05/24 09:08:35 12:49
+Waiting schedule 2023/05/24 09:08:35 12:54
+Starting. 12:54
+Insert new SRDs. 12:54
+Insert new Main Grants. 12:55
+Waiting schedule 2023/05/24 09:08:35 12:57
+Starting. 12:57
+Insert new SRDs. 12:57
+Insert new Main Grants. 12:57
+Insert new Main Grants. : ORA-00001: unique constraint (CONTENTSERVER.DC_SOCPEN_ID_GRANT) violated 12:58
+Waiting schedule 2023/05/30 12:58:51 13:01
+Waiting schedule 2023/05/30 12:58:51 13:01

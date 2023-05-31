@@ -11,8 +11,22 @@
         public string FullName { get; set; }
         public string GrantType { get; set; }
         public bool Scanned { get; set; }
-        public bool BoxLocked { get; set; }
+        public bool BoxLocked 
+        {
+            get
+            {
+                return TdwBatch > 1;
+            } 
+        }
+        public bool BoxOpen
+        {
+            get
+            {
+                return TdwBatch == 0;
+            }
+        }
         public string RegType { get; set; }
+        public int TdwBatch { get; set; }
 
     }
 }

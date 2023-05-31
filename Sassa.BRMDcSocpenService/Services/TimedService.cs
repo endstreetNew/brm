@@ -32,28 +32,32 @@
             sqlPath = Path.Combine(env.ContentRootPath, "sql");
             _raw = raw;
             _fu = fu;
+            Globals = fu.ReadJson<TimedService.GlobalVars>(fileName);
         }
 
-        public Task Start()
+        public async Task Start()
         {
-            
-            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
-            if (delayTime.Ticks < 0 && schedule == null)//Overdue
-            {
-                //schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-                //return Task.CompletedTask;
-                delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
-            }
-            Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
-            _fu.WriteJson(Globals, fileName);
             if (schedule == null)
             {
-                Globals.Progress = $"Sceduling.  delay - {delayTime}";
+                TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+                if (delayTime.Ticks < 0 && schedule == null)//Overdue
+                {
+                    //schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+                    //return Task.CompletedTask;
+                    delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
+                }
+                Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
                 Globals.Status = true;
                 _fu.WriteJson(Globals, fileName);
+                if(Globals.NextRefreshDate < DateTime.Now)
+                {
+                    await Task.Run(() => SyncSOCPEN(null));
+                    delayTime = Globals.NextRefreshDate - DateTime.Now;
+                    
+                }
                 schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             }
-            return Task.CompletedTask;
+            return;
         }
 
         public void Run()
@@ -67,47 +71,10 @@
         /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            //TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
-            if (Globals.Status)
-            {
-                //if (delayTime.Ticks < 0)//Overdue
-                //{
-                //    SyncSOCPEN(stoppingToken);
-                //}
-                
-            }
-            else
-            {
-                Globals.Progress = $"Stopped";
-            }
             return Start();
         }
 
 
-        //public Task StartAsync(CancellationToken stoppingToken)
-        //{
-
-        //    Globals.Progress = "Stopped.";
-        //    if (!Globals.Status) return Task.CompletedTask;
-        //    Globals.Progress = $"Waiting Schedule {Globals.NextRefreshTime}.";
-
-        //    try
-        //    {
-        //        long dueTime = (long)((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds - TimeOnly.FromDateTime(DateTime.Now).ToTimeSpan().TotalMilliseconds);
-        //        if (dueTime < 0)
-        //        {
-        //            dueTime = (long)(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(1).AddMilliseconds((long)Globals.NextRefreshTime.ToTimeSpan().TotalMilliseconds) - DateTime.Now).TotalMilliseconds;
-        //        }
-        //        JsonFileUtils.WriteJson(Globals, fileName);
-        //        schedule = new Timer(SyncSOCPEN, null, dueTime, (long)TimeSpan.FromHours(24).TotalMilliseconds);
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        Globals.Progress = "Invalid scedule. (Use todays Date and a startime after current time).";
-        //    }
-
-        //    return Task.CompletedTask;
-        //}
 
         private async void SyncSOCPEN(object? state)
         {
@@ -167,21 +134,17 @@
                 //Globals.Progress = "BarCode from dc file.";
                 //await _raw.ExecuteNonQuery(sql);
 
-
-                //Update Status from Trelational
-
-                
                 Globals.Status = true;//Continue running after scheduled run
+                Globals.Progress = "Done.";
             }
             catch (Exception ex)
             {
                 Globals.Progress = $"{Globals.Progress} : {ex.Message}";
-                _fu.WriteJson(Globals, fileName);
+                //_fu.WriteJson(Globals, fileName);
             }
             finally
             {
                 Globals.NextRefreshDate = DateTime.Now.AddDays(1);
-                Globals.Progress = "Done.";
                 _fu.WriteJson(Globals, fileName);
             }
         }

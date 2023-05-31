@@ -28,15 +28,10 @@ Current Task:<span>@ts.Globals.Progress</span>
 
 @code{
 
-
     TimeOnly Scheduletime { get; set; } = TimeOnly.FromDateTime(DateTime.Now);
     protected override void OnInitialized()
     {
-        ts.Globals = fu.ReadJson<TimedService.GlobalVars>(ts.fileName);
-        if(ts.Globals.Status)
-        {
-            ts.Start();
-        }
+
     }
     protected void Run_Click()
     {

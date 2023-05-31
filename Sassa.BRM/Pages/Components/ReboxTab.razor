@@ -162,10 +162,7 @@
                 {
                     <div class="row">
                         <div style="float: right;">
-                    @if (showConfirmLock)
-                    {
-                        <Confirmation Title="Confirm Lock box" Message="You are about to finally lock this box! Continue?" Cancel="CancelLock" Ok="ConfirmLock"></Confirmation>
-                    }
+
                             <div class="input-group mb-3">
                         <button type="button"  class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(boxfiles.count<1)">
                             Print BoxCover (@(
@@ -173,7 +170,7 @@
                             ))</button>
                                 <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrintCovers_Click(false))" disabled="@(boxfiles.count<1)">Print All Covers</button>
                                 <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick:stopPropagation=true @onclick ="@(() => btnPrintCovers_Click(true))" disabled="@(boxfiles.count<1)">Print Unscanned Covers</button>
-                                <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnLock_Click())" disabled="@(boxfiles.count<1 || BoxLocked)">Lock and Send to TDW</button>
+                                <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnOpenClose_Click())" disabled="@(boxfiles.count<1 || BoxLocked)"> @(BoxOpen ? "Close" : "Open") Box</button>
                             </div>
                         </div>
                     </div>
@@ -241,6 +238,7 @@
     public string boxNo { get; set; }
 
     protected bool BoxLocked;
+    protected bool BoxOpen;
     protected string RemoveBarcode;
 
     protected string searchText;
@@ -286,6 +284,7 @@
                 //Todo: fix field in db
                 rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
                 BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
+                BoxOpen = boxfiles.result.Where(r => r.TdwBatch == 0).Any();
                 //rebox.RegType = "";
                 //rebox.BoxNo = boxNo;
                 loaded = !BoxLocked;
@@ -475,10 +474,6 @@
 
     }
 
-    protected void btnLock_Click()
-    {
-        showConfirmLock = true;
-    }
 
     protected async Task btnPrintCovers_Click(bool NotScanned)
     {
@@ -506,10 +501,6 @@
             toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
 
             await rd.SaveHtmlReport(sb.ToString(), db.GetFileName($"Box_{rebox.BoxNo}"));
-            //await File.WriteAllTextAsync("brmFiles\\test", "Test.html");
-
-
-            //toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
 
         }
         catch (Exception ex)
@@ -520,11 +511,6 @@
         //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}", "_blank");
     }
 
-    //protected void SaveToPdf()
-    //{
-    //    string FileName = db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + "Batch_" + rebox.BoxNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-    //    pdf.SavePage($"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}",FileName);
-    //}
 
     public async Task<DcFile> Rebox(Reboxing rebox)
     {
@@ -575,21 +561,10 @@
         rebox = await db.GetBoxCounts(rebox);
     }
 
-    private async Task ConfirmLock()
+    private async Task btnOpenClose_Click()
     {
-        showConfirmLock = false;
-        BoxLocked = true;
-        await db.LockBox(rebox.BoxNo);
-        await db.SetBulkReturned(rebox.BoxNo,rebox.RegType.Contains("LC"));
-        loaded = false;
-        await btnLoadBox_Click();
-        //boxfiles = new PagedResult<ReboxListItem>();
-        //rebox = new Reboxing();
-    }
-
-    private void CancelLock()
-    {
-        showConfirmLock = false;
-        StateHasChanged();
+        //BoxOpen: box is open and files can be added TdwBatch 0 for Open 1 for Closed > 1 for locked
+        BoxOpen = await db.OpenCloseBox(rebox.BoxNo, BoxOpen);
+        boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
     }
 }

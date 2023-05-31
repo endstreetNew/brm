@@ -56,6 +56,8 @@ namespace Sassa.BRM.Models
         public decimal? MiniBoxno { get; set; }
         public decimal? BoxLocked { get; set; }
         public decimal? FspId { get; set; }
+        public decimal TdwBatch { get; set; }
+        public DateTime? TdwBatchDate { get; set; }
 
         public virtual DcBatch BatchNoNavigation { get; set; }
         public virtual DcGrantType GrantTypeNavigation { get; set; }

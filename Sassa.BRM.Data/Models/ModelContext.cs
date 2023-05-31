@@ -757,6 +757,8 @@ namespace Sassa.BRM.Models
 
                 entity.HasIndex(e => e.ApplicantNo, "INDEX7");
 
+                entity.HasIndex(e => e.TdwBatch, "DC_FILE_TDWBATCH");
+
                 entity.Property(e => e.UnqFileNo)
                     .HasMaxLength(20)
                     .IsUnicode(false)
@@ -1016,6 +1018,15 @@ namespace Sassa.BRM.Models
                 entity.Property(e => e.FspId)
                     .HasColumnType("NUMBER(38)")
                     .HasColumnName("FSP_ID");
+
+                entity.Property(e => e.TdwBatch)
+                    .HasColumnType("NUMBER(38)")
+                    .HasColumnName("TDW_BATCH")
+                    .HasDefaultValueSql("0 ");
+
+                entity.Property(e => e.TdwBatchDate)
+                    .HasColumnType("DATE")
+                    .HasColumnName("TDW_BATCH_DATE");
             });
 
             modelBuilder.Entity<DcFileDeleted>(entity =>

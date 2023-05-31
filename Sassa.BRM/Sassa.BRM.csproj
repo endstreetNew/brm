@@ -39,6 +39,7 @@
 	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
 	  <Watch Remove="Pages\Modals\ManualCapture.razor" />
 	  <Watch Remove="Pages\Print\BoxTransportCover.razor" />
+	  <Watch Remove="Pages\Print\TdwBatchCover.razor" />
 	</ItemGroup>
 
 

@@ -98,6 +98,22 @@ namespace Sassa.BRM.Services
             }
         }
 
+        //Returned batch detail
+        //To replace the above method
+        public void SendTDWIncoming(UserSession session, int tdwBatchNo, List<string> files)
+        {
+            string returnedBox = _config.GetValue<string>("TDWReturnedBox");
+            using (EmailClient client = new EmailClient(_SMTPserver, _SMTPPort, new System.Net.NetworkCredential(_SMTPUser, _SMTPPassword)))
+            {
+                //send mail to TDW
+                string body = $"Please find attached incoming batch for processing (BatchNo#{tdwBatchNo}).<br/><br/>Kind Regards<br/><br/>{session.Name}<br/><br/><br/><br/>";
+                client.SendMail($"no-reply@sassa.gov.za", returnedBox, @"SASSA Incoming files.", body, files);
+                //send mail to Originator
+                body = $"Please find attached box detail sent to TDW for processing (BatchNo#{tdwBatchNo}).<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
+                client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA Files returned to TDW", body, files);
+            }
+        }
+
         public void SendRequestStatusChange(UserSession session, string status, string idNo, string ToMail)
         {
             using (EmailClient client = new EmailClient(_SMTPserver, _SMTPPort, new System.Net.NetworkCredential(_SMTPUser, _SMTPPassword)))

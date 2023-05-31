@@ -39,6 +39,30 @@ namespace Sassa.BRM.Services
             }
         }
 
+        public async Task<int> GetNextTdwBatch()
+        {
+            try
+            {
+                int result;
+                using (OracleConnection connection = new OracleConnection(brmcs))
+                {
+
+                    connection.Open();
+                    String sql = $"select CAST(SEQ_TDW_BATCH.NEXTVAL AS INTEGER) from DUAL";
+                    using (OracleCommand command = new OracleCommand(sql, connection))
+                    {
+                        result = int.Parse((await command.ExecuteScalarAsync()).ToString());
+                    }
+
+                }
+                return result;
+            }
+            catch //(OracleException e)
+            {
+                throw;
+            }
+        }
+
         //public async Task<string> GetSocpenSearchId(long SRDNo)
         //{
 
