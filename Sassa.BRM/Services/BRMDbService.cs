@@ -837,7 +837,8 @@ namespace Sassa.BRM.Services
                             MiniBoxes = (int)dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.MiniBoxno),
                             Files = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Count(),
                             User = _session.SamName,
-                            TdwSendDate = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatchDate)
+                            TdwSendDate = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatchDate),
+                            TdwBatchNo = (int)dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatch),
 
                         });
 

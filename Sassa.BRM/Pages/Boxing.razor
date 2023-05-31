@@ -1,5 +1,6 @@
 ﻿@page "/boxing"
-@page "/boxing/{boxNo}"
+@page "/boxing/{tabNo:int}/{boxNo}"
+
 
 @inject BRMDbService db
 
@@ -30,18 +31,21 @@
 {
     [Parameter]
     public string boxNo { get; set; }
-
-    public int tabNo { get; set; } = 1;
+    [Parameter]
+    public int tabNo { get; set; }
 
     protected override void OnInitialized()
     {
-        if(db.session.IsRmc())
+        if (tabNo == 0)
         {
-            tabNo = 3;
-        }
-        else
-        {
-            tabNo = 1;
+            if (db.session.IsRmc())
+            {
+                tabNo = 3;
+            }
+            else
+            {
+                tabNo = 1;
+            }
         }
 
     }
