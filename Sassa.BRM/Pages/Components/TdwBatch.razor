@@ -1,5 +1,5 @@
 ﻿@inject Navigation Navigate
-@inject NavigationManager NavigationM
+@*@inject NavigationManager NavigationM*@
 @inject BRMDbService db
 @inject IAlertService toast
 @inject IJSRuntime Js
@@ -10,71 +10,72 @@
 @using System.Text
 @using System.IO;
 @using Sassa.BRM.Data.ViewModels;
+
 <TabControl>
     <TabPage Text="Batching" Id="1" Enabled="true">
-            <div class="whiteArea col">
-                <div class="row">
-                    <div class="whiteArea col">
-                        @if (boxfiles.count > 0)
-                        {
-                            <div class="row">
-                                <div>
-                                    <div class="input-group mb-3">
-                                        <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(!boxfiles.result.Where(b => b.IsSelected).Any())">Dispatch</button>
-                                    </div>
+        <div class="whiteArea col">
+            <div class="row">
+                <div class="whiteArea col">
+                    @if (boxfiles.count > 0)
+                    {
+                        <div class="row">
+                            <div>
+                                <div class="input-group mb-3">
+                                    <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click())" disabled="@(!boxfiles.result.Where(b => b.IsSelected).Any())">Dispatch</button>
                                 </div>
                             </div>
-                            <div class="row">
-                                <table class="table table-sm" style="font-size:small;">
-                                    <thead>
+                        </div>
+                        <div class="row">
+                            <table class="table table-sm" style="font-size:small;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Select</th>
+                                        <th scope="col">Box No</th>
+                                        <th scope="col">MiniBoxes</th>
+                                        <th scope="col">Files</th>
+                                        <th scope="col">Region</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TdwBatchViewModel p in boxfiles.result)
+                                    {
                                         <tr>
-                                            <th scope="col">Select</th>
-                                            <th scope="col">Box No</th>
-                                            <th scope="col">MiniBoxes</th>
-                                            <th scope="col">Files</th>
-                                            <th scope="col">Region</th>
+                                            <td>
+                                                <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+                                                    <input type="checkbox" @bind="@p.IsSelected" />
+                                                </div>
+                                            </td>
+                                            <td>@p.BoxNo</td>
+                                            <td>@p.MiniBoxes</td>
+                                            <td>@p.Files</td>
+                                            <td>@p.Region</td>
 
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (TdwBatchViewModel p in boxfiles.result)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
-                                                        <input type="checkbox" @bind="@p.IsSelected" />
-                                                    </div>
-                                                </td>
-                                                <td>@p.BoxNo</td>
-                                                <td>@p.MiniBoxes</td>
-                                                <td>@p.Files</td>
-                                                <td>@p.Region</td>
-
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                                <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
+                                    }
+                                </tbody>
+                            </table>
+                            <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col">
+                                <h5>No Closed Boxes ready for dispatch.</h5>
                             </div>
-                        }
-                        else
-                        {
-                            <div class="row">
-                                <div class="col">
-                                    <h5>No Closed Boxes ready for dispatch.</h5>
-                                </div>
-                            </div>
-                            
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
             </div>
+        </div>
 
     </TabPage>
     <TabPage Text="History" Id="2" Enabled="true">
         @if (batchedfiles.count > 0)
         {
             <div class="row">
+
                 <table class="table table-sm" style="font-size:small;">
                     <thead>
                         <tr>
@@ -84,7 +85,6 @@
                             <th scope="col">Files</th>
                             <th scope="col">Region</th>
                             <th scope="col">Action</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -105,11 +105,11 @@
                         }
                     </tbody>
                 </table>
-                <Pager Paged="OnPaged" TotalSize="@batchedfiles.count" PageSize="20"></Pager>
+                <Pager Paged="OnHistoryPaged" TotalSize="@batchedfiles.count" PageSize="20"></Pager>
             </div>
         }
     </TabPage>
-    </TabControl>
+</TabControl>
 
 
 @code {
@@ -132,22 +132,20 @@
 
 
     int page;
+    int historypage;
 
 
     protected override async Task OnInitializedAsync()
     {
-
-        page = 1;
+        await OnPaged(1);
+        await OnHistoryPaged(1);
         db.session.BookMark.BoxingTab = 4;
-        await OnPaged(page);
-
-
     }
 
     protected async Task btnPrint_Click()
     {
         int tdwBatch = await db.CreateTdwBatch(boxfiles.result.Where(b => b.IsSelected).ToList());
-        Navigate.NavigateTo($"tdwbatchcover/{tdwBatch}");
+        btnPrint_Click(tdwBatch);
     }
 
     protected void btnPrint_Click(int tdwBatch)
@@ -159,7 +157,12 @@
     {
         page = _page;
         boxfiles = await db.GetAllBoxes(page);
-        batchedfiles = await db.GetAllBoxes(page,true);
+    }
+
+    protected async Task OnHistoryPaged(int _page)
+    {
+        historypage = _page;
+        batchedfiles = await db.GetAllBoxes(page, true);
     }
 
 }

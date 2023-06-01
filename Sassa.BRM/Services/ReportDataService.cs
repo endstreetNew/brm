@@ -219,6 +219,7 @@ namespace Sassa.BRM.Services
                                                     g.Type_name as Grant_name,
                                                     dc.Child_id,
                                                     dc.Capture_Reference as CLM_Number,
+                                                    dc.Capture_date,
                                                     dc.Application_Date AS SOCPEN_CAPTURE_DATE,
                                                     dc.Scan_Date,
                                                     dc.CS_DATE as Content_Server_Date,
