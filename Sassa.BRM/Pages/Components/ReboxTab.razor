@@ -73,20 +73,6 @@
                             </div>
                       </div>
                   </div>
-@*                 <div class="row"> 
-                    <div class="col">
-                        <div class="input-group mb-3" hidden="@archiveHidden">
-                            <span class="input-group-text" style="width: 180px;">Archive Year</span>
-                            <select class="form-select" @bind="@rebox.ArchiveYear">
-                                @foreach (var val in db.GetYearList())
-                                {
-                                <option value="@val.Key">@val.Value</option>
-                                }
-                            </select>
-                        </div>
-
-                    </div>
-                </div>*@
                 <div class="row">
                     <div class="col">
                         <label class="control-label pull-left" style="margin-top: 5px; font-weight: bold;">Add file to box.</label>
@@ -170,7 +156,10 @@
                             ))</button>
                                 <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrintCovers_Click(false))" disabled="@(boxfiles.count<1)">Print All Covers</button>
                                 <button type="button" class="btn btn-primary btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick:stopPropagation=true @onclick ="@(() => btnPrintCovers_Click(true))" disabled="@(boxfiles.count<1)">Print Unscanned Covers</button>
+                                @if(rebox.IsLCSelected)
+                                {
                                 <button type="button" class="btn btn-warning btn-sm active" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnOpenClose_Click())" disabled="@(boxfiles.count<1 || BoxLocked)"> @(BoxOpen ? "Close" : "Open") Box</button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -287,11 +276,39 @@
                 BoxOpen = boxfiles.result.Where(r => r.TdwBatch == 0).Any();
                 //rebox.RegType = "";
                 //rebox.BoxNo = boxNo;
-                loaded = !BoxLocked;
+                //loaded = !BoxLocked;
+                if(BoxLocked)
+                {
+                    toast.Warn("This box has been dispatched and is locked.");
+                }
                 if (boxfiles.count > 0)
                 {
                     rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
                     rebox.RegType = boxfiles.result.First().RegType;
+                    if(string.IsNullOrEmpty(rebox.SelectedType))
+                    {
+                        // 1 main 14 archive
+                        //13 main lc 18 archive lc
+                        switch(rebox.RegType)
+                        {
+                            case "LC-MAIN":
+                                rebox.SelectedType = "13";
+                                break;
+                            case "LC-ARCHIVE":
+                                rebox.SelectedType = "18";
+                                break;
+                            case "MAIN":
+                               rebox.SelectedType = "1";
+                                break;
+                            case "ARCHIVE":
+                                rebox.SelectedType = "14";
+                                break;
+                            default:
+                                rebox.SelectedType = "1";
+                                break;
+                        }
+
+                    }
                 }
                 else
                 {
@@ -354,7 +371,6 @@
             rebox.MisFileNo = string.Empty;
             rebox.NewBarcode = string.Empty;
             await AddFile();
-            //boxfiles = await db.GetAllFilesByBoxNo(rebox.BoxNo, page);
             await brmInput.FocusAsync();
         }
         catch (Exception ex)
@@ -521,7 +537,7 @@
         {
             if(file.IsPreservedType)
             {
-                if ((rebox.RegType.Contains("LC") && !file.ApplicationStatus.Contains("LC")) || (!rebox.RegType.Contains("LC") && file.ApplicationStatus.Contains("LC")))
+                if ((rebox.IsLCSelected && !file.ApplicationStatus.Contains("LC")) || (!rebox.IsLCSelected && file.ApplicationStatus.Contains("LC")))
                 {
                     throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
                     //if (rebox.RegType != file.ApplicationStatus)

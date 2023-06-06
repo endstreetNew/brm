@@ -13,7 +13,7 @@ namespace Sassa.BRM.Data.ViewModels
     {
         public int TdwBatchNo { get; set; }
         public string BoxNo { get; set; }
-        public string AltBoxNo { get; set; }
+        public string RegType { get; set; }
         public int MiniBoxes { get; set; }
         public int Files { get; set; }
         public string Region { get; set; }

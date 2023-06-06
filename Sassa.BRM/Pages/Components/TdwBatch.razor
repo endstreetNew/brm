@@ -131,8 +131,8 @@
     PagedResult<TdwBatchViewModel> batchedfiles = new PagedResult<TdwBatchViewModel>();
 
 
-    int page;
-    int historypage;
+    int page = 1;
+    int historypage = 1;
 
 
     protected override async Task OnInitializedAsync()
@@ -162,7 +162,7 @@
     protected async Task OnHistoryPaged(int _page)
     {
         historypage = _page;
-        batchedfiles = await db.GetAllBoxes(page, true);
+        batchedfiles = await db.GetAllBoxes(historypage, true);
     }
 
 }

@@ -32,5 +32,13 @@
         public int BoxCount { get; set; }
         public int MiniBoxCount { get; set; }
         public string SelectedType { get; set; }
+
+        public bool IsLCSelected
+        { 
+            get 
+            {
+                return "18|13".Contains(SelectedType);
+            } 
+        }
     }
 }

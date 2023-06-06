@@ -560,7 +560,6 @@ namespace Sassa.BRM.Services
             {
                 batchStatus.Add("Transport", "Transport");
                 batchStatus.Add("Received", "Received");
-                //batchStatus.Add("Delivered", "Delivered");
                 batchStatus.Add("RMCBatch", "RMCBatch");
             }
             return batchStatus;
@@ -815,17 +814,23 @@ namespace Sassa.BRM.Services
             List<DcFile> dcFiles;
             if (batched)
             {
-                result.count = _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Count();
-                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                //result.count = _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn =>  bn.ApplicationStatus.Contains("LC")).Count();
+                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
             }
             else
             {
-                result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Count();
-                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                //result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).Count();
+                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+            }
+            if(!dcFiles.Any())
+            {
+                return new PagedResult<TdwBatchViewModel>();
             }
             var boxes = dcFiles.GroupBy(t => t.TdwBoxno)
                    .Select(grp => grp.First())
                    .ToList();
+
+            result.count = boxes.Count();
 
                 foreach(var box in boxes)
                 {
@@ -2878,6 +2883,30 @@ namespace Sassa.BRM.Services
             {
                 rebox.BoxCount = boxFiles.Count();
                 rebox.RegType = boxFiles.First().RegType;
+                if (string.IsNullOrEmpty(rebox.SelectedType))
+                {
+                    // 1 main 14 archive
+                    //13 main lc 18 archive lc
+                    switch (rebox.RegType)
+                    {
+                        case "LC-MAIN":
+                            rebox.SelectedType = "13";
+                            break;
+                        case "LC-ARCHIVE":
+                            rebox.SelectedType = "18";
+                            break;
+                        case "MAIN":
+                            rebox.SelectedType = "1";
+                            break;
+                        case "ARCHIVE":
+                            rebox.SelectedType = "14";
+                            break;
+                        default:
+                            rebox.SelectedType = "1";
+                            break;
+                    }
+
+                }
                 rebox.MiniBoxCount = boxFiles.Where(b => b.MiniBoxno == rebox.MiniBox).Count();
             }
             else
@@ -2976,8 +3005,8 @@ namespace Sassa.BRM.Services
                 result.UnqFileNo = file.UnqFileNo;
 
                 //Tdw
-                var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = tdwresult.Any();
+                //var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
+                result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).Any();
 
                 List<Application> spresult = null;
                 //SocPen
