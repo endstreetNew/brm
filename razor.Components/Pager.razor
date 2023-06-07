@@ -17,22 +17,21 @@
         [Parameter]
         public int PageSize { get; set; } = 12;
 
-
         int Page { get; set; } = 1;
 
-        int pages;
+        int pages => (int)Math.Ceiling((double)TotalSize / PageSize);
 
-        protected override void OnParametersSet()
-        {
-            if (TotalSize % PageSize > 0) //there is a remainder
-            {
-                pages = (TotalSize / PageSize) + 1;
-            }
-            else
-            {
-                pages = (TotalSize / PageSize);
-            }
-        }
+        //protected override void OnParametersSet()
+        //{
+        //    if (TotalSize % PageSize > 0) //there is a remainder
+        //    {
+        //        pages = (TotalSize / PageSize) + 1;
+        //    }
+        //    else
+        //    {
+        //        pages = (TotalSize / PageSize);
+        //    }
+        //}
 
         void FirstPage()
         {
@@ -61,3 +60,4 @@
 
 
     }
+

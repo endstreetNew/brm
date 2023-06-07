@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using razor.Components.Models;
@@ -59,6 +61,7 @@ namespace Sassa.BRM.Services
             reportList.Add("9", "Monthly Scanning Report");
             reportList.Add("10", "Deleted files Report");
             reportList.Add("11", "Manual Capture Report");
+            reportList.Add("12", "Audit Report");
 
             db = _db;
 
@@ -67,7 +70,7 @@ namespace Sassa.BRM.Services
 
         public async Task SaveCsvReport(string dateFrom, string dateTo, string rIndex, string office_id, string office_type, string region_id, string grant_type, string filename, string status = "", string sql = "")
         {
-            DataTable dt = new DataTable();
+            System.Data.DataTable dt = new System.Data.DataTable();
 
             string regionSQL = "";
             string region1SQL = "";
@@ -136,7 +139,7 @@ namespace Sassa.BRM.Services
                                     "INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID " +
                                     "INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID " +
                                     "Where b.status_code = 'ACTIVE'  AND b.CAPTURE_REFERENCE is null " +
-                                    "AND b.TDW_REC IS NULL and b.Mis_file is null and b.ECMIS_FILE is null" +
+                                    "AND b.TDW_REC IS NULL and b.Mis_file is null and b.ECMIS_FILE is null and b.OGA_date is null" +
                                 $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
                                 $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
                                 (string.IsNullOrEmpty(grant_type) ? "" : $" AND b.GRANT_TYPE = '{grant_type}'") +
@@ -250,6 +253,22 @@ namespace Sassa.BRM.Services
                                                     join dc_grant_type  g on f.grant_Type = g.type_id
                                                     where f.File_Comment Like 'Freecapture%'
                                                     AND f.Region_id = '{region_id}'";
+                                break;
+                            case "12":
+                                cmd.CommandText = $@"SELECT DISTINCT r.Region_NAME, b.Paypoint, g.TYPE_NAME, b.Application_date, b.BENEFICIARY_ID ,b.NAME,b.SURNAME FROM DC_SOCPEN b 
+                                            INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID
+                                            INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID AND b.Grant_TYPE <> 'S'
+                                            Where b.status_code = 'ACTIVE'
+                                            AND b.CAPTURE_REFERENCE is null
+                                            AND b.TDW_REC IS NULL
+                                            and b.Mis_file is null
+                                            and b.ECMIS_FILE is null
+                                            and b.OGA_date is null" +
+                                            $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
+                                            $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
+                                            (string.IsNullOrEmpty(grant_type) ? "" : $" AND b.GRANT_TYPE = '{grant_type}'") +
+                                            (string.IsNullOrEmpty(region_id) ? "" : $" AND b.REGION_ID = '{region_id}'") +
+                                            " ORDER BY r.region_name,b.Application_date";
                                 break;
                             default:
 

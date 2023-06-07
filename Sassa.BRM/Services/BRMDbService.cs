@@ -1223,6 +1223,7 @@ namespace Sassa.BRM.Services
                 file.TdwBoxno = rebox.BoxNo;
                 file.MiniBoxno = rebox.MiniBox;
                 file.TdwBoxTypeId = decimal.Parse(rebox.SelectedType);
+                file.TdwBatch = 0;
                 //file.FileNumber = rebox.MisFileNo;
                 if ("14|15|16|17|18".Contains(rebox.SelectedType))
                 {

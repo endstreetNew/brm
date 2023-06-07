@@ -37,7 +37,7 @@
         { 
             get 
             {
-                return "18|13".Contains(SelectedType);
+                return SelectedType == "18" || SelectedType == "13";
             } 
         }
     }

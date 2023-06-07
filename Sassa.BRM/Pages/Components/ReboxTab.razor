@@ -276,7 +276,7 @@
                 BoxOpen = boxfiles.result.Where(r => r.TdwBatch == 0).Any();
                 //rebox.RegType = "";
                 //rebox.BoxNo = boxNo;
-                //loaded = !BoxLocked;
+                
                 if(BoxLocked)
                 {
                     toast.Warn("This box has been dispatched and is locked.");
@@ -314,6 +314,7 @@
                 {
                     toast.Warn("Box not found (Creating new box).");
                 }
+                loaded = !BoxLocked;
                 await Task.Delay(100);
                 StateHasChanged();
                 return;
