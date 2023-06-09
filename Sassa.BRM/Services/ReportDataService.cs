@@ -255,20 +255,18 @@ namespace Sassa.BRM.Services
                                                     AND f.Region_id = '{region_id}'";
                                 break;
                             case "12":
-                                cmd.CommandText = $@"SELECT DISTINCT r.Region_NAME, b.Paypoint, g.TYPE_NAME, b.Application_date, b.BENEFICIARY_ID ,b.NAME,b.SURNAME FROM DC_SOCPEN b 
-                                            INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID
-                                            INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID AND b.Grant_TYPE <> 'S'
-                                            Where b.status_code = 'ACTIVE'
-                                            AND b.CAPTURE_REFERENCE is null
-                                            AND b.TDW_REC IS NULL
-                                            and b.Mis_file is null
-                                            and b.ECMIS_FILE is null
-                                            and b.OGA_date is null" +
-                                            $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
-                                            $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
+                                cmd.CommandText = $@"SELECT  r.Region_NAME,b.BENEFICIARY_ID , g.TYPE_NAME, max(b.Application_date) AS Application_date,b.NAME,b.SURNAME , b.Paypoint FROM DC_SOCPEN b --,b.NAME,b.SURNAME , b.Paypoint 
+                                                INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID
+                                                INNER JOIN DC_GRANT_TYPE g ON b.GRANT_TYPE = g.TYPE_ID AND b.Grant_TYPE <> 'S'
+                                                Where b.status_code = 'ACTIVE'
+                                                AND b.CAPTURE_REFERENCE is null AND b.TDW_REC IS NULL and b.Mis_file is null and b.ECMIS_FILE is null  
+                                                and (BENEFICIARY_ID, Grant_Type) not in (select beneficiary_id, Grant_Type from dc_socpen s Where b.beneficiary_id = s.beneficiary_id and b.Grant_TYPE = s.Grant_Type AND b.Grant_TYPE = 'C' AND (s.CAPTURE_REFERENCE is not null or s.TDW_REC IS not NULL or s.Mis_file is null or s.ECMIS_FILE is not null) )" +
+                                                $" AND b.Application_date >= to_date('{dateFrom}', 'dd/mm/YYYY')" +
+                                                $" and b.Application_date <= to_date('{dateTo}', 'dd/mm/YYYY')" +
                                             (string.IsNullOrEmpty(grant_type) ? "" : $" AND b.GRANT_TYPE = '{grant_type}'") +
                                             (string.IsNullOrEmpty(region_id) ? "" : $" AND b.REGION_ID = '{region_id}'") +
-                                            " ORDER BY r.region_name,b.Application_date";
+                                            " group by r.Region_NAME,b.BENEFICIARY_ID, g.TYPE_NAME,b.NAME,b.SURNAME , b.Paypoint " +
+                                            " ORDER BY r.region_name";
                                 break;
                             default:
 
