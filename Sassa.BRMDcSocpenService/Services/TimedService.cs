@@ -35,7 +35,7 @@
             Globals = fu.ReadJson<TimedService.GlobalVars>(fileName);
         }
 
-        public async Task Start()
+        public async Task Start(bool startup)
         {
             if (schedule == null)
             {
@@ -49,12 +49,13 @@
                 Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
                 Globals.Status = true;
                 _fu.WriteJson(Globals, fileName);
-                if(Globals.NextRefreshDate < DateTime.Now)
+                if(Globals.NextRefreshDate < DateTime.Now )
                 {
-                    await Task.Run(() => SyncSOCPEN(null));
+                    if(!startup) await Task.Run(() => SyncSOCPEN(null));
                     delayTime = Globals.NextRefreshDate - DateTime.Now;
                     
                 }
+                if (delayTime < TimeSpan.Zero) { delayTime = new TimeSpan(10000); }
                 schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             }
             return;
@@ -71,7 +72,7 @@
         /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            return Start();
+            return Start(true);
         }
 
 

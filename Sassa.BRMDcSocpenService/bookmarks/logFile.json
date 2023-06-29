@@ -63,3 +63,19 @@ Insert new Main Grants. 12:57
 Insert new Main Grants. : ORA-00001: unique constraint (CONTENTSERVER.DC_SOCPEN_ID_GRANT) violated 12:58
 Waiting schedule 2023/05/30 12:58:51 13:01
 Waiting schedule 2023/05/30 12:58:51 13:01
+Waiting schedule 2023/05/30 13:01:00 06:50
+Starting. 06:51
+Waiting schedule 2023/05/30 13:01:00 06:54
+Starting. 06:54
+Insert new SRDs. 06:55
+Insert new Main Grants. 06:56
+Insert new Child Grants. 07:03
+Retire Srds. 07:23
+Done. 07:32
+Waiting schedule 2023/06/21 07:32:19 11:17
+Starting. 11:17
+Insert new SRDs. 11:18
+Insert new Main Grants. 11:19
+Waiting schedule 2023/06/21 07:32:19 11:28
+Waiting schedule 2023/06/21 07:32:19 11:30
+Waiting schedule 2023/06/21 07:32:19 11:31

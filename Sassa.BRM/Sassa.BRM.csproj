@@ -10,11 +10,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="wwwroot\brmFiles\**" />
 	  <Compile Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Compile Remove="wwwroot\Documents\**" />
+	  <Content Remove="wwwroot\brmFiles\**" />
 	  <Content Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Content Remove="wwwroot\Documents\**" />
+	  <EmbeddedResource Remove="wwwroot\brmFiles\**" />
 	  <EmbeddedResource Remove="wwwroot\CSImages\NewFolder\**" />
+	  <EmbeddedResource Remove="wwwroot\Documents\**" />
+	  <None Remove="wwwroot\brmFiles\**" />
 	  <None Remove="wwwroot\CSImages\NewFolder\**" />
+	  <None Remove="wwwroot\Documents\**" />
+	  <Watch Remove="wwwroot\brmFiles\**" />
 	  <Watch Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Watch Remove="wwwroot\Documents\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -44,10 +54,9 @@
 
 
   <ItemGroup>
-    <Folder Include="wwwroot\brmFiles\" />
+    <Folder Include="BRMfiles\" />
     <Folder Include="wwwroot\CSImages\" />
     <Folder Include="wwwroot\images\" />
-    <Folder Include="wwwroot\Documents\" />
   </ItemGroup>
 
 

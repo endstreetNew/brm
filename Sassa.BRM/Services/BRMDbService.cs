@@ -811,16 +811,21 @@ namespace Sassa.BRM.Services
         {
 
             PagedResult<TdwBatchViewModel> result = new PagedResult<TdwBatchViewModel>();
+
+            List<DcFile> allFiles;
+            
             List<DcFile> dcFiles;
             if (batched)
             {
+                allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).AsNoTracking().ToListAsync();
                 //result.count = _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn =>  bn.ApplicationStatus.Contains("LC")).Count();
-                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
             }
             else
             {
+                allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).AsNoTracking().ToListAsync();
                 //result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).Count();
-                dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
             }
             if(!dcFiles.Any())
             {
@@ -840,7 +845,7 @@ namespace Sassa.BRM.Services
                             BoxNo = box.TdwBoxNo,
                             Region = GetRegion(box.RegionId),
                             MiniBoxes = (int)dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.MiniBoxno),
-                            Files = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Count(),
+                            Files = allFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Count(),
                             User = _session.SamName,
                             TdwSendDate = dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatchDate),
                             TdwBatchNo = (int)dcFiles.Where(f => f.TdwBoxNo == box.TdwBoxNo).Max(f => f.TdwBatch),
