@@ -807,26 +807,15 @@ namespace Sassa.BRM.Services
             return result;
         }
 
-        public async Task<PagedResult<TdwBatchViewModel>> GetAllBoxes(int page,bool batched = false)
+        public async Task<PagedResult<TdwBatchViewModel>> GetAllBoxes(int page)
         {
 
             PagedResult<TdwBatchViewModel> result = new PagedResult<TdwBatchViewModel>();
 
-            List<DcFile> allFiles;
-            
-            List<DcFile> dcFiles;
-            if (batched)
-            {
-                allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).AsNoTracking().ToListAsync();
-                //result.count = _context.DcFiles.Where(bn => bn.TdwBatch > 1 && bn.RegionId == _session.Office.RegionId).Where(bn =>  bn.ApplicationStatus.Contains("LC")).Count();
-                dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
-            }
-            else
-            {
-                allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).AsNoTracking().ToListAsync();
-                //result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).Count();
-                dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
-            }
+            List<DcFile> allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).AsNoTracking().ToListAsync();
+            //result.count = _context.DcFiles.Where(bn => bn.TdwBatch == 1 && bn.RegionId == _session.Office.RegionId).Where(bn => bn.ApplicationStatus.Contains("LC")).Count();
+            List<DcFile> dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
+
             if(!dcFiles.Any())
             {
                 return new PagedResult<TdwBatchViewModel>();
@@ -853,6 +842,37 @@ namespace Sassa.BRM.Services
                         });
 
                 }
+
+            return result;
+        }
+
+        public async Task<PagedResult<TdwBatchViewModel>> GetHistoryBoxes(int page)
+        {
+
+            PagedResult<TdwBatchViewModel> result = new PagedResult<TdwBatchViewModel>();
+
+            List<DcFile> allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1).AsNoTracking().ToListAsync();
+            List<DcFile> dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
+
+            var batchFiles = dcFiles.GroupBy(t => t.TdwBatch)
+               .Select(grp => grp.First())
+               .ToList();
+
+            foreach (var box in batchFiles)
+            {
+                result.result.Add(
+                new TdwBatchViewModel
+                {
+                    TdwBatchNo = (int)box.TdwBatch,
+                    Region = GetRegion(box.RegionId),
+                    Boxes = (int)dcFiles.Where(f => f.TdwBatch == box.TdwBatch).Count(),
+                    Files = dcFiles.Where(f => f.TdwBatch == box.TdwBatch).Count(),
+                    User = _session.SamName,
+                    TdwSendDate = box.TdwBatchDate
+                });
+
+            }
+            result.count = allFiles.Count();
 
             return result;
         }
@@ -1269,7 +1289,7 @@ namespace Sassa.BRM.Services
                 box.TdwSendDate = DateTime.Now;
                 box.TdwBatchNo = tdwBatch;
                 box.User = _session.SamName;
-                await _context.DcFiles.Where(f => f.TdwBoxno == box.BoxNo).ForEachAsync(f => f.TdwBatch = tdwBatch);
+                await _context.DcFiles.Where(f => f.TdwBoxno == box.BoxNo).ForEachAsync(f => { f.TdwBatch = tdwBatch; f.TdwBatchDate = box.TdwSendDate; });
             }
             await _context.SaveChangesAsync();
             await SendTDWBulkReturnedMail(tdwBatch);
@@ -1305,6 +1325,31 @@ namespace Sassa.BRM.Services
 
                 }
                 return boxes;
+        }
+
+        public async Task<List<TdwBatchViewModel>> GetTdwBatches()
+        {
+            List<TdwBatchViewModel> boxes = new List<TdwBatchViewModel>();
+            var dcFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1).AsNoTracking().ToListAsync();
+
+            var batchFiles = dcFiles.GroupBy(t => t.TdwBatch)
+               .Select(grp => grp.First())
+               .ToList();
+
+            foreach (var box in batchFiles)
+            {
+                boxes.Add(
+                new TdwBatchViewModel
+                {
+                    Region = GetRegion(box.RegionId),
+                    Boxes = (int)dcFiles.Where(f => f.TdwBatch == box.TdwBatch).Count(),
+                    Files = dcFiles.Where(f => f.TdwBatch == box.TdwBatch).Count(),
+                    User = _session.SamName,
+                    TdwSendDate = box.TdwBatchDate
+                });
+
+            }
+            return boxes;
         }
 
         #endregion

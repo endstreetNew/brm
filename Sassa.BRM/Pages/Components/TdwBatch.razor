@@ -79,11 +79,12 @@
                 <table class="table table-sm" style="font-size:small;">
                     <thead>
                         <tr>
+                            <th scope="col">Batch No</th>
                             <th scope="col">User</th>
-                            <th scope="col">Box No</th>
-                            <th scope="col">MiniBoxes</th>
-                            <th scope="col">Files</th>
+                            <th scope="col">Boxes</th>
+                            <th scope="col">LC Files</th>
                             <th scope="col">Region</th>
+                            <th scope="col">Date</th>
                             <th scope="col">Action</th>
                         </tr>
                     </thead>
@@ -91,11 +92,12 @@
                         @foreach (TdwBatchViewModel p in batchedfiles.result)
                         {
                             <tr>
+                                <td>@p.TdwBatchNo</td>
                                 <td>@p.User</td>
-                                <td>@p.BoxNo</td>
-                                <td>@p.MiniBoxes</td>
+                                <td>@p.Boxes</td>
                                 <td>@p.Files</td>
                                 <td>@p.Region</td>
+                                <td>@p.TdwSendDate</td>
                                 <td>
                                     <div class="input-group mb-3">
                                         <button type="button" class="btn btn-primary btn-sm" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click(@p.TdwBatchNo))">Reprint Cover</button>
@@ -162,7 +164,7 @@
     protected async Task OnHistoryPaged(int _page)
     {
         historypage = _page;
-        batchedfiles = await db.GetAllBoxes(historypage, true);
+        batchedfiles = await db.GetHistoryBoxes(historypage);
     }
 
 }
