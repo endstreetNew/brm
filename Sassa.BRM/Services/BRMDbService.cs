@@ -852,7 +852,7 @@ namespace Sassa.BRM.Services
             PagedResult<TdwBatchViewModel> result = new PagedResult<TdwBatchViewModel>();
 
             List<DcFile> allFiles = await _context.DcFiles.Where(bn => bn.TdwBatch > 1).AsNoTracking().ToListAsync();
-            List<DcFile> dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).ToList();
+            List<DcFile> dcFiles = allFiles.OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).ToList();
 
             var batchFiles = dcFiles.GroupBy(t => t.TdwBatch)
                .Select(grp => grp.First())
@@ -872,7 +872,7 @@ namespace Sassa.BRM.Services
                 });
 
             }
-            result.count = allFiles.Count();
+            result.count = batchFiles.Count();
 
             return result;
         }
