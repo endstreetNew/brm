@@ -98,21 +98,21 @@ namespace Sassa.BRM.Models
         [NotMapped]
         public string MergeStatus { get; set; }
 
-        [NotMapped]
-        public string TdwBoxNo
-        {
-            get
-            {
-                return TdwBoxno;
-            }
-            set
-            {
-                if(!IsLocked)
-                {
-                    TdwBoxno = value;
-                }
-            }
-        }
+        //[NotMapped]
+        //public string TdwBoxNo
+        //{
+        //    get
+        //    {
+        //        return TdwBoxno;
+        //    }
+        //    set
+        //    {
+        //        if(!IsLocked)
+        //        {
+        //            TdwBoxno = value;
+        //        }
+        //    }
+        //}
 
         [NotMapped]
         public bool IsLocked

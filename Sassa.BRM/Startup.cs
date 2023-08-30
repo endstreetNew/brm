@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -117,7 +119,14 @@ namespace Sassa.BRM
             };
             app.UseWebSockets(wsOptions);
             app.UseHttpsRedirection();
-
+            app.UseExceptionHandler(c => c.Run(async context =>
+            {
+                var exception = context.Features
+                    .Get<IExceptionHandlerPathFeature>()
+                    .Error;
+                var response = new { error = exception.Message };
+                await context.Response.WriteAsJsonAsync(response);
+            }));
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

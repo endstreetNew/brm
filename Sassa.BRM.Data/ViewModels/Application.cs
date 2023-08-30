@@ -16,6 +16,7 @@ namespace Sassa.BRM.Models
         }//-----------------------------------------------
         public string Name { get; set; }
         public string SurName { get; set; }
+        public string OfficeId { get; set; }
         public string RegionId { get; set; }
         public string RegionCode { get; set; }
         public string RegionName { get; set; }

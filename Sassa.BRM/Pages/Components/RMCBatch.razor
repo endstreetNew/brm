@@ -304,7 +304,7 @@
         try
         {
             DcFile file = await db.GetReboxCandidate(rebox);
-            if (string.IsNullOrEmpty(file.TdwBoxNo))
+            if (string.IsNullOrEmpty(file.TdwBoxno))
             {
                 await LoadBox(rebox.BoxNo);
                 if (boxfiles.count == 0)

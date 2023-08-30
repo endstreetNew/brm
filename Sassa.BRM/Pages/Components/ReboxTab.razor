@@ -522,7 +522,7 @@
         }
         catch (Exception ex)
         {
-            toast.Error($"Box :{rebox.BoxNo} Coversheets error.");
+            toast.Error($"Box :{rebox.BoxNo} Coversheets error. {ex.Message}");
 
         }
         //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}", "_blank");

@@ -9,8 +9,13 @@
   <ItemGroup>
     <None Remove="Sql\AddChildGrants.sql" />
     <None Remove="Sql\AddMainGrants.sql" />
+    <None Remove="Sql\AddOldAge.sql" />
     <None Remove="Sql\AddSrds.sql" />
     <None Remove="Sql\RetireSrds.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Sql\AddOldAge.sql" />
   </ItemGroup>
 
   <ItemGroup>

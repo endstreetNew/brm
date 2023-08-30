@@ -254,6 +254,8 @@ namespace Sassa.BRM.Services
                                                     where f.File_Comment Like 'Freecapture%'
                                                     AND f.Region_id = '{region_id}'";
                                 break;
+
+                            //Audit Report
                             case "12":
                                 cmd.CommandText = $@"SELECT  r.Region_NAME,b.BENEFICIARY_ID , g.TYPE_NAME, max(b.Application_date) AS Application_date,b.NAME,b.SURNAME , b.Paypoint FROM DC_SOCPEN b --,b.NAME,b.SURNAME , b.Paypoint 
                                                 INNER join DC_REGION r ON b.REGION_ID = r.REGION_ID
