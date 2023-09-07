@@ -138,13 +138,14 @@
             ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault().ResCode : 0
         }).ToList();
         BrmOffices = regionOffices.OrderBy(o => o.OfficeName).ToList();
+
         regionOffices.AddRange(ResCodes.Where(r => !regionOffices.Where(o => o.ResCode == r.ResCode).Any()).Select( r => 
         new RegionOffice
         {
             OfficeId = r.OfficeId == null? 0 : (int)r.OfficeId,
             RegionId = regionId,
             OfficeName = r.LocalOffice,
-            Status = r.OfficeId == null  || r.OfficeId == 0 ? "A" : BrmOffices.Where(o => o.OfficeId == (int)r.OfficeId).First().Status,
+                Status = r.OfficeId == null || r.OfficeId == 0 ? "A" : BrmOffices.Where(o => o.OfficeId == (int)r.OfficeId).Any() ? BrmOffices.Where(o => o.OfficeId == (int)r.OfficeId).First().Status : "I",
             ResCode = r.ResCode
         }));
 

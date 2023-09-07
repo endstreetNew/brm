@@ -49,7 +49,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.BRMDcSocpenService", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Socpen.Data", "Sassa.Socpen.Data\Sassa.Socpen.Data.csproj", "{416CEE59-F66F-4606-AEA0-93DE786EA062}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Senekal.Reports", "Senekal.Reports\Senekal.Reports.csproj", "{0BE30663-6BCB-40AE-B53C-5C02099EEA49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Senekal.Reports", "Senekal.Reports\Senekal.Reports.csproj", "{0BE30663-6BCB-40AE-B53C-5C02099EEA49}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Brm.Api", "Sassa.Brm.Api\Sassa.Brm.Api.csproj", "{A045A621-5452-46D5-AC75-95FA5E0A90F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -445,6 +447,26 @@ Global
 		{0BE30663-6BCB-40AE-B53C-5C02099EEA49}.Release|x64.Build.0 = Release|Any CPU
 		{0BE30663-6BCB-40AE-B53C-5C02099EEA49}.Release|x86.ActiveCfg = Release|Any CPU
 		{0BE30663-6BCB-40AE-B53C-5C02099EEA49}.Release|x86.Build.0 = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|x64.Build.0 = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Debug|x86.Build.0 = Debug|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|ARM.Build.0 = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|ARM64.Build.0 = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|x64.ActiveCfg = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|x64.Build.0 = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|x86.ActiveCfg = Release|Any CPU
+		{A045A621-5452-46D5-AC75-95FA5E0A90F8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

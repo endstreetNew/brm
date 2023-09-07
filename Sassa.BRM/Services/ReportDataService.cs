@@ -52,7 +52,7 @@ namespace Sassa.BRM.Services
             reportList = new Dictionary<string, string>();
             //reportList.Add("1", "Destruction List");
             //reportList.Add("2", "Destruction Status");
-            reportList.Add("3", "Missing Files Report");
+            reportList.Add("3", "Not Captured Report");
             reportList.Add("4", "Active Users");
             reportList.Add("5", "Activity Log");
             reportList.Add("6", "Activity By Action per User");
@@ -61,7 +61,7 @@ namespace Sassa.BRM.Services
             reportList.Add("9", "Monthly Scanning Report");
             reportList.Add("10", "Deleted files Report");
             reportList.Add("11", "Manual Capture Report");
-            reportList.Add("12", "Audit Report");
+            reportList.Add("12", "Missing Files Report");
 
             db = _db;
 

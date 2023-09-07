@@ -1,4 +1,4 @@
-﻿--If there is an disability grant convert it to old age grant
+
 
 INSERT INTO DC_SOCPEN (BENEFICIARY_ID, CHILD_ID, NAME, SURNAME,  GRANT_TYPE, REGION_ID, APPLICATION_DATE, STATUS_CODE, PAYPOINT) 
 SELECT     
@@ -21,3 +21,5 @@ LEFT JOIN SASSA.cust_rescodes D ON b.secondary_paypoint = d.res_code
 where NOT exists(SELECT 1 FROM DC_Socpen x WHERE x.Beneficiary_id = LPAD(A.PENSION_NO,13,0) AND x.grant_type = A.GRANT_TYPE)
 and A.GRANT_TYPE in('0','1','3','7','8','4')
 and A.Application_date is not null
+
+--If there is an disability grant convert it to old age grant
