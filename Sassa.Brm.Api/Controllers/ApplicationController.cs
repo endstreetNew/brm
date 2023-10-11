@@ -48,7 +48,7 @@ namespace Sassa.BRM.Controller
             //{
             if (_brmService.session == null)
             {
-                _brmService.SetUserSession();
+                _brmService.SetUserSession(app.BrmUserName);
                 _brmService.SetUserOffice(app.OfficeId);
             }
             result = await _brmService.CreateBRM(app, "Inserted via API.");

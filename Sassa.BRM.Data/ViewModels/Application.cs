@@ -52,6 +52,7 @@ namespace Sassa.BRM.Models
         public string Source { get; set; }
         public bool IsMergeCandidate { get; set; }
         public bool IsCombinationCandidate { get; set; }
+        public string BrmUserName { get; set; }
         public string FullName
         {
             get

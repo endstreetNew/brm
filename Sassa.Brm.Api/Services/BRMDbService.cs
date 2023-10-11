@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
@@ -43,12 +44,12 @@ namespace Sassa.BRM.Services
 
         }
 
-        public void SetUserSession()
+        public void SetUserSession(string user)
         {
             //S-1-5-21-1204054820-1125754781-535949388-513
             _session = new UserSession();
 
-            _session.SamName = "ApiServiceUser";
+            _session.SamName = user;
             //_session.Roles = identity.GetRoles();
             //_session.Name = (string)user.Properties["name"].Value;
             //_session.Surname = (string)user.Properties["sn"].Value;
@@ -605,8 +606,17 @@ namespace Sassa.BRM.Services
             await RemoveBRM(application.Brm_BarCode, reason);
             decimal? batch = null;
 
-            //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-            batch = 0;
+            string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
+            batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType,application.OfficeId,application.BrmUserName) : 0;
+            string region;
+            try
+            {
+                region = StaticD.LocalOffices.Where(o => o.OfficeId == application.OfficeId).FirstOrDefault()!.RegionId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Office not found");
+            }
 
             DcFile file = new DcFile()
             {
@@ -617,9 +627,9 @@ namespace Sassa.BRM.Services
                 TransType = application.TRANS_TYPE,
                 BatchNo = batch,
                 GrantType = application.GrantType,
-                OfficeId = session.Office.OfficeId,
-                RegionId = session.Office.RegionId,
-                FspId = session.Office.FspId,
+                OfficeId = application.OfficeId,
+                RegionId = region,
+                FspId = null,
                 DocsPresent = application.DocsPresent,
                 UpdatedDate = DateTime.Now,
                 UserFirstname = application.Name,
@@ -635,7 +645,7 @@ namespace Sassa.BRM.Services
                 TdwBoxno = application.TDW_BOXNO,
                 MiniBoxno = application.MiniBox,
                 FileComment = reason,
-                UpdatedByAd = session.SamName,
+                UpdatedByAd = application.BrmUserName,
                 TdwBatch = 0
             };
             _context.ChangeTracker.Clear();
@@ -752,8 +762,8 @@ namespace Sassa.BRM.Services
                 {
                     dcfile.FileComment = reason;
                     await BackupDcFileEntry(dcfile);
-                    _context.DcFiles.Remove(dcfile);
                     CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
+                    _context.DcFiles.Remove(dcfile);
                 }
             }
             var merges = _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo);
@@ -834,6 +844,54 @@ namespace Sassa.BRM.Services
             }
         }
 
+
+        private async Task<decimal?> CreateBatchForUser(string sRegType,string OfficeId,string SamName)
+        {
+            DcBatch batch;
+            List<DcBatch> batches = new List<DcBatch>();
+            //Get open batch for User
+            if (_session.IsRmc())
+            {
+                batches = await _context.DcBatches.Where(b => b.OfficeId == OfficeId && b.BatchStatus == "RMCBatch" && b.UpdatedByAd == SamName && b.RegType == sRegType).ToListAsync();
+            }
+            else
+            {
+                batches = await _context.DcBatches.Where(b => b.OfficeId == OfficeId && b.BatchStatus == "Open" && b.UpdatedByAd == SamName && b.RegType == sRegType).ToListAsync();
+            }
+
+            if (batches.Any())
+            {
+                batch = batches.First();
+                if (batch.NoOfFiles > 34 && !sRegType.StartsWith("LC"))
+                {
+                    throw new Exception($"Batch is full. Please verify and close batch before adding more to batch for {sRegType}");
+                }
+            }
+            else
+            {
+                batch = new DcBatch
+                {
+                    BatchStatus = _session.IsRmc() ? "RMCBatch" : "Open",
+                    BatchCurrent = "Y",
+                    OfficeId = OfficeId,
+                    RegType = sRegType,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = 0,
+                    UpdatedByAd = SamName
+                };
+                _context.DcBatches.Add(batch);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch// (Exception ex)
+                {
+                    throw;
+                }
+
+            }
+            return batch.BatchNo;
+        }
         #endregion
 
         //#region Boxing and Re-Boxing

@@ -1177,7 +1177,7 @@ namespace Sassa.BRM.Services
             //Find Barcode in DCFile
             if (!string.IsNullOrEmpty(rebox.BrmBarcode))
             {
-                candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode && f.BoxLocked != 1).ToListAsync();
+                candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
             }
             else
             {
@@ -1187,7 +1187,7 @@ namespace Sassa.BRM.Services
                 //if (!candidates.Any())
                 //{
                 //Try the MisFile in BRM
-                candidates = await _context.DcFiles.Where(k => k.FileNumber == rebox.MisFileNo && k.BoxLocked != 1).ToListAsync();
+                candidates = await _context.DcFiles.Where(k => k.FileNumber == rebox.MisFileNo).ToListAsync();
                 if (!candidates.Any())
                 {
                     //We need to create a record!
@@ -1232,23 +1232,23 @@ namespace Sassa.BRM.Services
 
             if (!candidates.Any())
             {
-                throw new Exception("No Suitable BRM record found.");
+                throw new Exception("BRM record not found.");
             }
 
             if (candidates.Count() > 1)
             {
-                //Try Repair
-                if (candidates.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode && c.BoxLocked != 1).Any())
-                {
-                    DcFile corrupt = _context.DcFiles.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).First();
-                    _context.DcFiles.Remove(corrupt);
-                    await _context.SaveChangesAsync();
-                    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode && f.BoxLocked != 1).ToListAsync();
-                }
-                if (candidates.Count() > 1)
-                {
+                ////Try Repair
+                //if (candidates.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).Any())
+                //{
+                //    DcFile corrupt = _context.DcFiles.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).First();
+                //    _context.DcFiles.Remove(corrupt);
+                //    await _context.SaveChangesAsync();
+                //    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
+                //}
+                //if (candidates.Count() > 1)
+                //{
                     throw new Exception($"Duplicate BRM No {rebox.BrmBarcode} please delete/recapture this file.");
-                }
+                //}
             }
             if (candidates.Where(f => f.BrmBarcode == rebox.BrmBarcode && f.TdwBoxno == rebox.BoxNo).Any())
             {

@@ -262,14 +262,14 @@
     {
         try
         {
-            if (string.IsNullOrEmpty(rebox.BoxNo))
+            if (string.IsNullOrEmpty(rebox.BoxNo) || rebox.BoxNo.Length > 7 || !rebox.BoxNo.All(char.IsLetterOrDigit))
             {
                 throw new Exception($"Invalid Box No: {rebox.BoxNo}.");
             }
             if (!loaded)
             {
                 rebox.BoxNo = rebox.BoxNo.ToUpper().Trim();
-                await OnPaged(page);
+                await OnPaged(page);//Load items in this box
                 //Todo: fix field in db
                 rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
                 BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
