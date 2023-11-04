@@ -43,6 +43,7 @@
                     <th scope="col">Action</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
+                    <th scope="col">Select</th>
                     <th scope="col">Brm Barcode</th>
                     <th scope="col">Child ID No</th>
                     <th scope="col">Grant Type</th>
@@ -67,6 +68,7 @@
                         <td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnView_Click(u))">View Cover</button></td>
                         <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(u))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
                         <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnEditBarcode_Click(u))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Edit Barcode</button></td>
+                        <td>@u.IsSelected</td>
                         <td>@u.Brm_BarCode</td>
                         <td>@u.ChildId</td>
                         <td>@u.GrantName</td>

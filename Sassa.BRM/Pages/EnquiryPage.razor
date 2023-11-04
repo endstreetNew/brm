@@ -5,6 +5,7 @@
 @inject IAlertService toast
 @inject BRMDbService db
 
+
 <div class="row">
     <div class="col" style="max-width:300px;">
         <input class="form-control" placeholder="Brm barcode or Id..." @bind="txtSearchBrm" />
@@ -138,6 +139,34 @@
                         </tbody>
                     </table>
                 }
+                <strong>Delete/Update History for this Applicant</strong>
+                @if (history != null)
+                {
+                    <table class="table table-sm" style="font-size:small;">
+                        <thead>
+                            <tr>
+
+                                <th scope="col">User</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Region</th>
+                                <th scope="col">Office</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var u in activities)
+                            {
+                                <tr>
+                                    <td>@u.Username</td>
+                                    <td>@u.ActivityDate</td>
+                                    <td>@(db.GetRegion(u.RegionId))</td>
+                                    <td>@(db.GetOfficeName(u.OfficeId.ToString()))</td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                }
             </div>
         </div>
     </Modal>
@@ -176,8 +205,9 @@
 @code {
 
     Enquiry e { get; set; }
-    List<DcActivity> activities { get; set; }
+    List<DcActivity> activities;
     List<Enquiry> idResults { get; set; }
+    List<DcFileDeleted> history;
 
     string txtSearchBrm;
 
@@ -203,6 +233,10 @@
             else
             {
                 idResults = await db.GetEnquiryBySrd(txtSearchBrm);
+            }
+            if(idResults.Any())
+            {
+                history = await db.GetDeleteHistory(idResults.First().ApplicantNo);
             }
         }
         catch (Exception ex)

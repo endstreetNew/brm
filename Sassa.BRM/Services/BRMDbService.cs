@@ -2245,7 +2245,9 @@ namespace Sassa.BRM.Services
                                 null as DateApproved,
                 0 As Trans_type,
                 '' AS IdHistory,
-                                'Brm' as Source
+                'Brm' as Source,
+                '' as BrmUserName,
+                0 as IsSelected
                         from Dc_File f
                         inner join DC_REGION rg on f.Region_ID = rg.REGION_ID
                         inner join DC_Grant_type g on g.TYPE_ID = f.GRANT_TYPE
@@ -2934,6 +2936,11 @@ namespace Sassa.BRM.Services
                 result.SocPenActive = socpenresult.Where( s => s.StatusCode =="ACTIVE").Any();
             }
             return result;
+        }
+
+        public async Task<List<DcFileDeleted>> GetDeleteHistory(string idNumber)
+        {
+            return await _context.DcFileDeleteds.Where( d => d.ApplicantNo == idNumber).ToListAsync();
         }
 
         public async Task<List<Enquiry>> GetEnquiryById(string idNumber)
