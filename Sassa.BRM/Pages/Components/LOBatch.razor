@@ -102,6 +102,14 @@
                         <label class="input-group-text">Show my batches</label>
                     </div>
                 </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <input class="form control" type="text" @bind="BrmBarCode" placeholder="<Scan Barcode>">
+                        </div>
+                        <button class="btn btn-primary btn-sm active" @onclick="@(() => NewBatch())">New Batch/Add File</button>
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="col">
@@ -181,7 +189,7 @@
 
 @code {
     protected PagedResult<DcBatch> DTBatch { get; set; }
-    protected DcBatch selectedBatch { get; set; }
+    protected DcBatch selectedBatch { get; set; } = new DcBatch();
 
     protected string filterStatus;
 
@@ -227,6 +235,29 @@
         {
             toast.Error(ex.Message);
         }
+    }
+
+    protected async Task NewBatch()
+    {
+        try
+        {
+            if (BrmBarCode.Trim().Length != 8)
+            { throw new Exception("Invalid BarCode."); }
+            BrmBarCode = BrmBarCode.Trim().ToUpper();
+            DcFile application = await db.GetBRMRecord(BrmBarCode);
+            if(application.BatchNo > 0)
+            {
+                throw new Exception($"File {BrmBarCode} already in batch {application.BatchNo}");
+            };
+            string batchType = application.ApplicantNo.StartsWith("S") ? "SrdNoId" : application.RegType;
+            selectedBatch.BatchNo = (decimal)(await db.CreateBatchForUser(batchType));
+            await btnAddFileToBatch(BrmBarCode);
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+
     }
 
     protected async Task FilterStatus(ChangeEventArgs args)
@@ -280,6 +311,7 @@
             items = await db.GetAllFilesByBatchNo(selectedBatch.BatchNo, editPage);
             editBatch = items.count != 0;
             DTBatch = await db.GetBatches(filterStatus, page);
+            StateHasChanged();
         }
         catch (Exception ex)
         {

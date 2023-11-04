@@ -610,8 +610,8 @@ namespace Sassa.BRM.Services
             await RemoveBRM(application.Brm_BarCode, reason);
             decimal? batch = null;
 
-            string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-            batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
+            //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
+            batch = 0;//string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
 
             DcFile file = new DcFile()
             {
@@ -2457,7 +2457,7 @@ namespace Sassa.BRM.Services
 
         #region Batching
 
-        private async Task<decimal?> CreateBatchForUser(string sRegType)
+        public async Task<decimal?> CreateBatchForUser(string sRegType)
         {
             DcBatch batch;
             List<DcBatch> batches = new List<DcBatch>();
