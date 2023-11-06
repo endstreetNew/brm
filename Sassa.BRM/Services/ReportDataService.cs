@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using razor.Components.Models;
+using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
+using Sassa.eDocs.Data.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -70,6 +72,13 @@ namespace Sassa.BRM.Services
 
         public async Task SaveCsvReport(string dateFrom, string dateTo, string rIndex, string office_id, string office_type, string region_id, string grant_type, string filename, string status = "", string sql = "")
         {
+            ReportHeader header = new ReportHeader();
+            header.FromDate = dateFrom;
+            header.ToDate = dateTo;
+            int usernameIndex = filename.IndexOf('-') + 1;
+            header.Username = filename.Substring(usernameIndex, filename.Substring(usernameIndex).IndexOf("-"));//{_session.Office.RegionCode}-{_session.SamName.ToUpper()}-
+            header.Region = StaticD.RegionName(region_id);
+
             System.Data.DataTable dt = new System.Data.DataTable();
 
             string regionSQL = "";
@@ -278,7 +287,7 @@ namespace Sassa.BRM.Services
                         con.Open();
                         using (OracleDataReader reader = (OracleDataReader)await cmd.ExecuteReaderAsync())
                         {
-                            reader.ToCsv(filename, reportFolder);
+                            reader.ToCsv(filename,header, reportFolder);
                         }
                     }
                     con.Close();
@@ -292,12 +301,18 @@ namespace Sassa.BRM.Services
 
         public async Task SaveReport(string rIndex, ReportPeriod from, ReportPeriod to, string regionId, string fileName)
         {
+            ReportHeader header = new ReportHeader();
+            header.FromDate = from.FromDate.ToShortDateString();
+            header.ToDate = to.ToDate.ToShortDateString();
+            int usernameIndex = fileName.IndexOf('-') + 1;
+            header.Username = fileName.Substring(usernameIndex, fileName.Substring(usernameIndex).IndexOf("-"));//{_session.Office.RegionCode}-{_session.SamName.ToUpper()}-
+            header.Region = StaticD.RegionName(regionId);
+
             switch (rIndex)
             {
                 case "8"://Missing Summary
                     List<MissingFile> result = await _ogs.MissingProgress(from, to, regionId);
-                    result.ToCsv(fileName, reportFolder);
-
+                    result.ToCsv<MissingFile>(fileName,header,reportFolder);
                     break;
                 default:
                     break;

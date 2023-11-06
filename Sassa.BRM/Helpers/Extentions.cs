@@ -2,10 +2,12 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Oracle.ManagedDataAccess.Client;
+using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 //using System.Data.Entity.Core.Objects;
 using System.Globalization;
 using System.IO;
@@ -163,8 +165,9 @@ namespace Sassa.BRM.Helpers
         /// <param name="filename"></param>
         /// <param name="path">if null/empty will use IO.Path.GetTempPath()</param>
         /// <param name="extension">will use csv by default</param>
-        public static void ToCsv(this IDataReader reader, string filename, string path = null, string extension = "csv")
+        public static void ToCsv(this IDataReader reader, string filename, ReportHeader header, string path = null, string extension = "csv")
         {
+            //Username, Region, Date Range and number of application
             int nextResult = 0;
             do
             {
@@ -172,6 +175,7 @@ namespace Sassa.BRM.Helpers
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {
                     writer.WriteLine(string.Join(",", Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList()));
+                    
                     int count = 0;
                     while (reader.Read())
                     {
@@ -181,6 +185,8 @@ namespace Sassa.BRM.Helpers
                             writer.Flush();
                         }
                     }
+                    writer.WriteLine($"");
+                    writer.WriteLine($"{header.Region}|{header.Username}|{header.FromDate}|{header.ToDate}|{count}");
                 }
 
                 filename = string.Format("{0}-{1}", filename, ++nextResult);
@@ -188,7 +194,7 @@ namespace Sassa.BRM.Helpers
             while (reader.NextResult());
         }
 
-        public static void ToCsv<T>(this List<T> list, string filename, string path = null, string extension = "csv")
+        public static void ToCsv<T>(this List<T> list, string filename, ReportHeader header, string path = null, string extension = "csv")
         {
             var filePath = Path.Combine(string.IsNullOrEmpty(path) ? Path.GetTempPath() : path, string.Format("{0}.{1}", filename, extension));
             using (StreamWriter writer = new StreamWriter(filePath))
@@ -215,6 +221,9 @@ namespace Sassa.BRM.Helpers
                     var llastProp = properties[properties.Length - 1];
                     writer.Write(llastProp.GetValue(item) + writer.NewLine);
                 }
+
+                writer.WriteLine($"");
+                writer.WriteLine($"{header.Region}|{header.Username}|{header.FromDate}|{header.ToDate}|{list.Count}");
                 writer.Flush();
             }
 
