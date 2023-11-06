@@ -604,10 +604,10 @@ namespace Sassa.BRM.Services
         {
             //Removes all duplicates
             await RemoveBRM(application.Brm_BarCode, reason);
-            decimal? batch = null;
+            decimal? batch = 0;
 
-            string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-            batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType,application.OfficeId,application.BrmUserName) : 0;
+            //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
+            //batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType,application.OfficeId,application.BrmUserName) : 0;
             string region;
             try
             {
