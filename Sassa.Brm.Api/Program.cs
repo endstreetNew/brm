@@ -3,7 +3,7 @@ using Sassa.BRM.Models;
 using Sassa.BRM.Services;
 
 using Microsoft.Extensions.Configuration;
-using Sassa.BRM.Models;
+
 
 var cbuilder = new ConfigurationBuilder();
 cbuilder.AddJsonFile("appsettings.json");

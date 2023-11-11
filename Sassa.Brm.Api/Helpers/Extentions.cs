@@ -74,13 +74,13 @@ namespace Sassa.BRM.Helpers
             fromformat = fromformat.Replace("-", "/").Replace("mm", "MM"); ;
             fromdate = fromdate.Replace("-", "/");
             if (string.IsNullOrEmpty(fromdate)) return "";
-            return ((DateTime)fromdate.ToDate(fromformat)).ToString("dd/MMM/yy");
+            return ((DateTime)fromdate.ToDate(fromformat)!).ToString("dd/MMM/yy");
         }
 
         public static string ChangeDateStringFormat(this string fromdate, string fromformat, string toFormat)
         {
             if (string.IsNullOrEmpty(fromdate)) return "";
-            return ((DateTime)fromdate.ToDate(fromformat)).ToString(toFormat);
+            return ((DateTime)fromdate.ToDate(fromformat)!).ToString(toFormat);
         }
 
         public static Decimal? ToDecimal(this string val)
@@ -92,7 +92,7 @@ namespace Sassa.BRM.Helpers
             }
             return null;
         }
-        public static String ToEncodedString(this Stream stream, Encoding enc = null)
+        public static String ToEncodedString(this Stream stream, Encoding? enc = null)
         {
             enc = enc ?? Encoding.UTF8;
 

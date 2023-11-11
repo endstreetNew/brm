@@ -27,7 +27,7 @@ namespace Sassa.BRM.Services
 
         ModelContext _context;
         //RawSqlService _raw;
-        UserSession _session;
+        UserSession? _session;
         //MailMessages _mail;
 
         public UserSession session
@@ -56,7 +56,7 @@ namespace Sassa.BRM.Services
 
         }
 
-        public event EventHandler SessionInitialized;
+        public event EventHandler? SessionInitialized;
 
         #region Static Data
 
