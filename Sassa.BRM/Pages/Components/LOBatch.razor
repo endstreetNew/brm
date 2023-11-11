@@ -25,7 +25,7 @@
                 <div class="input-group-text">
                     <input class="form control" type="text" @bind="BrmBarCode" placeholder="<Scan Barcode>">
                 </div>
-                <button class="btn btn-primary" @onclick="@(() => NewBatch(BrmBarCode))">Add File</button>
+                <button class="btn btn-primary" @onclick="@(() => NewBatch())">Add File</button>
             </div>
             <div class="row">
                 <div class="col-12">
@@ -251,7 +251,7 @@
             };
             string batchType = application.ApplicantNo.StartsWith("S") ? "SrdNoId" : application.RegType;
             selectedBatch.BatchNo = (decimal)(await db.CreateBatchForUser(batchType));
-            await btnAddFileToBatch(BrmBarCode);
+            await btnAddFileToBatch();
         }
         catch (Exception ex)
         {
@@ -319,21 +319,18 @@
         }
     }
     //Always use newbatch to do validation
-    // protected async Task btnAddFileToBatch(string BrmBarCode)
-    // {
-    //     try
-    //     {
-    //         if (BrmBarCode.Trim().Length != 8)
-    //         { throw new Exception("Invalid BarCode."); }
-    //         BrmBarCode = BrmBarCode.Trim().ToUpper();
-    //         await db.AddFileToBatch(BrmBarCode, selectedBatch.BatchNo);
-    //         items = await db.GetAllFilesByBatchNo(selectedBatch.BatchNo, editPage);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         toast.Error(ex.Message);
-    //     }
-    // }
+    protected async Task btnAddFileToBatch()
+    {
+        try
+        {
+            await db.AddFileToBatch(BrmBarCode, selectedBatch.BatchNo);
+            items = await db.GetAllFilesByBatchNo(selectedBatch.BatchNo, editPage);
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
+    }
     protected void OnConfirmationClose()
     {
 
