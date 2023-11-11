@@ -179,7 +179,7 @@ namespace Sassa.BRM.Services
 
                 return result;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 throw;
             }

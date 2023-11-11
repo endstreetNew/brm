@@ -135,7 +135,7 @@
 
     List<MonthDetail> dashboardData;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         office = db.session.Office;
         IsDashboardLoaded = false;

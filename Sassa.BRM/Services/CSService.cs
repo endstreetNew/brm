@@ -53,7 +53,7 @@ namespace Sassa.BRM.Services
                 //authClient.Endpoint = new System.ServiceModel.EndpointAddress("http://ssvsprdsphc01.sassa.local:18080/cws/services/Authentication");
                 ota.AuthenticationToken = await authClient.AuthenticateUserAsync(username, password);
             }
-            catch(Exception ex)
+            catch//(Exception ex)
             {
                 throw new Exception("Failed to Authenticate Contentserver WS.");
             }

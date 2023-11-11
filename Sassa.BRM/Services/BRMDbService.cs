@@ -48,7 +48,7 @@ namespace Sassa.BRM.Services
                 GetUserSession((WindowsIdentity)ctx.HttpContext.User.Identity);
                 //if (!StaticD.Users.Contains(_session.SamName)) StaticD.Users.Add(_session.SamName);
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 _session = null;
                 //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
@@ -2448,7 +2448,7 @@ namespace Sassa.BRM.Services
                 _context.DcFileDeleteds.Add(removed);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //throw new Exception("Error backing up file: " + ex.Message);
             }

@@ -329,7 +329,7 @@ namespace Sassa.BRM.Services
             {
                 files = Directory.GetFiles(reportFolder, $"{regionCode}-{username.ToUpper()}*");
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
 
             }

@@ -30,7 +30,7 @@
                         <td scope="col">
                             @if (prop.PropertyType == typeof(bool))
                             {
-                                @if (prop.GetValue(u) == null || (bool)prop.GetValue(u) == false)
+                                @if (prop.GetValue(u) == null || (bool)(prop.GetValue(u) ?? false) == false)
                                 {
                                     <span class="oi oi-x" aria-hidden="true"></span>
                                 }
@@ -51,7 +51,7 @@
                                 <a class="btn btn-primary btn-sm active" href="/brmfiles/@propa.GetValue(u)" download="@propa.GetValue(u)" target="_top">Download</a>
                             </td>
                             <td>
-                                <button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(propa.GetValue(u).ToString()))">Delete</button>
+                                <button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(propa.GetValue(u)!.ToString()!))">Delete</button>
                             </td>
                         }
 

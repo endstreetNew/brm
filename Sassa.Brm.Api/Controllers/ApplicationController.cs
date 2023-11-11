@@ -61,11 +61,11 @@ namespace Sassa.BRM.Controller
             //return xx;
             return result;
         }
-        [HttpGet]
-        public ActionResult<string> GetLastError()
-        {
-            return lastError;
-        }   
+        //[HttpGet]
+        //public ActionResult<string> GetLastError()
+        //{
+        //    return lastError;
+        //}   
 
     }
 }

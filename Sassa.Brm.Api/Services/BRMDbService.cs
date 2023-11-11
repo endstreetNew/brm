@@ -30,7 +30,7 @@ namespace Sassa.BRM.Services
         UserSession? _session;
         //MailMessages _mail;
 
-        public UserSession session
+        public UserSession? session
         {
             get
             {
@@ -143,7 +143,7 @@ namespace Sassa.BRM.Services
 
         }
 
-        public DcLocalOffice GetLocalOffice(string officeId)
+        public DcLocalOffice? GetLocalOffice(string officeId)
         {
             if (StaticD.LocalOffices == null)
             {
@@ -340,7 +340,7 @@ namespace Sassa.BRM.Services
         {
             DcLocalOffice lo = new DcLocalOffice();
             lo.OfficeName = office.OfficeName;
-            lo.OfficeId = (int.Parse(_context.DcLocalOffices.Max(o => o.OfficeId)) + 1).ToString();
+            lo.OfficeId = (int.Parse(_context.DcLocalOffices.Max(o => o.OfficeId) ?? "") + 1).ToString();
             lo.RegionId = office.RegionId;
             lo.ActiveStatus = "A";
             lo.OfficeType = "LO";
@@ -609,14 +609,16 @@ namespace Sassa.BRM.Services
             //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
             //batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType,application.OfficeId,application.BrmUserName) : 0;
             string region;
-            try
+
+            if (StaticD.LocalOffices != null && StaticD.LocalOffices.Any())
             {
                 region = StaticD.LocalOffices.Where(o => o.OfficeId == application.OfficeId).FirstOrDefault()!.RegionId;
             }
-            catch (Exception ex)
+            else
             {
                 throw new Exception("Office not found");
             }
+
 
             DcFile file = new DcFile()
             {
@@ -670,7 +672,7 @@ namespace Sassa.BRM.Services
             //    _raw.ExecuteNonQuery(sql);
             //}
 
-            file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
+            file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault()!;
             //await SetBatchCount((decimal)file.BatchNo);
             CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
             DcSocpen dc_socpen;

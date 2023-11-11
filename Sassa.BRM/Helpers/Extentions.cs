@@ -477,7 +477,7 @@ namespace Sassa.BRM.Helpers
             });
 
             spreadsheetDocument.WorkbookPart.Workbook.Save();
-            spreadsheetDocument.Close();
+            spreadsheetDocument.Dispose();
 
             // Close the document.
             return Encoding.UTF8.GetString(mem.ToArray());

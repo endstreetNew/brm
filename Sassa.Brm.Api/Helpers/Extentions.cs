@@ -133,7 +133,7 @@ namespace Sassa.BRM.Helpers
                 {
                     if (!Convert.IsDBNull(dr[i]))
                     {
-                        string value = dr[i].ToString().Trim();
+                        string value = dr[i].ToString()!.Trim();
                         if (value.Contains(","))
                         {
                             value = String.Format("\"{0}\"", value);
@@ -143,7 +143,7 @@ namespace Sassa.BRM.Helpers
                         else
                         {
 
-                            sb.Append(rgx.Replace(dr[i].ToString().Trim(), ""));
+                            sb.Append(rgx.Replace(dr[i].ToString()!.Trim(), ""));
                         }
                     }
                     if (i < dtDataTable.Columns.Count - 1)
@@ -163,7 +163,7 @@ namespace Sassa.BRM.Helpers
         /// <param name="filename"></param>
         /// <param name="path">if null/empty will use IO.Path.GetTempPath()</param>
         /// <param name="extension">will use csv by default</param>
-        public static void ToCsv(this IDataReader reader, string filename, string path = null, string extension = "csv")
+        public static void ToCsv(this IDataReader reader, string filename, string? path = null, string extension = "csv")
         {
             int nextResult = 0;
             do
@@ -188,7 +188,7 @@ namespace Sassa.BRM.Helpers
             while (reader.NextResult());
         }
 
-        public static void ToCsv<T>(this List<T> list, string filename, string path = null, string extension = "csv")
+        public static void ToCsv<T>(this List<T> list, string filename, string? path = null, string extension = "csv")
         {
             var filePath = Path.Combine(string.IsNullOrEmpty(path) ? Path.GetTempPath() : path, string.Format("{0}.{1}", filename, extension));
             using (StreamWriter writer = new StreamWriter(filePath))

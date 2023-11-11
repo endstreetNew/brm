@@ -2,7 +2,7 @@
 
 <h3>Maintenance</h3>
 
-<TabControl ActivePageId="1" PageActivate="OnTabActivate">
+<TabControl ActivePageId="1">
     <TabPage Text="Socpen Office Links" Id="1" Enabled="true">
         <OfficeAdmin></OfficeAdmin>
     </TabPage>
@@ -16,26 +16,26 @@
 
 @code {
 
-    protected override async Task OnInitializedAsync()
-    {
-        await OnTabActivate(1);
-    }
-    private async Task OnTabActivate(int e)
-    {
-        switch (e)
-        {
-            case 1:
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     //await OnTabActivate(1);
+    // }
+    // private async Task OnTabActivate(int e)
+    // {
+    //     switch (e)
+    //     {
+    //         case 1:
 
-                break;
-            case 2:
+    //             break;
+    //         case 2:
 
-                break;
-            case 3:
+    //             break;
+    //         case 3:
                 
-                break;
-            default:
-                break;
-        }
-    }
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
 }
