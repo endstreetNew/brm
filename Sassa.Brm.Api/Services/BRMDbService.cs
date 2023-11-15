@@ -73,7 +73,7 @@ namespace Sassa.BRM.Services
         }
         public async Task GetLocalOffice()
         {
-            string username = session.SamName;
+            string username = session == null ? "Unknown" : session.SamName;
             if (StaticD.LocalOffices == null)
             {
                 StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
@@ -98,7 +98,7 @@ namespace Sassa.BRM.Services
 
                   }).Any())
             {
-                DcLocalOffice ioffice = GetOffices("7").FirstOrDefault();
+                DcLocalOffice ioffice = GetOffices("7").FirstOrDefault()!;
                 //Attach to first or default office in Gauteng.
                 await UpdateUserLocalOffice(ioffice.OfficeId, null);
                 //try again..
@@ -127,7 +127,7 @@ namespace Sassa.BRM.Services
             _session.Office.RegionName = GetRegion(value.RegionId);
             _session.Office.RegionCode = GetRegionCode(value.RegionId);
             _session.Office.OfficeType = !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO"; //Default to local office
-            if (SessionInitialized != null) SessionInitialized(this, null);
+            if (SessionInitialized != null) SessionInitialized(this, EventArgs.Empty);
         }
 
         public async Task GetLocalOffices()
@@ -175,7 +175,7 @@ namespace Sassa.BRM.Services
             {
                 StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
+            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices!.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
         }
         public List<DcFixedServicePoint> GetOfficeServicePoints(string officeID)
         {
@@ -798,7 +798,7 @@ namespace Sassa.BRM.Services
                 _context.DcFileDeleteds.Add(removed);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //throw new Exception("Error backing up file: " + ex.Message);
             }
@@ -813,7 +813,7 @@ namespace Sassa.BRM.Services
                 {
                     var parent = parents.Where(p => p.TDW_BOXNO == null).First();
 
-                    DcMerge merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault();
+                    DcMerge merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault()!;
 
                     if (merge == null)//No existing merge create one
                     {

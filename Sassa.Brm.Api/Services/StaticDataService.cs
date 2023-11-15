@@ -80,7 +80,7 @@ namespace Sassa.BRM.Services
             }
         }
 
-        private static Dictionary<string, string> _requestStatus;
+        private static Dictionary<string, string>? _requestStatus;
         public static Dictionary<string, string> RequestStatus
         {
             get
@@ -100,7 +100,7 @@ namespace Sassa.BRM.Services
             }
         }
 
-        private static Dictionary<string, string> _picklistStatus;
+        private static Dictionary<string, string>? _picklistStatus;
         public static Dictionary<string, string> PickListStatus
         {
             get
@@ -116,7 +116,7 @@ namespace Sassa.BRM.Services
 
         }
 
-        private static Dictionary<string, string> _tdwregions;
+        private static Dictionary<string, string>? _tdwregions;
         public static Dictionary<string, string> TdwRegions
         {
             get
@@ -218,7 +218,7 @@ namespace Sassa.BRM.Services
             return _months;
         }
 
-        public static List<String> _exclusionTypes;
+        public static List<String>? _exclusionTypes;
         public static List<String> ExclusionTypes
         {
             get
@@ -242,14 +242,14 @@ namespace Sassa.BRM.Services
             }
         }
 
-        private static string _version;
+        private static string _version = "";
         public static string Version()
         {
             if (string.IsNullOrEmpty(_version))
             {
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-                _version = fvi.FileVersion;
+                _version = fvi.FileVersion ?? "Not Found";
             }
             return _version;
         }
