@@ -19,6 +19,7 @@ namespace Sassa.BRM.Models
         public string OfficeType { get; set; }
         public string District { get; set; }
         public string ActiveStatus { get; set; }
+        public string ManualBatch { get; set; }
 
         public virtual DcRegion Region { get; set; }
         public virtual ICollection<DcBatch> DcBatches { get; set; }

@@ -603,13 +603,19 @@ namespace Sassa.BRM.Services
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {
             //Removes all duplicates
-            await RemoveBRM(application.Brm_BarCode, reason);
+
             decimal? batch = 0;
-
-            //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-            //batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType,application.OfficeId,application.BrmUserName) : 0;
+            var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
+            if (office.ManualBatch == "A")
+            {
+                batch = 0;
+            }
+            else
+            {
+                return null;
+            }
             string region;
-
+            await RemoveBRM(application.Brm_BarCode, reason);
             if (StaticD.LocalOffices != null && StaticD.LocalOffices.Any())
             {
                 region = StaticD.LocalOffices.Where(o => o.OfficeId == application.OfficeId).FirstOrDefault()!.RegionId;

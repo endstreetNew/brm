@@ -324,6 +324,13 @@ namespace Sassa.BRM.Services
             await DeleteLocalOffice(fromOfficeId);
         }
 
+        public async Task SaveManualBatch(string officeId, string manualBatch)
+        {
+            DcLocalOffice lo = await _context.DcLocalOffices.Where(o => o.OfficeId == officeId).FirstAsync();
+            lo.ManualBatch = manualBatch;
+            await _context.SaveChangesAsync();
+            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+        }
         public async Task DeleteLocalOffice(string officeId)
         {
             var lo = await _context.DcLocalOffices.FirstAsync(o => o.OfficeId == officeId);
@@ -609,9 +616,16 @@ namespace Sassa.BRM.Services
             //Removes all duplicates
             await RemoveBRM(application.Brm_BarCode, reason);
             decimal? batch = null;
-
-            //string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-            batch = 0;//string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
+            var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
+            if (office.ManualBatch == "A")
+            {
+                batch = 0;
+            }
+            else 
+            { 
+                string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
+                batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
+            }
 
             DcFile file = new DcFile()
             {

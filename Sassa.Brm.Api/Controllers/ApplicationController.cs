@@ -52,7 +52,11 @@ namespace Sassa.BRM.Controller
                 _brmService.SetUserOffice(app.OfficeId);
             }
             result = await _brmService.CreateBRM(app, "Inserted via API.");
-            //}
+            if (result == null)
+            {
+                return BadRequest();
+            }
+            //} 
             //catch (Exception ex)
             //{
             //    return GetLastError();

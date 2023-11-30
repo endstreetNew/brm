@@ -40,6 +40,7 @@
                             <th scope="col">Active</th>
                             <th scope="col">Action</th>
                             <th scope="col">Migrate</th>
+                            <th scope="col">Batching</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,6 +81,9 @@
                                         
                                         </div>
                                     }
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm active" @onclick="@(() => btnManualBatching_Click(u))">Set @(u.ManualBatch == "I" ? "Manual" : "Auto")-Batch</button>
                                 </td>
                             </tr>
 
@@ -122,7 +126,8 @@
         {
             OfficeId = int.Parse(o.OfficeId),
             OfficeName = o.OfficeName,
-            Status = o.ActiveStatus
+            Status = o.ActiveStatus,
+            ManualBatch = o.ManualBatch,
             //ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault().ResCode : 0
         }).ToList();
 
@@ -142,6 +147,18 @@
         if (u.ResCode > 0)
         {
             await ss.ChangeOfficeStatus(u.ResCode,status);
+        }
+        IsLoaded = false;
+        await GetRegionOffices();
+    }
+
+    protected async void btnManualBatching_Click(RegionOffice u)
+    {
+        //toggle current Status
+        string status = u.ManualBatch == "A" ? "A" : "I";
+        if (u.OfficeId > 0)
+        {
+            await db.SaveManualBatch(u.OfficeId.ToString(), u.ManualBatch == "A" ? "I" : "A");
         }
         IsLoaded = false;
         await GetRegionOffices();

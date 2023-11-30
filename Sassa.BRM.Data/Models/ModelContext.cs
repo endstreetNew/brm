@@ -1908,6 +1908,12 @@ namespace Sassa.BRM.Models
                     .IsUnicode(false)
                     .HasColumnName("OFFICE_TYPE");
 
+                entity.Property(e => e.ManualBatch)
+                    .IsRequired()
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("'I' ")
+                    .HasColumnName("MANUAL_BATCH");
                 entity.Property(e => e.RegionId)
                     .HasMaxLength(20)
                     .IsUnicode(false)
