@@ -14,3 +14,12 @@ Set (tdw_rec) = (
 	AND ROWNUM = 1
 )
 where s.tdw_rec is null
+
+update dc_socpen s
+set s.grant_type = '0'
+--select * from dc_socpen s
+where s.grant_type ='3'
+and status_code = 'INACTIVE'
+and exists(
+Select * from cust_payment p 
+where not exists(SELECT * from dc_socpen where p.id_number = s.beneficiary_id and status_code = 'ACTIVE' and Grant_Type = '0'))

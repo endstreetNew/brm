@@ -8,7 +8,7 @@ using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
-using Sassa.eDocs.Data.Migrations;
+//using Sassa.eDocs.Data.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Data;
