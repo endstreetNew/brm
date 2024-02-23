@@ -89,7 +89,6 @@
     <ProjectReference Include="..\razor.Components\razor.Components.csproj" />
     <ProjectReference Include="..\Sassa.Barcoder\Sassa.Barcoder.csproj" />
     <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
-    <ProjectReference Include="..\Sassa.eDocs.Data\Sassa.eDocs.Data.csproj" />
     <ProjectReference Include="..\Sassa.QrCoder\Sassa.QrCoder.csproj" />
     <ProjectReference Include="..\Sassa.Socpen.Data\Sassa.Socpen.Data.csproj" />
   </ItemGroup>

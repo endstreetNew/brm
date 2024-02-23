@@ -15,9 +15,5 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Sassa.eDocs.Data\Sassa.eDocs.Data.csproj" />
-  </ItemGroup>
-
 
 </Project>

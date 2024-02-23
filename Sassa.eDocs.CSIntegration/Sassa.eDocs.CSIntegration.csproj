@@ -44,10 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sassa.eDocs.Data\Sassa.eDocs.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
 
