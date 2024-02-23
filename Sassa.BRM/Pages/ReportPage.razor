@@ -242,7 +242,7 @@
     string toQuarter;
     string forMonth;
 
-    string customSql;
+    //string customSql;
 
     protected bool IsDashboardLoaded;
     protected bool IsMissingDashboardLoaded;
@@ -250,7 +250,7 @@
     ReportPeriod period = new ReportPeriod { FromDate = DateTime.Now.AddMonths(-1), ToDate = DateTime.Now };
     //DateTime FromDate = DateTime.Now.AddMonths(-1);
     //DateTime ToDate = DateTime.Now;
-    List<MissingSummary> dashboardData;
+    //List<MissingSummary> dashboardData;
 
     Dictionary<string, string> reportList;
     Dictionary<string, ReportPeriod> quarterList;
@@ -341,7 +341,7 @@
                 {
                     if (db.session.IsRmc() && db.session.IsInRole("GRP_BRM_Supervisors"))
                     {
-                        await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName, "", customSql);
+                        await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName, "");
                     }
                     else
                     {
