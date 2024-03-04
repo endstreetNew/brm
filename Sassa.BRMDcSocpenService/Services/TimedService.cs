@@ -33,9 +33,11 @@
             _raw = raw;
             _fu = fu;
             Globals = fu.ReadJson<TimedService.GlobalVars>(fileName);
+            Globals.Status = false;
+            fu.WriteJson(Globals, fileName);
         }
 
-        public async Task Start(bool startup)
+        public async Task Start()
         {
             if (schedule == null)
             {
@@ -47,16 +49,23 @@
                     delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
                 }
                 Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
-                Globals.Status = true;
+                //Globals.Status = true;
                 _fu.WriteJson(Globals, fileName);
-                if(Globals.NextRefreshDate < DateTime.Now )
+                if (Globals.NextRefreshDate < DateTime.Now)
                 {
-                    if(!startup) await Task.Run(() => SyncSOCPEN(null));
+                    await Task.Run(() => SyncSOCPEN(null));
                     delayTime = Globals.NextRefreshDate - DateTime.Now;
-                    
+
                 }
                 if (delayTime < TimeSpan.Zero) { delayTime = new TimeSpan(10000); }
                 schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+            }
+            else
+            {
+                if (Globals.NextRefreshDate < DateTime.Now)//Run if overdue
+                {
+                    await Task.Run(() => SyncSOCPEN(null));
+                }
             }
             return;
         }
@@ -72,7 +81,7 @@
         /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            return Start(true);
+            return Start();
         }
 
 
@@ -83,7 +92,7 @@
             Globals.Status = false;
             string sql = "";
             Globals.LastRunDate = DateTime.Now;
-            Globals.Progress = "Starting.";
+            Globals.Progress = "Syncing.";
             _fu.WriteJson(Globals, fileName);
             bookmark = _raw.GetBookMark("Select max(Capture_date) from dc_socpen");
             bookmark = bookmark.AddDays(-14); //Start two weeks ago.

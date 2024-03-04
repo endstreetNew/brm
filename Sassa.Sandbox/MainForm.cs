@@ -25,7 +25,7 @@ namespace Sassa.Sandbox
         //"SMTPPassword": "D0cum3nt"
         private void button1_Click(object sender, EventArgs e)
         {
-            string _smtpServer = "10.117.122.18";
+            string _smtpServer =  "10.117.122.18";//"10.117.122.170";//"10.124.154.25";// "10.117.122.170";//
             int _port = 25;
             string _smtpUser = "no-reply@sassa.gov.za";
             string _smtpPassword = "D0cum3nt";
