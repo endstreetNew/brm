@@ -201,6 +201,7 @@
         string socpenDate = br.AppDate;
         string reason = $"Freecapture by : {db.session.SamName}";
         br.AppDate = SelectedAppDate.ToStandardDateString();
+        br.OfficeId = db.session.Office.OfficeId;
         if (socpenDate != br.AppDate)
         {
             reason = $"Freecapture with date {br.AppDate} for {socpenDate} by : {db.session.SamName} ";

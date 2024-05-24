@@ -261,7 +261,7 @@
             {
                 throw new Exception("Please provide a reason for this deletion.");
             }
-            await db.RemoveBRM(selectedApp.Brm_BarCode,deleteReason);
+            await db.RemoveBRM(selectedApp.Brm_BarCode, deleteReason);
             await Changed.InvokeAsync();
             showConfirmation = false;
         }

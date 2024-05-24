@@ -39,10 +39,11 @@
 
         public async Task Start()
         {
+            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
+
             if (schedule == null)
             {
-                TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
-                if (delayTime.Ticks < 0 && schedule == null)//Overdue
+                if (delayTime.Ticks < 0)//Overdue
                 {
                     //schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
                     //return Task.CompletedTask;

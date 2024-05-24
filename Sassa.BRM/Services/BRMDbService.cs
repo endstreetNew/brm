@@ -740,7 +740,6 @@ namespace Sassa.BRM.Services
                 dc_socpen.LocalofficeId = session.Office.OfficeId;
                 dc_socpen.Documents = file.DocsPresent;
 
-
                 _context.DcSocpen.Add(dc_socpen);
             }
             try
@@ -2407,14 +2406,17 @@ namespace Sassa.BRM.Services
         {
 
             var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
+            //int fileCount = files.Count();
             if (files.Any())
             {
                 foreach (var dcfile in files)
                 {
+                    //if (!deleteAll && fileCount-- == 1) continue;//leave one record
                     dcfile.FileComment = reason;
                     await BackupDcFileEntry(dcfile);
                     _context.DcFiles.Remove(dcfile);
                     CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
+
                 }
             }
             var merges = _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo);
@@ -2432,6 +2434,7 @@ namespace Sassa.BRM.Services
             }
 
         }
+
         /// <summary>
         /// Backup DcFile entry for removal
         /// </summary>
@@ -2444,10 +2447,14 @@ namespace Sassa.BRM.Services
             removed.FromDCFile(file);
             try
             {
-                _context.DcFileDeleteds.Add(removed);
-                await _context.SaveChangesAsync();
+                if (!_context.DcFileDeleteds.Where(d => d.UnqFileNo == file.UnqFileNo).Any())
+                {
+                    _context.DcFileDeleteds.Add(removed);
+                    await _context.SaveChangesAsync();
+                }
+                
             }
-            catch //(Exception ex)
+            catch(Exception ex)
             {
                 //throw new Exception("Error backing up file: " + ex.Message);
             }

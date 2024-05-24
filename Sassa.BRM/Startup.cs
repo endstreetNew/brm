@@ -43,7 +43,7 @@ namespace Sassa.BRM
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
             services.AddSingleton<MailMessages>();
-            services.AddSingleton<SaveToPDF>();
+            services.AddSingleton<FileService>();
 
             services.AddScoped<IAlertService, AlertService>();
             services.AddScoped<Navigation>();

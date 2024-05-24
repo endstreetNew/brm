@@ -1,4 +1,5 @@
-﻿@inject BRMDbService db
+﻿@using System.IO
+@inject BRMDbService db
 @inject IAlertService toast
 
     <br />
@@ -59,26 +60,24 @@
     <Pager Paged="OnApprovedBatchPaged" TotalSize="@batches.count"></Pager>
     <br />
     <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Batch_Click())">Export</button>
+    <div id="divError"></div>
 </div>
-<!--<div>
+@* <div>
     <br />
     <h2>Upload results</h2>
     <hr />
     <table>
         <tr>
-            <td>-->
-                @*<asp:FileUpload id=CompletedFile runat="server" />*@
 
-            <!--</td>
-            <td>-->
-                @*<asp:Button id="UploadBtn" Text="Upload File" OnClick="UploadBtn_Click" runat="server" class="btn btn-primary active" Width="105px" />*@
-            <!--</td>
             <td>
-                <p style="margin-top:10px">Accepts single column .csv file with header DESTROYED or TDWNOTFOUND</p>
+                <asp:Button id="UploadBtn" Text="Upload File" OnClick="UploadBtn_Click" runat="server" class="btn btn-primary active" Width="105px" />
+            </td>
+            <td>
+                <p style="margin-top:10px">Accepts single column .csv file with header ID</p>
             </td>
         </tr>
     </table>
-</div>-->
+</div> *@
 
 @code {
 
@@ -98,8 +97,44 @@
     {
         await OnApprovedBatchPaged(batchpage);
     }
-    //protected void CommandBtn_Click(object sender, GridViewCommandEventArgs e)
-    //{
+
+    private List<IBrowserFile> loadedFiles = new();
+    private long maxFileSize = 1024 * 15;
+    private int maxAllowedFiles = 3;
+    private bool isLoading;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            try
+            {
+                // var trustedFileName = Path.GetRandomFileName();
+                // var path = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"));
+
+                // await using FileStream fs = new(path, FileMode.Create);
+                // await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+
+                // loadedFiles.Add(file);
+
+                // Logger.LogInformation(
+                //     "Unsafe Filename: {UnsafeFilename} File saved: {Filename}",
+                //     file.Name, trustedFileName);
+            }
+            catch (Exception ex)
+            {
+                // Logger.LogError("File: {Filename} Error: {Error}",
+                //     file.Name, ex.Message);
+            }
+        }
+
+        isLoading = false;
+    }
+    // protected void CommandBtn_Click(object sender, GridViewCommandEventArgs e)
+    // {
     //    int batchId = (int)GridApproved.DataKeys[int.Parse(e.CommandArgument.ToString())].Value;
     //    switch (e.CommandName)
     //    {
@@ -136,11 +171,11 @@
 
     //    GridApproved.DataSource = dProcess.dData.GetApprovedBatches();
     //    GridApproved.DataBind();
-    //}
+    // }
 
-    //protected void UploadBtn_Click(object sender, EventArgs e)
-    //{
-    //    divError.Visible = false;
+    // protected void UploadBtn_Click(object sender, EventArgs e)
+    // {
+    //    //divError.Visible = false;
     //    if (CompletedFile.FileContent.Length > 0)
     //    {
 
@@ -181,7 +216,7 @@
     //        }
 
     //    }
-    //}
+    // }
 
     protected async Task btnExport_Batch_Click()
     {

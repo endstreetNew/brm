@@ -299,9 +299,18 @@
 
     protected async Task btnEditBatch(DcBatch batch)
     {
+        try
+        {
         selectedBatch = batch;
         items = await db.GetAllFilesByBatchNo(batch.BatchNo, editPage);
         editBatch = true;
+        DTBatch = await db.GetBatches(filterStatus, page);
+        StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
     }
     protected async Task btnRemoveItem(string brmBarCode)
     {
@@ -423,6 +432,7 @@
             toast.Error($"Batch cover :{batch.BatchNo} error.");
 
         }
+        //await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
         await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
     }
 

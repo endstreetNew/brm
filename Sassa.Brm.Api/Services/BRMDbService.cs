@@ -694,16 +694,19 @@ namespace Sassa.BRM.Services
             //}
             //else
             //{
-            long? srd;
+            long? srd = null;
             try
             {
-                srd = long.Parse(application.Srd_No);
+                if (application.Srd_No.IsNumeric())
+                { 
+                    srd = long.Parse(application.Srd_No);
+                }
             }
             catch
             {
                 srd = null;
             }
-            //Remove existing Barcode for this id/grant
+            //Remove existing Barcode for this id/grant from dc_socpen
             _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
             await _context.SaveChangesAsync();
 
@@ -785,7 +788,14 @@ namespace Sassa.BRM.Services
             //}
             if (files.Any() || merges.Any())
             {
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+
+                }
             }
 
         }

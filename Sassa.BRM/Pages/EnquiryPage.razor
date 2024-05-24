@@ -192,7 +192,7 @@
                     <td>@u.BrmBarCode</td>
                     <td>@u.CaptureDate</td>
                     <td>@u.GrantType</td>
-                    <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{NavigationM.BaseUri}/coversheet/{u.BrmBarCode}")">View Cover</NavLink></td>
+                    <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{NavigationM.BaseUri}coversheet/{u.BrmBarCode}")">View Cover</NavLink></td>
                     @*<td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnViewCover_Click(u.BrmBarCode))">View Cover</button></td>*@
                     <td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnShowDetail(u))">Detail</button></td>
                 </tr>
@@ -257,7 +257,7 @@
 
     protected void btnViewCover_Click(string brmBarCode)
     {
-        Navigate.NavigateTo($"coversheet/{brmBarCode}");
+        Navigate.NavigateTo($"{NavigationM.BaseUri}coversheet/{brmBarCode}");
     }
 
     protected async Task btnShowDetail(Enquiry en)
