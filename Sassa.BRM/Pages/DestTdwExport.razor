@@ -99,40 +99,40 @@
     }
 
     private List<IBrowserFile> loadedFiles = new();
-    private long maxFileSize = 1024 * 15;
-    private int maxAllowedFiles = 3;
-    private bool isLoading;
+    //private long maxFileSize = 1024 * 15;
+    //private int maxAllowedFiles = 3;
+    //private bool isLoading;
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
-    {
-        isLoading = true;
-        loadedFiles.Clear();
+    // private async Task LoadFiles(InputFileChangeEventArgs e)
+    // {
+    //     isLoading = true;
+    //     loadedFiles.Clear();
 
-        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
-        {
-            try
-            {
-                // var trustedFileName = Path.GetRandomFileName();
-                // var path = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"));
+    //     foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+    //     {
+    //         try
+    //         {
+    //             // var trustedFileName = Path.GetRandomFileName();
+    //             // var path = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"));
 
-                // await using FileStream fs = new(path, FileMode.Create);
-                // await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+    //             // await using FileStream fs = new(path, FileMode.Create);
+    //             // await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
 
-                // loadedFiles.Add(file);
+    //             // loadedFiles.Add(file);
 
-                // Logger.LogInformation(
-                //     "Unsafe Filename: {UnsafeFilename} File saved: {Filename}",
-                //     file.Name, trustedFileName);
-            }
-            catch (Exception ex)
-            {
-                // Logger.LogError("File: {Filename} Error: {Error}",
-                //     file.Name, ex.Message);
-            }
-        }
+    //             // Logger.LogInformation(
+    //             //     "Unsafe Filename: {UnsafeFilename} File saved: {Filename}",
+    //             //     file.Name, trustedFileName);
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             // Logger.LogError("File: {Filename} Error: {Error}",
+    //             //     file.Name, ex.Message);
+    //         }
+    //     }
 
-        isLoading = false;
-    }
+    //     isLoading = false;
+    // }
     // protected void CommandBtn_Click(object sender, GridViewCommandEventArgs e)
     // {
     //    int batchId = (int)GridApproved.DataKeys[int.Parse(e.CommandArgument.ToString())].Value;

@@ -2487,7 +2487,9 @@ namespace Sassa.BRM.Services
             }
             else
             {
-                batch = new DcBatch
+                try
+                {
+                    batch = new DcBatch
                 {
                     BatchStatus = _session.IsRmc() ? "RMCBatch" : "Open",
                     BatchCurrent = "Y",
@@ -2498,11 +2500,10 @@ namespace Sassa.BRM.Services
                     UpdatedByAd = session.SamName
                 };
                 _context.DcBatches.Add(batch);
-                try
-                {
+
                     await _context.SaveChangesAsync();
                 }
-                catch// (Exception ex)
+                catch (Exception ex)
                 {
                     throw;
                 }

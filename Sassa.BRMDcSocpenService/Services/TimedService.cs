@@ -33,37 +33,34 @@
             _raw = raw;
             _fu = fu;
             Globals = fu.ReadJson<TimedService.GlobalVars>(fileName);
-            Globals.Status = false;
+            Globals.Status = true;
             fu.WriteJson(Globals, fileName);
         }
 
+        public void Schedule(DateTime scheduleTarget)
+        {
+            Globals.NextRefreshDate = scheduleTarget;
+            TimeSpan delayTime = Globals.AHRefreshDate() - DateTime.Now;
+            Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
+            _fu.WriteJson(Globals, fileName);
+            schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
+        }
         public async Task Start()
         {
-            TimeSpan delayTime = Globals.NextRefreshDate - DateTime.Now;
-
-            if (schedule == null)
+            if (schedule == null)//First run
             {
-                if (delayTime.Ticks < 0)//Overdue
+                if (Globals.NextRefreshDate > DateTime.Now)
                 {
-                    //schedule = new Timer(SyncSOCPEN, null, TimeSpan.Zero, TimeSpan.FromHours(24));
-                    //return Task.CompletedTask;
-                    delayTime = Globals.NextRefreshDate - DateTime.Now + TimeSpan.FromHours(24);
+                    Schedule(Globals.NextRefreshDate);
                 }
-                Globals.Progress = $"Waiting schedule {Globals.NextRefreshDate}";
-                //Globals.Status = true;
-                _fu.WriteJson(Globals, fileName);
-                if (Globals.NextRefreshDate < DateTime.Now)
+                else
                 {
-                    await Task.Run(() => SyncSOCPEN(null));
-                    delayTime = Globals.NextRefreshDate - DateTime.Now;
-
+                    Schedule(DateTime.Now + TimeSpan.FromHours(24));
                 }
-                if (delayTime < TimeSpan.Zero) { delayTime = new TimeSpan(10000); }
-                schedule = new Timer(SyncSOCPEN, null, delayTime, TimeSpan.FromHours(24));
             }
             else
             {
-                if (Globals.NextRefreshDate < DateTime.Now)//Run if overdue
+                if (Globals.NextRefreshDate < DateTime.Now)//Run if due
                 {
                     await Task.Run(() => SyncSOCPEN(null));
                 }
@@ -353,6 +350,16 @@
                 } 
             }
             public TimeOnly NextRefreshTime  = TimeOnly.FromDateTime(DateTime.Now);
+
+            public DateTime AHRefreshDate()
+            { 
+                if(NextRefreshDate.Hour > 8 && NextRefreshDate.Hour < 17) //Cant run in business hours.
+                {
+                    NextRefreshDate = NextRefreshDate.AddHours(19 - NextRefreshDate.Hour);
+                }
+                return NextRefreshDate; 
+            } 
+
         }
     }
 }
