@@ -35,8 +35,9 @@ namespace Sassa.BRM
             options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
-            services.AddScoped<ProgressService>();//.AddDbContext<eDocumentContext>(options =>
-            //options.UseOracle(Configuration.GetConnectionString("eDocsConnection")));
+            services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
+            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
+
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
             options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
             services.AddSingleton<StaticD>();
@@ -49,6 +50,7 @@ namespace Sassa.BRM
             services.AddScoped<Navigation>();
             services.AddScoped<CSService>();
             services.AddScoped<ReportDataService>();
+            services.AddScoped<ProgressService>();
 
             services.ConfigureApplicationCookie(options =>
             {

@@ -85,7 +85,7 @@
 
     protected int RegionId;
     protected string destructionYear;
-    protected PagedResult<DcExclusionBatch> batches;
+    protected PagedResult<DcExclusionBatch> batches = new PagedResult<DcExclusionBatch>();
     int batchpage = 1;
 
     protected override async Task OnInitializedAsync()

@@ -63,8 +63,6 @@
         </tr>
     </thead>
     <tbody>
-        @if(exclusions != null)
-        {
         @foreach (DcExclusion p in exclusions.result)
         {
             <tr>
@@ -77,7 +75,6 @@
                     <button class="btn btn-primary btn-sm active" @onclick="@(() => btnRemoveExclusion_Click(p.Id))">Remove</button>
                 </td>
             </tr>
-        }
         }
     </tbody>
 </table>
@@ -93,7 +90,7 @@
     protected UserOffice office;
     protected string txtSearchId;
 
-    protected PagedResult<DcExclusion> exclusions;
+    protected PagedResult<DcExclusion> exclusions = new PagedResult<DcExclusion>();
 
     int exclusionpage = 1;
 

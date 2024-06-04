@@ -1,8 +1,10 @@
 ﻿@using System.IO
 @inject BRMDbService db
 @inject IAlertService toast
+@inject IWebHostEnvironment environment
+@inject DestructionService dProcess
 
-    <br />
+<br />
 <h5>Create TDW Destruction list</h5>
 <hr />
 
@@ -39,22 +41,22 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (DcExclusionBatch p in batches.result)
-            {
-                <tr>
-                    <td>@p.BatchId</td>
-                    <td>@db.GetRegion(p.RegionId.ToString())</td>
-                    <td>@p.CreatedBy</td>
-                    <td>@p.ApprovedBy</td>
-                    <td>@p.ApprovedDate</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(p.ApprovedBy))
-                        {
-                            <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Region_Click())">Export</button>
-                        }
-                    </td>
-                </tr>
-            }
+        @foreach (DcExclusionBatch p in batches.result)
+        {
+            <tr>
+                <td>@p.BatchId</td>
+                <td>@db.GetRegion(p.RegionId.ToString())</td>
+                <td>@p.CreatedBy</td>
+                <td>@p.ApprovedBy</td>
+                <td>@p.ApprovedDate</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(p.ApprovedBy))
+                    {
+                        <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Region_Click())">Export</button>
+                    }
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
     <Pager Paged="OnApprovedBatchPaged" TotalSize="@batches.count"></Pager>
@@ -62,11 +64,15 @@
     <button class="btn btn-primary btn-sm active" @onclick="@(() => btnExport_Batch_Click())">Export</button>
     <div id="divError"></div>
 </div>
-@* <div>
+<div>
     <br />
     <h2>Upload results</h2>
     <hr />
-    <table>
+    <label>
+        Upload Destroyed list:
+        <InputFile OnChange="LoadFiles" />
+    </label>
+@*     <table>
         <tr>
 
             <td>
@@ -76,14 +82,32 @@
                 <p style="margin-top:10px">Accepts single column .csv file with header ID</p>
             </td>
         </tr>
-    </table>
-</div> *@
+    </table> *@
+    @if (isLoading)
+    {
+        <p>Uploading...</p>
+    }
+    else
+    {
+        if (loadedFiles.Any())
+        {
+            <p>Processing..</p>
+            var file = loadedFiles.FirstOrDefault();
+            <ul>
+                <li>Name: @file.Name</li>
+            <li>Last modified: @file.LastModified.ToString()</li>
+            <li>Size (bytes): @file.Size</li>
+            <li>Content type: @file.ContentType</li>
+        </ul>
+        }
+    }
+</div> 
 
 @code {
 
     protected int RegionId;
     protected string destructionYear;
-    protected PagedResult<DcExclusionBatch> batches;
+    protected PagedResult<DcExclusionBatch> batches = new PagedResult<DcExclusionBatch>();
     int batchpage = 1;
 
     protected override async Task OnInitializedAsync()
@@ -99,40 +123,49 @@
     }
 
     private List<IBrowserFile> loadedFiles = new();
-    //private long maxFileSize = 1024 * 15;
-    //private int maxAllowedFiles = 3;
-    //private bool isLoading;
+    private long maxFileSize = 1024 * 3000;
+    private int maxAllowedFiles = 3;
+    private bool isLoading;
 
-    // private async Task LoadFiles(InputFileChangeEventArgs e)
-    // {
-    //     isLoading = true;
-    //     loadedFiles.Clear();
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
 
-    //     foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
-    //     {
-    //         try
-    //         {
-    //             // var trustedFileName = Path.GetRandomFileName();
-    //             // var path = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"));
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            try
+            {
+                var path = Path.Combine(environment.ContentRootPath, "BrmFiles", file.Name);
 
-    //             // await using FileStream fs = new(path, FileMode.Create);
-    //             // await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
 
-    //             // loadedFiles.Add(file);
+                loadedFiles.Add(file);
+                fs.Close();
 
-    //             // Logger.LogInformation(
-    //             //     "Unsafe Filename: {UnsafeFilename} File saved: {Filename}",
-    //             //     file.Name, trustedFileName);
-    //         }
-    //         catch (Exception ex)
-    //         {
-    //             // Logger.LogError("File: {Filename} Error: {Error}",
-    //             //     file.Name, ex.Message);
-    //         }
-    //     }
+                //Process content
+                try
+                {
+                     await dProcess.DestroyXlsxFile(path,"ID");
+                }
+                catch (IOException fe)
+                {
+                    Console.WriteLine("The file could not be read:");
+                    Console.WriteLine(fe.Message);
+                }
 
-    //     isLoading = false;
-    // }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        isLoading = false;
+
+    }
+
     // protected void CommandBtn_Click(object sender, GridViewCommandEventArgs e)
     // {
     //    int batchId = (int)GridApproved.DataKeys[int.Parse(e.CommandArgument.ToString())].Value;
