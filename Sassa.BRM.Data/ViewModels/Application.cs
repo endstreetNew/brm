@@ -9,6 +9,8 @@ namespace Sassa.BRM.Models
         public string Id { get; set; }
         //Change to accomodate invalid child ids from socpen
         private string child_id;
+        private string aRCHIVE_YEAR;
+
         public string ChildId 
         {
             get { return child_id; }

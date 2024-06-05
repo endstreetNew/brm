@@ -1999,7 +1999,6 @@ namespace Sassa.BRM.Services
             GetGrantType("S");//Dummy call to ensure static loaded
             GetRegionCode("7");//Dummy call to ensure static loaded
             List<Application> oldidquery = new List<Application>();
-
             idquery = await _context.DcSocpen.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
             {
                 SocpenIsn = d.Id,
@@ -2015,7 +2014,7 @@ namespace Sassa.BRM.Services
                 RegionCode = StaticD.RegionCode(d.RegionId),
                 RegionName = StaticD.RegionName(d.RegionId),
                 AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                ARCHIVE_YEAR = StaticD.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
                 ChildId = d.ChildId,
                 LcType = "0",
                 IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
@@ -2059,6 +2058,8 @@ namespace Sassa.BRM.Services
             }
             return result;
         }
+
+
         //public string DcSocpenSql(string SearchId)
         //{
         //    //Select* from DC_Socpen spn
@@ -2970,10 +2971,10 @@ namespace Sassa.BRM.Services
                 result.CsgStatus = "";
                 result.GrantType = GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
-                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode);
+                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode).ToList();
                 if (merged.Any())
                 {
-                    result.MergeParent = (await merged.FirstAsync()).ParentBrmBarcode;
+                    result.MergeParent = (merged.First()).ParentBrmBarcode;
                 }
                 result.MultiGrant = merged.Any();
                 result.Province = GetRegion(file.RegionId);
@@ -2985,7 +2986,7 @@ namespace Sassa.BRM.Services
 
                 //Tdw
                 //var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).Any();
+                result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
 
                 List<Application> spresult = null;
                 //SocPen

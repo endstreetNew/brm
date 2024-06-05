@@ -71,6 +71,13 @@ namespace Sassa.BRM.Services
                     return "";
             }
         }
+
+        public static string GetArchiveYear(DateTime? appDate, string statusCode)
+        {
+            if (appDate == null) return null;
+            return statusCode.ToUpper() != "ACTIVE" ? ((DateTime)appDate).ToString("yyyy") : null;
+
+        }
         public static List<string> PastelColors
         {
             get
