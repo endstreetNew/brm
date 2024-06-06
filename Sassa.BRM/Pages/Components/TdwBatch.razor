@@ -1,5 +1,4 @@
 ﻿@inject Navigation Navigate
-@*@inject NavigationManager NavigationM*@
 @inject BRMDbService db
 @inject IAlertService toast
 @inject IJSRuntime Js
@@ -137,10 +136,10 @@
     int historypage = 1;
 
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await OnPaged(1);
-        await OnHistoryPaged(1);
+        OnPaged(1);
+        OnHistoryPaged(1);
         db.session.BookMark.BoxingTab = 4;
     }
 
@@ -155,16 +154,16 @@
         Navigate.NavigateTo($"tdwbatchcover/{tdwBatch}");
     }
 
-    protected async Task OnPaged(int _page)
+    protected void OnPaged(int _page)
     {
         page = _page;
-        boxfiles = await db.GetAllBoxes(page);
+        boxfiles = db.GetAllBoxes(page);
     }
 
-    protected async Task OnHistoryPaged(int _page)
+    protected void OnHistoryPaged(int _page)
     {
         historypage = _page;
-        batchedfiles = await db.GetHistoryBoxes(historypage);
+        batchedfiles = db.GetHistoryBoxes(historypage);
     }
 
 }

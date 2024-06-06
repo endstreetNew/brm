@@ -479,7 +479,7 @@
             toast.Error($"Batch cover :{batch.BatchNo} error.");
 
         }
-        await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
+        await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
     }
 
 }

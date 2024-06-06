@@ -29,17 +29,18 @@ namespace Sassa.BRM
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            string BrmConnectionString = Configuration.GetConnectionString("BrmConnection");
+
             services.AddHttpContextAccessor();
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
+            options.UseOracle(BrmConnectionString));
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
+            options.UseOracle(BrmConnectionString));
             services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
-
+            options.UseOracle(BrmConnectionString));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
-            options.UseOracle(Configuration.GetConnectionString("BrmConnection")));
+            options.UseOracle(BrmConnectionString));
             services.AddSingleton<StaticD>();
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
