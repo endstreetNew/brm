@@ -1,7 +1,9 @@
 ﻿@page "/reportpage"
 @page "/reportpage/{param}"
 @inject Navigation Navigate
+@inject SessionService sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
 @inject ProgressService og
 @inject ReportDataService rs
 @inject IAlertService toast
@@ -45,7 +47,7 @@
                 <span class="input-group-text">Region</span>
                 <select class="form-select" @bind="office.RegionId">
                     <option value="" selected>All...</option>
-                    @foreach (var region in db.GetRegions())
+                    @foreach (var region in sservice.GetRegions())
                     {
                         <option value="@region.Key">@region.Value</option>
                     }
@@ -123,7 +125,7 @@
                     <span class="input-group-text">Region</span>
                     <select class="form-select" @bind="office.RegionId">
                         <option value="" selected>All...</option>
-                        @foreach (var region in db.GetRegions())
+                        @foreach (var region in sservice.GetRegions())
                         {
                             <option value="@region.Key">@region.Value</option>
                         }
@@ -136,7 +138,7 @@
                     <span class="input-group-text">Office</span>
                     <select class="form-select" @bind="office.OfficeId">
                         <option value="" selected>All...</option>
-                        @foreach (var val in db.GetOffices(office.RegionId))
+                        @foreach (var val in sservice.GetOffices(office.RegionId))
                         {
                             <option value="@val.OfficeId">@val.OfficeName</option>
                         }
@@ -148,7 +150,7 @@
                         <span class="input-group-text">Grant Type</span>
                         <select class="form-select" @bind="GrantType">
                             <option value="" selected>All...</option>
-                            @foreach (var val in db.GetGrantTypes())
+                            @foreach (var val in sservice.GetGrantTypes())
                             {
 
                                 <option value="@val.Key">@val.Value</option>
@@ -170,7 +172,7 @@
 
 <br/>
                  <div class="row">
-                    <span><strong>Progress for Region : @db.GetRegion(office.RegionId) Period : @period.FromDate to @period.ToDate</strong></span>
+                    <span><strong>Progress for Region : @sservice.GetRegion(office.RegionId) Period : @period.FromDate to @period.ToDate</strong></span>
                     <br/>
                 </div>
                  <div class="row">
@@ -199,7 +201,7 @@
                                 @foreach (var u in missingFiles.result)
                                 {
                                     <tr style="background-color:@(u.ApplicationDate < DateTime.Now.AddDays(-60) ? "orange":"white" );">
-                                        <td>@db.GetGrantType(u.GrantType)</td>
+                                        <td>@sservice.GetGrantType(u.GrantType)</td>
                                         <td>@u.ApplicationDate</td>
                                         <td>@u.BeneficiaryId</td>
                                         <td>@u.ChildId</td>
@@ -264,7 +266,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        office = db.session.Office;
+        office = sessionservice.session.Office;
         page = 1;
         IsMissingDashboardLoaded = false;
         IsDashboardLoaded = false;
@@ -291,7 +293,7 @@
                 await OnMissingPaged(missingpage);
                 break;
             case 5:
-                files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+                files = rs.GetFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
                 break;
             default:
                 break;
@@ -302,7 +304,7 @@
     {
 
         office.RegionId = (string)e.Value;
-        office.OfficeId = db.GetOffices(office.RegionId).First().OfficeId;
+        office.OfficeId = sservice.GetOffices(office.RegionId).First().OfficeId;
     }
 
     private async Task btnFTPExport_Click()
@@ -339,7 +341,7 @@
                 }
                 else if(rIndex == "11")
                 {
-                    if (db.session.IsRmc() && db.session.IsInRole("GRP_BRM_Supervisors"))
+                    if (sessionservice.session.IsRmc() && sessionservice.session.IsInRole("GRP_BRM_Supervisors"))
                     {
                         await rs.SaveCsvReport(period.FromDate.ToString("dd/MM/yyyy"), period.ToDate.ToString("dd/MM/yyyy"), rIndex, office.OfficeId, office.OfficeType, office.RegionId, GrantType, FileName, "");
                     }
@@ -365,7 +367,7 @@
     protected void OnPaged(int _page)
     {
         page = _page;
-        files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+        files = rs.GetFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
     }
 
     protected async Task OnMissingPaged(int _page)
@@ -380,7 +382,7 @@
     protected void DeleteReport(string fileName)
     {
         rs.DeleteReport(fileName);
-        files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+        files = rs.GetFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
     }
 
     protected void btnResetProgress_Click()

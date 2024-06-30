@@ -1,5 +1,7 @@
 ﻿@using System.IO
+@inject SessionService sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
 @inject IAlertService toast
 @inject IWebHostEnvironment environment
 @inject DestructionService dProcess
@@ -45,7 +47,7 @@
         {
             <tr>
                 <td>@p.BatchId</td>
-                <td>@db.GetRegion(p.RegionId.ToString())</td>
+                <td>@sservice.GetRegion(p.RegionId.ToString())</td>
                 <td>@p.CreatedBy</td>
                 <td>@p.ApprovedBy</td>
                 <td>@p.ApprovedDate</td>
@@ -113,7 +115,7 @@
     protected override async Task OnInitializedAsync()
     {
         destructionYear = StaticD.DestructionYears.First();
-        RegionId = int.Parse(db.session.Office.RegionId);
+        RegionId = int.Parse(sessionservice.session.Office.RegionId);
         await OnApprovedBatchPaged(batchpage);
     }
 
@@ -262,7 +264,7 @@
         try
         {
             toast.Info($"Destruction List queued.");
-            await db.SaveDestructionList(db.session.Office.RegionId);
+            await db.SaveDestructionList(sessionservice.session.Office.RegionId);
         }
         catch( Exception ex)
         {

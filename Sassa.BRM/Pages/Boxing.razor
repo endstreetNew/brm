@@ -3,11 +3,12 @@
 @page "/boxing/{tabNo:int}/{boxNo}"
 
 
+@inject SessionService sessionservice
 @inject BRMDbService db
 
 <TabControl PageActivate="OnPageActivate" ActivePageId="@tabNo">
     <TabPage Text="Batching" Id="1" Enabled="true">
-        @if(db.session.Office.OfficeType == "LO")
+        @if (sessionservice.session.Office.OfficeType == "LO")
         {
             <LOBatch></LOBatch>
         }
@@ -19,13 +20,13 @@
     <TabPage Text="Waybills" Id="2" Enabled="true">
         <BatchWaybill></BatchWaybill>
     </TabPage>
-    <TabPage Text="Re-Boxing" Id="3" Enabled="@(db.session.Office.OfficeType != "LO")">
+    <TabPage Text="Re-Boxing" Id="3" Enabled="@(sessionservice.session.Office.OfficeType != "LO")">
         <ReboxTab boxNo="@boxNo"></ReboxTab>
     </TabPage>
-    <TabPage Text="TDW Dispatch" Id="4" Enabled="@(db.session.Office.OfficeType != "LO" && db.session.IsInRole("GRP_BRM_Monitoring"))">
+    <TabPage Text="TDW Dispatch" Id="4" Enabled="@(sessionservice.session.Office.OfficeType != "LO" && sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">
         <TdwBatch></TdwBatch>
     </TabPage>
-    <TabPage Text="Box History" Id="5" Enabled="@(db.session.Office.OfficeType != "LO")">
+    <TabPage Text="Box History" Id="5" Enabled="@(sessionservice.session.Office.OfficeType != "LO")">
         <BoxHistory></BoxHistory>
     </TabPage>
 </TabControl>
@@ -42,7 +43,7 @@
     {
         if (tabNo == 0)
         {
-            if (db.session.IsRmc())
+            if (sessionservice.session.IsRmc())
             {
                 tabNo = 3;
             }

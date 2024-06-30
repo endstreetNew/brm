@@ -1,4 +1,6 @@
-﻿@inject BRMDbService db
+﻿@inject SessionService sessionservice
+@inject BRMDbService db
+@inject StaticService sservice
 @inject IAlertService toast
 
 <br />
@@ -36,15 +38,15 @@
             <span class="input-group-text">Request reason filter</span>
             <select class="form-select" @onchange="@(e => ReasonFilterChange(e))">
                 <option value="" selected>select...</option>
-                @foreach (var item in db.GetRequestCategoryTypes())
+                @foreach (var item in sservice.GetRequestCategoryTypes())
                 {
                     <option value=@item.Key>@item.Value</option>
                 }
             </select>
         </div>
     </div>
-    
-        @if (db.session.Office.OfficeType == "RMC" && db.session.IsInRole("GRP_BRM_Supervisors"))
+
+    @if (sessionservice.session.Office.OfficeType == "RMC" && sessionservice.session.IsInRole("GRP_BRM_Supervisors"))
         {
             <div class="col goldArea">
             <div class="input-group mb-1">
@@ -178,7 +180,7 @@ else
     {
         fileRequests = db.GetFileRequests(filterUser, filterOffice, page, filterStatus, filterReason);
         piedata = db.GetRequestPieData();
-        regiondata = db.GetRequestPieData(db.session.Office.RegionId);
+        regiondata = db.GetRequestPieData(sessionservice.session.Office.RegionId);
         return Task.CompletedTask;
     }
 

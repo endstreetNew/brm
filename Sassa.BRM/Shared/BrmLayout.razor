@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@inject SessionService sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
+@inject SessionService sessionservice
 @inject NavigationManager navigation
 
 <div class="grid">
@@ -46,9 +49,9 @@
     {
         try
         {
-            if(db.session.IsBrmUser())
+            if (sessionservice.session.IsBrmUser())
             {
-                await db.GetLocalOffice();
+                sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
                 Status = "";
             }
             else

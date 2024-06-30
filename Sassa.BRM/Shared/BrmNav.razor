@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.Configuration
 @inject NavigationManager navigation
+@inject SessionService sessionservice
 @inject BRMDbService db
 @inject IConfiguration config
 
@@ -46,7 +47,7 @@
             </li>
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="boxing">
-                    @(db.session.Office.OfficeType == "LO" ? "Batching":"Re-boxing")
+                    @(sessionservice.session.Office.OfficeType == "LO" ? "Batching" : "Re-boxing")
                 </NavLink>
             </li>
             <li class="nav-item px-3">
@@ -59,14 +60,14 @@
                     Reports
                 </NavLink>
             </li>
-            @if (db.session.Office.OfficeType == "RMC")
+            @if (sessionservice.session.Office.OfficeType == "RMC")
             {
                 <li class="nav-item px-3">
                     <NavLink class="nav-link" href="destruction">
                         Destruction
                     </NavLink>
                 </li>
-                @if (db.session.IsInRole("GRP_BRM_Office_Name_Change"))
+                @if (sessionservice.session.IsInRole("GRP_BRM_Office_Name_Change"))
                 {
                     <li class="nav-item px-3">
                         <NavLink class="nav-link" href="officeadmin">
@@ -87,7 +88,7 @@
     protected override void OnInitialized()
     {
         RsWeb = config.GetValue<string>("Url:RsWeb");
-        db.SessionInitialized += new EventHandler(OnSessionChanged);
+        sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
         if (navigation.BaseUri.ToLower().Contains("ssvsbrmdrshc02") || navigation.BaseUri.ToLower().Contains("ssvsqabrshc02")) menucolor = "#125707";
         base.OnInitialized();
 

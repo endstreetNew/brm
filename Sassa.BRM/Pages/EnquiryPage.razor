@@ -4,6 +4,7 @@
 @inject Navigation Navigate
 @inject IAlertService toast
 @inject BRMDbService db
+@inject StaticService sservice
 
 
 <div class="row">
@@ -131,8 +132,8 @@
                                     <td>@u.ActivityDate</td>
                                     <td>@u.Area</td>
                                     <td>@u.Activity</td>
-                                    <td>@(db.GetRegion(u.RegionId))</td>
-                                    <td>@(db.GetOfficeName(u.OfficeId.ToString()))</td>
+                                    <td>@(sservice.GetRegion(u.RegionId))</td>
+                                    <td>@(sservice.GetOfficeName(u.OfficeId.ToString()))</td>
                                 </tr>
                             }
 
@@ -159,8 +160,8 @@
                                 <tr>
                                     <td>@u.Username</td>
                                     <td>@u.ActivityDate</td>
-                                    <td>@(db.GetRegion(u.RegionId))</td>
-                                    <td>@(db.GetOfficeName(u.OfficeId.ToString()))</td>
+                                    <td>@(sservice.GetRegion(u.RegionId))</td>
+                                    <td>@(sservice.GetOfficeName(u.OfficeId.ToString()))</td>
                                 </tr>
                             }
 

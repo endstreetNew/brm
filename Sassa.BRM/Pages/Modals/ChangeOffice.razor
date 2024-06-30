@@ -1,4 +1,6 @@
 ﻿@inject BRMDbService db
+@inject StaticService sservice
+@inject SessionService sessionservice
 
 <div class="modal" tabindex="-1" style="display:block;" role="dialog">
     <div class="modal-dialog">
@@ -12,7 +14,7 @@
                     <span class="input-group-text">Region</span>
                         <InputSelect class="form-select" ValueExpression="@(() => office.RegionId)" Value="@office.RegionId" ValueChanged="@((string value) => SelectRegion(value))">
                         <option selected>select...</option>
-                        @foreach (var region in db.GetRegions())
+                        @foreach (var region in sservice.GetRegions())
                         {
                             <option value="@region.Key">@region.Value</option>
                         }
@@ -22,7 +24,7 @@
                     <span class="input-group-text">Office</span>
                     <InputSelect class="form-select" ValueExpression="@(() => office.OfficeId)" Value="office.OfficeId" ValueChanged="@((string value) => SelectOffice(value))">
                             <option selected>select...</option>
-                        @foreach (var val in db.GetOffices(office.RegionId).Where(o => o.ActiveStatus == "A"))
+                        @foreach (var val in sservice.GetOffices(office.RegionId).Where(o => o.ActiveStatus == "A"))
                         {
 
                             <option value="@val.OfficeId">@val.OfficeName</option>
@@ -33,7 +35,7 @@
                         <span class="input-group-text">Fixed Service Point</span>
                         <InputSelect class="form-select" ValueExpression="@(() => office.FspId)" Value="@((decimal?)office.FspId)" ValueChanged="@((decimal? e) => SelectServicePoint(e))">
                             <option selected>select...</option>
-                            @foreach (var fsp in db.GetOfficeServicePoints(office.OfficeId))
+                            @foreach (var fsp in sservice.GetOfficeServicePoints(office.OfficeId))
                             {
                                 <option value="@fsp.Id">@fsp.ServicePointName</option>
                             }
@@ -60,14 +62,14 @@
 
     protected override void OnInitialized()
     {
-        office = db.session.Office;
+        office = sessionservice.session.Office;
     }
 
     protected async Task btnOk_Click()
     {
-        await db.UpdateUserLocalOffice(office.OfficeId,office.FspId);
-        await db.GetLocalOffice();
-        office = db.session.Office;
+        await sservice.UpdateUserLocalOffice(office.OfficeId, office.FspId, sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
+        sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
+        office = sessionservice.session.Office;
         await Cancel.InvokeAsync();
     }
     protected void btnCancel_Click()
@@ -78,7 +80,7 @@
     protected void SelectRegion(string regionid)
     {
         office.RegionId = regionid;
-        office.OfficeId = db.GetOffices(office.RegionId).First().OfficeId;
+        office.OfficeId = sservice.GetOffices(office.RegionId).First().OfficeId;
     }
 
     protected void SelectOffice(string officeid)

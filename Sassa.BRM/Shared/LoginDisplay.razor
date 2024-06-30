@@ -1,4 +1,6 @@
-﻿@inject BRMDbService db
+﻿@inject SessionService sessionservice
+@* @inject BRMDbService db *@
+@inject StaticService sservice
 @inject NavigationManager navigation
 <AuthorizeView>
     @if (gsession != null)
@@ -20,12 +22,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        db.SessionInitialized += new EventHandler(OnSessionChanged);
-        if (db.session == null)
+        sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
+        if (sessionservice.session == null)
         {
             try
             {
-                await db.GetLocalOffice();
+                sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
                 GetServicePoint();
             }
             catch
@@ -36,7 +38,7 @@
         }
         else
         {
-            gsession = db.session;
+            gsession = sessionservice.session;
 
             GetServicePoint();
         }
@@ -44,7 +46,7 @@
 
     private void OnSessionChanged(object sender, EventArgs args)
     {
-        gsession = db.session;
+        gsession = sessionservice.session;
         GetServicePoint();
         StateHasChanged();
     }
@@ -53,7 +55,7 @@
     {
         try
         {
-            ServicePoint = db.GetServicePointName(db.session.Office.FspId);
+            ServicePoint = sservice.GetServicePointName(sessionservice.session.Office.FspId);
         }
         catch { }
     }

@@ -16,8 +16,10 @@ namespace Sassa.BRM.Controller
     {
 
         private readonly BRMDbService _brmService;
+        private readonly StaticService sservice;
+        private readonly SessionService sessionservice;
 
-        public ApplicationController(BRMDbService context, IHttpContextAccessor ctx)
+        public ApplicationController(BRMDbService context, IHttpContextAccessor ctx,StaticService staticService)
         {
             _brmService = context;
             //try
@@ -42,7 +44,7 @@ namespace Sassa.BRM.Controller
             DcFile result;
             //try
             //{
-                _brmService.SetUserOffice(app.OfficeId);
+                sservice.SetUserOffice(app.OfficeId);
                 result = await _brmService.CreateBRM(app, "Inserted via API.");
             //}
             //catch (Exception ex)

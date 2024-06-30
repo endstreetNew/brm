@@ -1,4 +1,6 @@
-﻿@inject BRMDbService db
+﻿@inject SessionService sessionservice
+@inject BRMDbService db
+@inject StaticService sservice
 @inject Navigation Navigate
 @inject IAlertService toast
 @inject IJSRuntime JSRuntime
@@ -34,7 +36,7 @@
                                 <span class="input-group-text">Loose Correspondence Type</span>
                                 <select class="form-select" @bind="@br.LcType">
                                     <option selected>select...</option>
-                                    @foreach (var lctype in db.GetLcTypes())
+                                    @foreach (var lctype in sservice.GetLcTypes())
                                     {
                                         <option value=@lctype.Key>@lctype.Value</option>
                                     }
@@ -88,7 +90,7 @@
                     {
                         <div class="form-group alert alert-danger">
                             <label>Duplicate BRM !</label>
-                            @if (db.session.IsInRole("GRP_BRM_Monitoring"))
+                            @if (sessionservice.session.IsInRole("GRP_BRM_Monitoring"))
                             {
                                 <button @onclick="btnOverwrite_Click" class="btn btn-warning active" style="float: right;">Overwrite</button>
                             }
@@ -137,7 +139,7 @@
         br.IsNew = true;
         if (br.GrantType == "0") //Old Age Grant : •	Be able to capture GIA where the system only reflects OA.
         {
-            grantTypes = db.GetGrantTypes().Where(i => "08".Contains(i.Key)).ToDictionary(i => i.Key, i => i.Value);
+            grantTypes = sservice.GetGrantTypes().Where(i => "08".Contains(i.Key)).ToDictionary(i => i.Key, i => i.Value);
             //ddlGtype.SelectedValue = br.GrantType;
             grantTypeVisible = true;
         }
@@ -147,7 +149,7 @@
             //•	If a child is transferred from one beneficiary to another and the child information is missing on the new beneficiary, the users must be able to capture the missing child information.
             //•	When you see a CSG, but you are looking for CDG, users must be able to add the CDG(grant type).
             //•	When you are looking CSG and the system is showing active FCG, the user must be able to add the CSG.
-            grantTypes = db.GetGrantTypes().Where(i => "6C59".Contains(i.Key)).ToDictionary(i => i.Key, i => i.Value);
+            grantTypes = sservice.GetGrantTypes().Where(i => "6C59".Contains(i.Key)).ToDictionary(i => i.Key, i => i.Value);
             //ddlGtype.SelectedValue = result.GrantType;
             grantTypeVisible = true;
             //Allow capture of missing child Id
@@ -166,17 +168,17 @@
     protected async Task btnOverwrite_Click()
     {
         if (!IsValid()) return;
-        await Save($"Overwrite selected by : {db.session.SamName}");
+        await Save($"Overwrite selected by : {sessionservice.session.SamName}");
     }
 
     private async Task btnOk_Click()
     {
         string socpenDate = br.AppDate;
-        string reason = $"New record created by : {db.session.SamName}";
+        string reason = $"New record created by : {sessionservice.session.SamName}";
         br.AppDate = SelectedAppDate.ToStandardDateString();
         if (socpenDate != br.AppDate)
         {
-            reason = $"New record with date {br.AppDate} for {socpenDate} by : {db.session.SamName} ";
+            reason = $"New record with date {br.AppDate} for {socpenDate} by : {sessionservice.session.SamName} ";
         }
         if (!IsValid()) return;
         br.Brm_BarCode = br.Brm_BarCode.ToUpper().Trim();

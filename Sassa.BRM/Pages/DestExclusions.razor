@@ -1,4 +1,4 @@
-﻿
+﻿@inject SessionService sessionservice
 @inject BRMDbService db
 @inject IAlertService toast
 
@@ -80,7 +80,7 @@
 </table>
 <Pager Paged="OnExclusionsPaged" TotalSize="@exclusions.count"></Pager>
 <br />
-<button class="btn btn-primary btn-sm active" @onclick="@(() => btnSubmitBatch_Click())">Submit @db.session.Office.RegionName batch for Final Approval</button>
+<button class="btn btn-primary btn-sm active" @onclick="@(() => btnSubmitBatch_Click())">Submit @sessionservice.session.Office.RegionName batch for Final Approval</button>
 
 
 @code {

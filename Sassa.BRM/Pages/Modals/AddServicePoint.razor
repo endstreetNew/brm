@@ -1,4 +1,5 @@
-﻿@inject BRMDbService db
+﻿@* @inject BRMDbService db *@
+@inject StaticService sservice
 @inject IAlertService toast
 <!-- Bootstrap Modal Dialog -->
 <div class="modal" tabindex="-1" style="display:block;" role="dialog">
@@ -64,7 +65,7 @@
         }
         else
         {
-            await db.CreateServicePoint(servicePoint);
+            await sservice.CreateServicePoint(servicePoint);
             await Ok.InvokeAsync();
         }
     }

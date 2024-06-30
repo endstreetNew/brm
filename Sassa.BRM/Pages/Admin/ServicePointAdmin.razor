@@ -1,4 +1,6 @@
-﻿@inject BRMDbService db
+﻿@inject SessionService sessionservice
+@inject BRMDbService db
+@inject StaticService sservice
 @inject SocpenService ss
 @namespace Sassa.BRM.Pages.Admin
 @using Sassa.Socpen.Data
@@ -15,7 +17,7 @@
             <span class="input-group-text">Region</span>
             <select class="form-select" @bind="regionId">
                 <option value="" selected></option>
-                @foreach (var region in db.GetRegions())
+                @foreach (var region in sservice.GetRegions())
                 {
                     <option value="@region.Key">@region.Value</option>
                 }
@@ -95,7 +97,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        regionId = db.session.Office.RegionId;
+        regionId = sessionservice.session.Office.RegionId;
         await GetRegionOffices();
     }
 
@@ -118,7 +120,7 @@
         }).ToList();
 
         regionOffices = regionOffices.OrderBy(o => o.OfficeName).ToList();
-        regionServicePoints = db.GetServicePoints(regionId);
+        regionServicePoints = sservice.GetServicePoints(regionId);
         IsLoaded = true;
     }
 
@@ -151,7 +153,7 @@
     protected async void  btnUpdate_Click(DcFixedServicePoint u)
     {
         
-        await db.UpdateServicePoint(u);
+        await sservice.UpdateServicePoint(u);
         IsLoaded = false;
         await GetRegionOffices();
     }

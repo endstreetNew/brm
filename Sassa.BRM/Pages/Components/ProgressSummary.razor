@@ -1,4 +1,5 @@
 ﻿@inject BRMDbService db
+@inject StaticService sservice
 @inject ProgressService og
 @inject ReportDataService rs
 @inject IAlertService toast
@@ -41,7 +42,7 @@
                 <span class="input-group-text">Region</span>
                 <select class="form-select" @bind="office.RegionId">
                     <option value="" selected>All...</option>
-                    @foreach (var region in db.GetRegions())
+                    @foreach (var region in sservice.GetRegions())
                     {
                         <option value="@region.Key">@region.Value</option>
                     }
@@ -58,7 +59,7 @@
 else
 {
             <div class="row">
-            <span><strong>Progress for Region : @db.GetRegion(office.RegionId) Period : @fromQuarter to @toQuarter</strong></span>
+            <span><strong>Progress for Region : @sservice.GetRegion(office.RegionId) Period : @fromQuarter to @toQuarter</strong></span>
             <br/>
         </div>
         <div class="row">

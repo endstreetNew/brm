@@ -1,5 +1,6 @@
-﻿
+﻿@inject SessionService  sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
 @inject IAlertService toast
 
 <h3>FINAL Approval for regions Destruction exclusions</h3>
@@ -64,7 +65,7 @@
         {
             <tr>
                 <td>@p.BatchId</td>
-                <td>@db.GetRegion(p.RegionId.ToString())</td>
+                <td>@sservice.GetRegion(p.RegionId.ToString())</td>
                 <td>@p.CreatedBy</td>
                 <td>@p.ApprovedBy</td>
                 <td>@p.ApprovedDate</td>
@@ -91,7 +92,7 @@
     protected override async Task OnInitializedAsync()
     {
         destructionYear = StaticD.DestructionYears.First();
-        RegionId = int.Parse(db.session.Office.RegionId);
+        RegionId = int.Parse(sessionservice.session.Office.RegionId);
         await OnExclusionBatchPaged(1);
 
     }

@@ -1,5 +1,6 @@
 ﻿
 @inject BRMDbService db
+@inject StaticService sservice
 @inject IAlertService toast
 
 <Modal Heading="File Request" Cancel="OnModalCancel" Ok="OnModalOk">
@@ -10,7 +11,7 @@
                 <span class="input-group-text">Request Category</span>
                 <select class="form-select" @bind="@fr.Category">
                     @*<option value="" selected>select...</option>*@
-                    @foreach (var grant in db.GetRequestCategories())
+                    @foreach (var grant in sservice.GetRequestCategories())
                     {
                         <option value=@grant.Key>@grant.Value</option>
                     }
@@ -18,13 +19,13 @@
             </div>
             <div class="input-group mb-1">
                 <span class="input-group-text">Stakeholder</span>
-                <text class="form-control">@db.GetStakeHolders()[fr.Category]</text>
+                <text class="form-control">@sservice.GetStakeHolders()[fr.Category]</text>
             </div>
             <div class="input-group mb-1">
                 <span class="input-group-text">Request Reason</span>
                 <select class="form-select" @bind="@fr.CategoryType">
                     <option value="" selected>select...</option>
-                    @foreach (var item in db.GetRequestCategoryTypes(fr.Category))
+                    @foreach (var item in sservice.GetRequestCategoryTypes(fr.Category))
                     {
                         <option value=@item.Key>@item.Value</option>
                     }
@@ -72,7 +73,7 @@
         try
         {
             Validate();
-            fr.StakeHolder = db.GetStakeHolders()[fr.Category];
+            fr.StakeHolder = sservice.GetStakeHolders()[fr.Category];
             await db.AddFileRequest(fr);
             toast.Success("Request processed");
             OnModalCancel();

@@ -27,10 +27,12 @@ namespace Sassa.BRM.Services
 
         ProgressService _ogs;
         BRMDbService db;
+        StaticService sservice;
 
-        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db)
+        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db,StaticService Sservice)
         {
             connectionString = config.GetConnectionString("BrmConnection");
+            sservice = Sservice;
             //reportFolder = config.GetSection("Folders").GetChildren().GetValue("Reports");
             reportFolder = Path.Combine(env.ContentRootPath, config["Folders:Reports"]);
             if (!Directory.Exists(reportFolder))
@@ -193,7 +195,7 @@ namespace Sassa.BRM.Services
                                             Environment.NewLine + " )";
                                 break;
                             case "7"://Performance report
-                                DcLocalOffice office = db.GetLocalOffice(office_id);
+                                DcLocalOffice office = sservice.GetLocalOffice(office_id);
                                 if (office.OfficeType == "RMC")
                                 {
                                     cmd.CommandText = $@"SELECT * FROM

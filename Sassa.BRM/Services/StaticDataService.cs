@@ -5,11 +5,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
 {
     public class StaticD
     {
+        public StaticD()
+        {
+        }
+
         public static string RsWeb { get; set; }
         public static string ReportFolder { get; set; }
         public static string DocumentFolder { get; set; }

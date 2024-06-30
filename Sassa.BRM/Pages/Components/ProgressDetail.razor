@@ -1,5 +1,7 @@
 @inject Navigation Navigate
+@inject SessionService sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
 @inject ProgressService og
 @inject ReportDataService rs
 @inject IAlertService toast
@@ -41,7 +43,7 @@
                     <span class="input-group-text">Region</span>
                     <select class="form-select" @bind="office.RegionId">
                         <option value="" selected>All...</option>
-                        @foreach (var region in db.GetRegions())
+                        @foreach (var region in sservice.GetRegions())
                         {
                             <option value="@region.Key">@region.Value</option>
                         }
@@ -53,7 +55,7 @@
                         <span class="input-group-text">Office</span>
                         <select class="form-select" @bind="office.OfficeId">
                             <option value="" selected>All...</option>
-                            @foreach (var val in db.GetOffices(office.RegionId))
+                            @foreach (var val in sservice.GetOffices(office.RegionId))
                             {
                                 <option value="@val.OfficeId">@val.OfficeName</option>
                             }
@@ -137,7 +139,7 @@
 
     protected override void OnInitialized()
     {
-        office = db.session.Office;
+        office = sessionservice.session.Office;
         IsDashboardLoaded = false;
     }
 
@@ -153,11 +155,11 @@
             //await Task.Delay(100);
             if (string.IsNullOrEmpty(office.OfficeId))
             {
-                office = db.session.Office;
+                office = sessionservice.session.Office;
             }
             else
             {
-                office.OfficeName = db.GetOfficeName(office.OfficeId);
+                office.OfficeName = sservice.GetOfficeName(office.OfficeId);
             }
             if (string.IsNullOrEmpty(fromMonth) || string.IsNullOrEmpty(toMonth))
             {

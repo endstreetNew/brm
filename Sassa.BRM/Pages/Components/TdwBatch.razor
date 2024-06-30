@@ -1,4 +1,5 @@
 ﻿@inject Navigation Navigate
+@inject SessionService sessionservice
 @inject BRMDbService db
 @inject IAlertService toast
 @inject IJSRuntime Js
@@ -142,9 +143,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        boxfiles = await db.GetAllBoxes(page);
-        batchedfiles = await db.GetHistoryBoxes(historypage);
-        db.session.BookMark.BoxingTab = 4;
+        //todo: Fix with new service
+        // boxfiles = await db.GetAllBoxes(page);
+        // batchedfiles = await db.GetHistoryBoxes(historypage);
+        sessionservice.session.BookMark.BoxingTab = 4;
     }
 
     protected async Task btnPrint_Click()
@@ -161,13 +163,15 @@
     protected async Task OnPaged(int _page)
     {
         page = _page;
-        boxfiles = await db.GetAllBoxes(page);
+        //todo:fix
+        //boxfiles = await db.GetAllBoxes(page);
     }
 
     protected async Task OnHistoryPaged(int _page)
     {
         historypage = _page;
-        batchedfiles = await db.GetHistoryBoxes(historypage);
+        //todo: fix
+        //batchedfiles = await db.GetHistoryBoxes(historypage);
     }
 
 }

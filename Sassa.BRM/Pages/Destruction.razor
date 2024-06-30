@@ -1,9 +1,9 @@
 ﻿@page "/destruction"
-
+@inject SessionService sessionservice
 @inject BRMDbService db
 <h3>File Destruction</h3>
 
-@if (db.session != null)
+@if (sessionservice.session != null)
 {
     <TabControl PageActivate="@OnPageActivate" ActivePageId="@ActivePage">
         <TabPage Text="Exclusions" Id="1" Enabled="true">

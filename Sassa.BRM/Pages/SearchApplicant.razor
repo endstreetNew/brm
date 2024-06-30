@@ -1,7 +1,9 @@
 ﻿@page "/searchapplicant"
 @page "/searchapplicant/{Id}"
 
+@inject SessionService sessionservice
 @inject BRMDbService db
+@inject StaticService sservice
 @inject IAlertService toast
 
 @if (showBrmModal)
@@ -36,7 +38,7 @@
             <span class="input-group-text" style="width:120px;">Grant Type</span>
             <select class="form-select" @bind="@manualGrantType" style="max-width:220px;">
                 <option value="" selected>All...</option>
-                @foreach (var val in db.GetGrantTypes())
+                @foreach (var val in sservice.GetGrantTypes())
                 {
 
                     <option value="@val.Key">@val.Value</option>
@@ -55,7 +57,7 @@
             }
         }
     </div>
-    @if (db.session.IsRmc())
+    @if (sessionservice.session.IsRmc())
     {
         <div class="col-4 float-right">
         <BoxStatus rebox="@rebox"></BoxStatus>
@@ -288,7 +290,7 @@
         rebox.BoxNo = rebox.BoxNo.ToUpper();
         if (string.IsNullOrEmpty(rebox.BoxNo))
         {
-            if(db.session.IsRmc())
+            if (sessionservice.session.IsRmc())
             {
                 toast.Error("a TDW BoxNo is required to capture at the RMC.");
                 return;
@@ -307,13 +309,13 @@
             return;
         }
         SelectedApplication = a;
-        if(a.RegionId == db.session.Office.RegionId)
+        if (a.RegionId == sessionservice.session.Office.RegionId)
         {
             ConfirmedRegion();//Save normal capture
         }
         else
         {
-            regionChangeMessage = $"Are you sure you want to change the region of this application from {db.GetRegion( a.RegionId)} to {db.GetRegion( db.session.Office.RegionId)} ?";
+            regionChangeMessage = $"Are you sure you want to change the region of this application from {sservice.GetRegion(a.RegionId)} to {sservice.GetRegion(sessionservice.session.Office.RegionId)} ?";
             showConfirmRegion = true;
             //toast.Error($"Please set your region to {db.GetRegion(a.RegionId)} to capture this record");
         }
@@ -325,7 +327,7 @@
         rebox.BoxNo = rebox.BoxNo.ToUpper();
         if (string.IsNullOrEmpty(rebox.BoxNo))
         {
-            if (db.session.IsRmc())
+            if (sessionservice.session.IsRmc())
             {
                 toast.Error("a TDW BoxNo is required to capture at the RMC.");
                 return;
@@ -350,7 +352,7 @@
         SelectedApplication.TDW_BOXNO = rebox.BoxNo;
         SelectedApplication.MiniBox = rebox.MiniBox;
         SelectedApplication.GrantType = manualGrantType;
-        SelectedApplication.RegionId = db.session.Office.RegionId;
+        SelectedApplication.RegionId = sessionservice.session.Office.RegionId;
         SelectedApplication.Id = pensionNrValue;
         SelectedApplication.Srd_No = SRDNo;
         SelectedApplication.LcType = "0";

@@ -2,6 +2,7 @@
 @layout PrintLayout
 
 @inject BRMDbService db
+@inject StaticService sservice
 @inject BarCodeService bcService
 @inject IJSRuntime Js
 @inject IAlertService toast
@@ -42,18 +43,18 @@
                 <div class="row">
                     <div class="col-5">
                         <div>@file.FullName</div>
-                        <div>@(db.GetRegion(file.RegionId))</div>
-                        <div>@(db.GetOfficeName(file.OfficeId))</div>
+                        <div>@(sservice.GetRegion(file.RegionId))</div>
+                        <div>@(sservice.GetOfficeName(file.OfficeId))</div>
                         <div>Transaction Date: </div>
                         <div>Date Last Reviewed: @(file.Lastreviewdate == null? ""  : ((DateTime)file.Lastreviewdate).ToString("yyyy/MM/dd"))</div>
                         @if (file.Lctype != null)
                         {
-                            <div>LC Type: @(db.GetLcType((decimal)file.Lctype))</div>
+                            <div>LC Type: @(sservice.GetLcType((decimal)file.Lctype))</div>
                         }
                     </div>
                     <div class="col-5">
                         <div>@(file.GrantType == "S" ? file.SrdNo : file.ApplicantNo)</div>
-                        <div>@(db.GetGrantType(file.GrantType))</div>
+                        <div>@(sservice.GetGrantType(file.GrantType))</div>
                         <div>@(file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("yyyy/MM/dd"))</div>
                         <div>Archive Year: @file.ArchiveYear</div>
                     </div>
@@ -102,7 +103,7 @@
     {
         file = await db.GetBRMRecord(BrmBarCode);
 
-        QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, db.GetGrantType(file.GrantType));
+        QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, sservice.GetGrantType(file.GrantType));
 
 
         IdBarCode = bcService.GetBarCode(file.GrantType == "S" ? file.SrdNo : file.ApplicantNo);

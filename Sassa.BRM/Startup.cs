@@ -33,6 +33,8 @@ namespace Sassa.BRM
 
             services.AddHttpContextAccessor();
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
+            services.AddScoped<SessionService>().AddDbContext<ModelContext>(options =>
+            options.UseOracle(BrmConnectionString));
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
@@ -41,7 +43,9 @@ namespace Sassa.BRM
             options.UseOracle(BrmConnectionString));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
             options.UseOracle(BrmConnectionString));
-            services.AddSingleton<StaticD>();
+            services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
+            options.UseOracle(BrmConnectionString)); ;
+            services.AddSingleton<StaticD>(); 
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
             services.AddSingleton<MailMessages>();

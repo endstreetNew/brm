@@ -1,6 +1,7 @@
 ﻿@inject Navigation Navigate
 @inject NavigationManager Navigation
 @inject IAlertService toast
+@inject SessionService sessionservice
 @inject BRMDbService db
 @inject IJSRuntime JSRuntime
 
@@ -72,8 +73,8 @@
                             }
                         </td>
                         <td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnView_Click(u))">View Cover</button></td>
-                        <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(u))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
-                        <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnEditBarcode_Click(u))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Edit Barcode</button></td>
+                        <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(u))" disabled="@(!sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
+                        <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnEditBarcode_Click(u))" disabled="@(!sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">Edit Barcode</button></td>
                         <td>@u.IsSelected</td>
                         <td>@u.Brm_BarCode</td>
                         <td>@u.ChildId</td>
@@ -129,8 +130,8 @@
                                                                 <td>@um.Id</td>
                                                                 <td><NavLink class="btn btn-primary btn-sm active" target="_blank" href="@($"{Navigation.BaseUri}/coversheet/{um.Brm_BarCode}")">View Cover</NavLink></td>
                                                                 @*<td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnView_Click(um))">View Cover</button></td>*@
-                                                                <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(um))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
-                                                                <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnEditBarcode_Click(u))" disabled="@(!db.session.IsInRole("GRP_BRM_Monitoring"))">Edit Barcode</button></td>
+                                                                <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(um))" disabled="@(!sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
+                                                                <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnEditBarcode_Click(u))" disabled="@(!sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">Edit Barcode</button></td>
                                                                 <td>@um.Brm_BarCode</td>
                                                                 <td>@um.ChildId</td>
                                                                 <td>@um.GrantName</td>

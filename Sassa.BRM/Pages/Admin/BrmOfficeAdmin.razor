@@ -1,5 +1,7 @@
-﻿@inject BRMDbService db
+﻿@inject SessionService sessionservice
+@inject BRMDbService db
 @inject SocpenService ss
+@inject StaticService sservice
 @namespace Sassa.BRM.Pages.Admin
 @using Sassa.Socpen.Data
 @using Sassa.BRM.Shared
@@ -15,7 +17,7 @@
             <span class="input-group-text">Region</span>
             <select class="form-select" @bind="regionId">
                 <option value="" selected></option>
-                @foreach (var region in db.GetRegions())
+                @foreach (var region in sservice.GetRegions())
                 {
                     <option value="@region.Key">@region.Value</option>
                 }
@@ -108,7 +110,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        regionId = db.session.Office.RegionId;
+        regionId = sessionservice.session.Office.RegionId;
         await GetRegionOffices();
     }
 
@@ -142,7 +144,7 @@
         string status  = u.Status == "A" ? "I" : "A";
         if (u.OfficeId > 0)
         {
-            await db.ChangeOfficeStatus(u.OfficeId.ToString(),status);
+            await sservice.ChangeOfficeStatus(u.OfficeId.ToString(),status);
         }
         if (u.ResCode > 0)
         {
@@ -158,7 +160,7 @@
         string status = u.ManualBatch == "A" ? "A" : "I";
         if (u.OfficeId > 0)
         {
-            await db.SaveManualBatch(u.OfficeId.ToString(), u.ManualBatch == "A" ? "I" : "A");
+            await sservice.SaveManualBatch(u.OfficeId.ToString(), u.ManualBatch == "A" ? "I" : "A");
         }
         IsLoaded = false;
         await GetRegionOffices();
@@ -166,7 +168,7 @@
 
     protected async void  btnRename_Click(RegionOffice u)
     {
-        await db.ChangeOfficeName(u.OfficeId.ToString(),u.OfficeName);
+        await sservice.ChangeOfficeName(u.OfficeId.ToString(),u.OfficeName);
         IsLoaded = false;
         await GetRegionOffices();
     }
@@ -182,7 +184,7 @@
     protected async void btnMove_Click()
     {
 
-        await db.MoveOffice(fromOfficeId, SelectedOfficeId);
+        await sservice.MoveOffice(fromOfficeId, SelectedOfficeId);
         IsLoaded = false;
         await GetRegionOffices();
         showOfficeConfirmation = false;

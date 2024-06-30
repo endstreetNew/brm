@@ -2,6 +2,7 @@
 @layout PrintLayout
 
 @inject BRMDbService db
+@inject StaticService sservice
 @inject BarCodeService bcService
 @inject IJSRuntime Js
 @inject Navigation Navigation
@@ -76,7 +77,7 @@
                                     <td>@u.GrantType</td>
                                     <td>@u.RegType</td>
                                     <td>@(u.TransDate == null ? "" : ((DateTime)u.TransDate).ToShortDateString())</td>
-                                    <td colspan="2">@((MarkupString)bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, db.GetGrantType(u.GrantType)))</td>
+                                    <td colspan="2">@((MarkupString)bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, sservice.GetGrantType(u.GrantType)))</td>
                                 </tr>
                         }
                     </tbody>
@@ -109,8 +110,8 @@ else
         //QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, db.GetGrantType(file.GrantType));
         if(items.Any())
         {
-            officename = db.GetOfficeName(items.First().OfficeId);
-            fspname = db.GetFspName(items.First().FspId);
+            officename = sservice.GetOfficeName(items.First().OfficeId);
+            fspname = sservice.GetFspName(items.First().FspId);
         }
         BatchBarCode = bcService.GetBarCode(BatchId);
     }

@@ -1,4 +1,5 @@
 ﻿@inject BRMDbService db
+@inject StaticService sservice
 
 
 @foreach (var section in "General Particulars|Particulars of Income|Particulars of Assets".Split('|'))
@@ -57,7 +58,7 @@
             _docspresent = _docspresent.Distinct().Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
         }
 
-        docs = db.GetGrantDocuments(GrantType);
+        docs = sservice.GetGrantDocuments(GrantType);
     }
 
     protected override void OnParametersSet()

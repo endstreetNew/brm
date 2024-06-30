@@ -1,6 +1,7 @@
-﻿
+﻿@inject SessionService sessionservice
 @inject BRMDbService db
 @inject SocpenService ss
+@inject StaticService sservice
 @namespace Sassa.BRM.Pages.Admin
 @using Sassa.Socpen.Data
 @using Sassa.BRM.Shared
@@ -16,7 +17,7 @@
             <span class="input-group-text">Region</span>
             <select class="form-select" @bind="regionId">
                 <option value="" selected></option>
-                @foreach (var region in db.GetRegions())
+                @foreach (var region in sservice.GetRegions())
                 {
                     <option value="@region.Key">@region.Value</option>
                 }
@@ -115,7 +116,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        regionId = db.session.Office.RegionId;
+        regionId = sessionservice.session.Office.RegionId;
         await GetRegionOffices();
     }
 
@@ -215,7 +216,7 @@
             {
                 throw new Exception("Can't create Office office exists, !");
             }
-            await db.CreateOffice(u);
+            await sservice.CreateOffice(u);
             IsLoaded = false;
             await GetRegionOffices();
         }

@@ -1,4 +1,5 @@
 ﻿@inject IAlertService toast
+@inject SessionService sessionservice
 @inject BRMDbService db
 @inject Navigation Navigate
 
@@ -42,7 +43,7 @@
                     <td>@u.NoOfFiles</td>
                     <td colspan="2">
 
-                        @if (db.session.Office.OfficeType == "LO")
+                        @if (sessionservice.session.Office.OfficeType == "LO")
                         {
                             <button class="btn btn-primary btn-sm active" @onclick="@(() => btnDispatch_Click(u))">@(u.Status == "Closed" ? "Dispatch" : "Reprint")</button>
                         }
@@ -74,7 +75,7 @@
     protected override async Task OnInitializedAsync()
     {
         waybills = await db.GetBatchWaybills();
-        db.session.BookMark.BoxingTab = 2;
+        sessionservice.session.BookMark.BoxingTab = 2;
     }
 
 

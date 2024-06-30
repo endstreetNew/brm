@@ -2,6 +2,7 @@
 
 @* Old *@
 @inject Navigation Navigate
+@inject SessionService sessionservice
 @inject BRMDbService db
 @inject IAlertService toast
 @inject IJSRuntime Js
@@ -169,7 +170,7 @@
     protected void OnPaged(int _page)
     {
         page = _page;
-        files = rs.GetFiles(db.session.Office.RegionCode, db.session.SamName, page);
+        files = rs.GetFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
     }
 
     // protected void OnHistoryPaged(int _page)

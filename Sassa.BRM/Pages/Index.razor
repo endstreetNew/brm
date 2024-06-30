@@ -1,6 +1,9 @@
 ﻿@page "/"
 @page "/brmprod"
-@inject BRMDbService db
+@* @inject BRMDbService db *@
+@inject SessionService sessionservice
+@inject StaticService sservice
+
 <AuthorizeView>
     @if (gsession != null)
     {
@@ -13,41 +16,41 @@
         <span><strong>User Details</strong></span>
         <div class="input-group mb-1">
             <span class="input-group-text">Name</span>
-            <label type="text" class="form-control">@db.session.Name</label>
+                    <label type="text" class="form-control">@sessionservice.session.Name</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Surname</span>
-            <label type="text" class="form-control">@db.session.Surname</label>
+                    <label type="text" class="form-control">@sessionservice.session.Surname</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Email</span>
-            <label type="text" class="form-control">@db.session.Email</label>
+                    <label type="text" class="form-control">@sessionservice.session.Email</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Region</span>
-            <label type="text" class="form-control">@db.session.Office.RegionName</label>
+                    <label type="text" class="form-control">@sessionservice.session.Office.RegionName</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Office</span>
-            <label type="text" class="form-control">@db.session.Office.OfficeName</label>
+                    <label type="text" class="form-control">@sessionservice.session.Office.OfficeName</label>
             <button class="btn btn-primary active" @onclick="ShowOfficeModal">Change Office</button>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Service Point</span>
-            <label type="text" class="form-control">@db.GetServicePointName(db.session.Office.FspId)</label>
+                    <label type="text" class="form-control">@sservice.GetServicePointName(sessionservice.session.Office.FspId)</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Office Type</span>
-            <label type="text" class="form-control">@db.session.Office.OfficeType</label>
+                    <label type="text" class="form-control">@sessionservice.session.Office.OfficeType</label>
         </div>
         <div class="input-group mb-1">
             <span class="input-group-text">Supervisor</span>
-            <label type="text" class="form-control">@(db.session.IsInRole("GRP_BRM_Supervisors") ? "Yes" : "No")</label>
+                    <label type="text" class="form-control">@(sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Yes" : "No")</label>
         </div>
     </div>
     <div class="whiteArea col">
         <span><strong>Roles</strong></span>
-        @foreach (var role in db.session.Roles)
+                @foreach (var role in sessionservice.session.Roles)
         {
             <label type="text" class="form-control">@role</label>
         }
@@ -71,14 +74,14 @@
 
         protected override void OnInitialized()
         {
-            db.SessionInitialized += new EventHandler(OnSessionChanged);
+            sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
             OnSessionChanged(this, EventArgs.Empty);
 
         }
 
         private void OnSessionChanged(object sender, EventArgs args)
         {
-            gsession = db.session;
+            gsession = sessionservice.session;
             //StateHasChanged();
         }
 
@@ -86,7 +89,7 @@
         {
             //StateHasChanged();
             showOfficeModal = false;
-            gsession = db.session;
+            gsession = sessionservice.session;
         }
 
         protected void ShowOfficeModal()
