@@ -6,9 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sassa.eDocs;
-using Sassa.eForms.Models;
+//using Sassa.eForms.Models;
 using Sassa.eServices.Admin.Services;
-using Sassa.Surveys.Data;
+//using Sassa.Surveys.Data;
 using Sotsera.Blazor.Toaster.Core.Models;
 using System;
 
@@ -62,26 +62,26 @@ namespace Sassa.eServices.Admin
             //services.AddSingleton<EFormService>();
             services.AddSingleton<MaintenanceService>();
             
-            services.AddSingleton<ILOService, LOService>();
+            //services.AddSingleton<ILOService, LOService>();
 
-            services.AddScoped<SurveyService>().AddDbContext<SurveyContext>(options =>
-            options.UseOracle(
-            Configuration.GetConnectionString("SurveysOracle")));
+            //services.AddScoped<SurveyService>().AddDbContext<SurveyContext>(options =>
+            //options.UseOracle(
+            //Configuration.GetConnectionString("SurveysOracle")));
 
-            //For saving large files direct
-            services.AddScoped<StoreDbService>().AddDbContext<eDocumentContext>(options =>
-            options.UseOracle(
-            Configuration.GetConnectionString("edocsConnectionstring")));
+            ////For saving large files direct
+            //services.AddScoped<StoreDbService>().AddDbContext<eDocumentContext>(options =>
+            //options.UseOracle(
+            //Configuration.GetConnectionString("edocsConnectionstring")));
 
             //Recaptcha--------------
             //services.AddControllersWithViews();
             //-----------------------
-            services.AddSingleton<SMSSender>();
-            services.AddSingleton<SassaUserStore>();
-            services.AddSingleton<DocumentStore>();
+            //services.AddSingleton<SMSSender>();
+            //services.AddSingleton<SassaUserStore>();
+            //services.AddSingleton<DocumentStore>();
             services.AddScoped<AppState>();
 
-            services.AddTransient<Monitor.Client.Services.TimerService>();
+            //services.AddTransient<Monitor.Client.Services.TimerService>();
             //HttpClients
             services.AddHttpClient("UserService", c =>
             {

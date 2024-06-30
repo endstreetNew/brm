@@ -46,6 +46,7 @@
 	  <Watch Remove="Pages\Components\BoxStatus.razor" />
 	  <Watch Remove="Pages\Components\BoxTransport.razor" />
 	  <Watch Remove="Pages\Components\BRMHistory.razor" />
+	  <Watch Remove="Pages\Components\TdwBatch - Copy.razor" />
 	  <Watch Remove="Pages\Components\TdwBatch.razor" />
 	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
 	  <Watch Remove="Pages\Modals\ManualCapture.razor" />

@@ -602,7 +602,7 @@ namespace Sassa.BRM.Services
 
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {
-            //Removes all duplicates
+            
 
             decimal? batch = 0;
             var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
@@ -615,7 +615,7 @@ namespace Sassa.BRM.Services
                 return null;
             }
             string region;
-            await RemoveBRM(application.Brm_BarCode, reason);
+
             if (StaticD.LocalOffices != null && StaticD.LocalOffices.Any())
             {
                 region = StaticD.LocalOffices.Where(o => o.OfficeId == application.OfficeId).FirstOrDefault()!.RegionId;
@@ -624,7 +624,8 @@ namespace Sassa.BRM.Services
             {
                 throw new Exception("Office not found");
             }
-
+            //Removes all duplicates in case LO retries after DC_Activity failure
+            await RemoveBRM(application.Brm_BarCode, "Api retry");
 
             DcFile file = new DcFile()
             {

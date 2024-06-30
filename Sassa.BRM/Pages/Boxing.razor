@@ -25,6 +25,9 @@
     <TabPage Text="TDW Dispatch" Id="4" Enabled="@(db.session.Office.OfficeType != "LO" && db.session.IsInRole("GRP_BRM_Monitoring"))">
         <TdwBatch></TdwBatch>
     </TabPage>
+    <TabPage Text="Box History" Id="5" Enabled="@(db.session.Office.OfficeType != "LO")">
+        <BoxHistory></BoxHistory>
+    </TabPage>
 </TabControl>
 
 

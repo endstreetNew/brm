@@ -344,6 +344,29 @@ namespace Sassa.BRM.Services
             return result;
         }
 
+        public PagedResult<CsvListItem> GetBoxHisTory(string regionCode, string username, int page)
+        {
+            PagedResult<CsvListItem> result = new PagedResult<CsvListItem>();
+            string[] files = new string[0];
+            try
+            {
+                files = Directory.GetFiles(reportFolder, $"{regionCode}-{username.ToUpper()}*");
+            }
+            catch //(Exception ex)
+            {
+
+            }
+
+            result.count = files.Count();
+            foreach (string filePath in files)
+            {
+                result.result.Add(new CsvListItem(Path.GetFileName(filePath)));
+            }
+            //Page the result..
+            result.result = result.result.OrderByDescending(r => r.ReportDate).Skip((page - 1) * 12).Take(12).ToList();
+            return result;
+        }
+
         public void DeleteReport(string fileName)
         {
             File.Delete($"{reportFolder}\\{fileName}");

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Oracle.ManagedDataAccess.Client;
 using Sassa.eServices.Admin.Services;
 using Sassa.Monitor.Shared;
 using System;
@@ -23,14 +22,15 @@ namespace Sassa.eServices.Admin.Controllers
         private static List<Asset> _Assets = new List<Asset>();
 
         private CSService _csservice;
+
         private IWebHostEnvironment _env;
         private readonly ILogger<AssetController> _logger;
 
-        public AssetController(IWebHostEnvironment env,ILogger<AssetController> logger,CSService csservice)
+        public AssetController(IWebHostEnvironment env,ILogger<AssetController> logger, CSService csservice)
         {
             _logger = logger;
-            _csservice = csservice;
             _env = env;
+            _csservice = csservice;
         }
 
         [HttpGet]
@@ -38,23 +38,15 @@ namespace Sassa.eServices.Admin.Controllers
         {
             if (_Assets.Count > 0) return _Assets;
             _Assets.Add(new Asset {Id=1, AssetType = "WebApp", AssetName = "BRM Production", Connector = "http://brm_prod.sassa.local/brmprod/Unauthorized.aspx", Username = "JSmithA", Password = "Savitri0!", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 12, AssetType = "WebApp", AssetName = "BRM QA", Connector = "http://ssvsbrmapphc02.sassa.local/QA/Unauthorized.aspx", Username = "JSmithA", Password = "Savitri0!", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 4, AssetType = "WebApp", AssetName = "eServicePortal (.30)", Connector = "http://10.124.154.30", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 5, AssetType = "WebApp", AssetName = "eServicePortal (.29)", Connector = "http://10.124.154.29", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 2, AssetType = "WebService", AssetName = "CSAuthentication", Connector = "http://10.124.154.218/cws/Authentication.svc?wsdl", Username = "lo-upload", Password = "!0-Up10@d", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 3, AssetType = "WebService", AssetName = "CSDocuments", Connector = "http://10.124.154.218/cws/DocumentManagement.svc?wsdl", Username = "lo-upload", Password = "!0-Up10@d", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 6, AssetType = "API", AssetName = "Sassa.eUsers.Api (.30)", Connector = "http://10.124.154.30:8085/index.html", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 7, AssetType = "API", AssetName = "Sassa.eDocs.Api (.30)", Connector = "http://10.124.154.30:8088/index.html", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 8, AssetType = "API", AssetName = "Sassa.eUsers.Api (.29)", Connector = "http://10.124.154.29:8085/index.html", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 2, AssetType = "WebApp", AssetName = "BRM QA", Connector = "http://ssvsbrmapphc02.sassa.local/QA/Unauthorized.aspx", Username = "JSmithA", Password = "Savitri0!", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 3, AssetType = "API", AssetName = "Sassa.eUsers.Api (.30)", Connector = "http://10.124.154.30:8085/index.html", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 4, AssetType = "API", AssetName = "Sassa.eDocs.Api (.30)", Connector = "http://10.124.154.30:8088/index.html", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 5, AssetType = "API", AssetName = "Sassa.eUsers.Api (.29)", Connector = "http://10.124.154.29:8085/index.html", Username = "", Password = "", Status = "Unkwown" });
             _Assets.Add(new Asset { Id = 9, AssetType = "API", AssetName = "Sassa.eDocs.Api (.29)", Connector = "http://10.124.154.29:8088/index.html", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 10, AssetType = "API", AssetName = "Sassa.eForms.Api (LO)", Connector = "http://10.117.122.198:8080/index.html", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 11, AssetType = "API", AssetName = "Sassa.eDocs.Api (LO)", Connector = "http://10.117.122.198:8088/index.html", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 13, AssetType = "ORACLEDB", AssetName = "Sassa.eDocs.DB", Connector = "DATA SOURCE = SSVSCSODBPHC01.SASSA.LOCAL:1521/ecsprod; USER ID = EDOCS; Password = Password123; ", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 14, AssetType = "ORACLEDB", AssetName = "Sassa.eUser.DB", Connector = "DATA SOURCE=SSVSCSODBPHC01.SASSA.LOCAL:1521/ecsprod;USER ID=ESERVICES;Password=Password123;", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 15, AssetType = "ORACLEDB", AssetName = "Sassa.BRMProd.DB", Connector = "Data Source = (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.124.154.20)(PORT=1521)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ecsbrm))); user id=contentserver; password=Password123;", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 16, AssetType = "ORACLEDB", AssetName = "Sassa.LOProd.DB", Connector = "DATA SOURCE = 10.124.154.21:1521/ecslo;USER ID=lo_admin;Password=sassa123;", Username = "", Password = "", Status = "Unkwown" });
-            _Assets.Add(new Asset { Id = 17, AssetType = "ORACLEDB", AssetName = "Sassa.CSProd.DB", Connector = "Data Source = (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.124.154.224)(PORT=1521)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ecsprod))); user id=contentserver; password=Password123;", Username = "", Password = "", Status = "Unkwown" });
-
+            _Assets.Add(new Asset { Id = 6, AssetType = "API", AssetName = "Sassa.eForms.Api (LO)", Connector = "http://10.117.122.198:8080/index.html", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 7, AssetType = "API", AssetName = "Sassa.eDocs.Api (LO)", Connector = "http://10.117.122.198:8088/index.html", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 8, AssetType = "ORACLEDB", AssetName = "Sassa.BRMProd.DB", Connector = "Data Source = (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.124.154.20)(PORT=1521)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ecsbrm))); user id=contentserver; password=Password123;", Username = "", Password = "", Status = "Unkwown" });
+            _Assets.Add(new Asset { Id = 9, AssetType = "ORACLEDB", AssetName = "Sassa.BRMProd.DB", Connector = "Data Source = (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.124.154.20)(PORT=1521)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ecsbrm))); user id=contentserver; password=Password123;", Username = "", Password = "", Status = "Unkwown" });
             foreach (Asset a in _Assets)
             {
                 a.Status = await CheckAsset(a);
@@ -110,14 +102,14 @@ namespace Sassa.eServices.Admin.Controllers
                         //        }
                         //    }
                         case "ORACLEDB":
-                            using (OracleConnection con = new OracleConnection(asset.Connector))
-                            {
+                            //using (OracleConnection con = new OracleConnection(asset.Connector))
+                            //{
 
-                                OracleCommand command = new OracleCommand("SELECT 1 FROM DUAL", con);
-                                command.Connection.Open();
-                                if (command.ExecuteReader().HasRows) return "UP";
+                            //    OracleCommand command = new OracleCommand("SELECT 1 FROM DUAL", con);
+                            //    command.Connection.Open();
+                            //    if (command.ExecuteReader().HasRows) return "UP";
                                 return "DOWN";
-                            }
+                            //}
                         default:
                             return "INVALID";
                     }
@@ -146,6 +138,12 @@ namespace Sassa.eServices.Admin.Controllers
         /// </summary>
         /// <param name="html"></param>
         /// <returns></returns>
+
+        /// <summary>
+        /// Save pdf to contentserver
+        /// </summary>
+        /// <param name="html"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task Put([FromBody] string html)
         {
@@ -156,14 +154,14 @@ namespace Sassa.eServices.Admin.Controllers
             try
             {
                 //PDF.SaveAs(file);
-                await _csservice.UploadDoc(filename,file);
+                await _csservice.UploadDoc(filename, file);
 
             }
             catch//(Exception ex)
             {
                 throw;
             }
-            
+
         }
-     }
+    }
 }

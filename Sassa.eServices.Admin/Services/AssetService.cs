@@ -149,7 +149,7 @@ namespace Sassa.eServices.Admin.Services
             {
                 doc.Save(file);
                 doc.Close();
-                await _csservice.UploadDoc(filename, file);
+                await Task.Delay(100);// _csservice.UploadDoc(filename, file);
 
             }
             catch //(Exception ex)
