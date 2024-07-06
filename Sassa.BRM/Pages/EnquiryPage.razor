@@ -1,10 +1,13 @@
 ﻿@page "/enquirypage"
 
+@using System.Threading
+
 @inject NavigationManager NavigationM
 @inject Navigation Navigate
 @inject IAlertService toast
 @inject BRMDbService db
 @inject StaticService sservice
+
 
 
 <div class="row">
@@ -210,14 +213,21 @@
     List<Enquiry> idResults { get; set; }
     List<DcFileDeleted> history;
 
+    private CancellationTokenSource _cancellationTokenSource;
+
     string txtSearchBrm;
 
     bool showDetail;
+
+    bool loading = false;
 
     async Task Search()
     {
         try
         {
+            if (loading) return;
+            loading = true;    
+            //_cancellationTokenSource = new CancellationTokenSource();
             if (txtSearchBrm.Length == 8)
             {
                 e = await db.GetEnquiry(txtSearchBrm.ToUpper());
@@ -239,9 +249,12 @@
             {
                 history = await db.GetDeleteHistory(idResults.First().ApplicantNo);
             }
+            loading = false;
         }
         catch (Exception ex)
         {
+            //_cancellationTokenSource?.Cancel();
+            //_cancellationTokenSource?.Dispose();
             toast.Error(ex.Message);
         }
     }

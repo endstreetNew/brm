@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.EmailClient", "Sassa.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Monitor.Shared", "Sassa.Monitor.Shared\Sassa.Monitor.Shared.csproj", "{DFE916A4-E2C1-4783-8192-C5743E5A0CC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sassa.Monitor.AppHost", "Sassa.Monitor\Sassa.Monitor.AppHost\Sassa.Monitor.AppHost.csproj", "{E47B3116-A46C-4100-BABF-8313ADE3E12C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Monitor.AppHost", "Sassa.Monitor\Sassa.Monitor.AppHost\Sassa.Monitor.AppHost.csproj", "{E47B3116-A46C-4100-BABF-8313ADE3E12C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Monitor.ServiceDefaults", "Sassa.Monitor\Sassa.Monitor.ServiceDefaults\Sassa.Monitor.ServiceDefaults.csproj", "{3D335204-088B-411B-8A0A-977EE2D880A9}"
 EndProject

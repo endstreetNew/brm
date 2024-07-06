@@ -547,60 +547,7 @@ namespace Sassa.BRM.Services
             return false;
         }
 
-        /// <summary>
-        /// New TDW Batch feature
-        /// </summary>
-        /// <param name="tdwBatchNo"></param>
-        /// <returns></returns>
-        public async Task SendTDWBulkReturnedMail(int tdwBatchNo)
-        {
-            List<TDWRequestMain> tpl = new List<TDWRequestMain>();
-            List<DcFile> parentlist;
-            TDWRequestMain TdwFormat;
-            foreach (string boxNo in await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchNo).AsNoTracking().Select(b => b.TdwBoxno).Distinct().ToListAsync())
-            {
 
-                parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
-                foreach (DcFile parent in parentlist)
-                {
-                    TdwFormat = new TDWRequestMain
-                    {
-                        BRM_No = parent.BrmBarcode,
-                        CLM_No = parent.UnqFileNo,
-                        Folder_ID = parent.UnqFileNo,
-                        Grant_Type = parent.GrantType,
-                        Firstname = parent.UserFirstname,
-                        Surname = parent.UserLastname,
-                        ID_Number = parent.ApplicantNo,
-                        Year = parent.UpdatedDate.Value.ToString("YYYY"),
-                        Location = parent.TdwBoxno,
-                        Reg = parent.RegType,
-                        //Bin  = parent. ,
-                        Box = parent.MiniBoxno.ToString(),
-                        //Pos  = parent. ,
-                        UserPicked = ""
-                    };
-                    tpl.Add(TdwFormat);
-                }
-
-            }
-            string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBatch_{tdwBatchNo}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-            //attachment list
-            List<string> files = new List<string>();
-            //write attachments for manual download/add to mail
-            File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
-            files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
-            //send mail to TDW
-            try
-            {
-                //if (!Environment.MachineName.ToLower().Contains("prod")) return;
-                _mail.SendTDWIncoming(session, tdwBatchNo, files);
-            }
-            catch
-            {
-                //ignore confirmation errors
-            }
-        }
 
         public async Task<DcFile> GetReboxCandidate(Reboxing rebox)
         {
@@ -721,25 +668,7 @@ namespace Sassa.BRM.Services
             }
         }
 
-        /// <summary>
-        /// Create TDW batch and send mail
-        /// </summary>
-        /// <param name="boxes"></param>
-        /// <returns></returns>
-        public async Task<int> CreateTdwBatch(List<TdwBatchViewModel> boxes)
-        {
-            int tdwBatch = await _raw.GetNextTdwBatch();
-            foreach (var box in boxes.Where(b => !string.IsNullOrEmpty(b.BoxNo)))
-            {
-                box.TdwSendDate = DateTime.Now;
-                box.TdwBatchNo = tdwBatch;
-                box.User = session.SamName;
-                await _context.DcFiles.Where(f => f.TdwBoxno == box.BoxNo).ForEachAsync(f => { f.TdwBatch = tdwBatch; f.TdwBatchDate = box.TdwSendDate; });
-            }
-            await _context.SaveChangesAsync();
-            await SendTDWBulkReturnedMail(tdwBatch);
-            return tdwBatch;
-        }
+
 
         public void ResendFile(string fileName)
         {
@@ -2348,7 +2277,7 @@ namespace Sassa.BRM.Services
         {
             Enquiry result = new Enquiry();
             var dcfiles = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode && !string.IsNullOrEmpty(f.ApplicantNo)).ToListAsync();
-            if (!dcfiles.Any()) throw new Exception("Brcode not found");
+            if (!dcfiles.Any()) throw new Exception("Barcode not found");
             if (dcfiles.Count() > 1)
             {
                 throw new Exception("Duplicate Brm Record please delete duplicate first.");

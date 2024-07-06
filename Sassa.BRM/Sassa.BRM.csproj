@@ -34,6 +34,8 @@
 	<ItemGroup>
 	  <Content Remove="appsettings.Production.json" />
 	  <Content Remove="Pages\Components\BoxTransport.razor" />
+	  <Content Remove="Pages\Components\tdwBatchBatches.razor" />
+	  <Content Remove="Pages\Components\TdwBatchBoxes.razor" />
 	  <Content Remove="Pages\Print\BoxTransportCover.razor" />
 	</ItemGroup>
 
@@ -48,6 +50,8 @@
 	  <Watch Remove="Pages\Components\BRMHistory.razor" />
 	  <Watch Remove="Pages\Components\TdwBatch - Copy.razor" />
 	  <Watch Remove="Pages\Components\TdwBatch.razor" />
+	  <Watch Remove="Pages\Components\tdwBatchBatches.razor" />
+	  <Watch Remove="Pages\Components\TdwBatchBoxes.razor" />
 	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
 	  <Watch Remove="Pages\Modals\ManualCapture.razor" />
 	  <Watch Remove="Pages\Print\BoxTransportCover.razor" />
@@ -68,6 +72,8 @@
     </None>
     <None Include="Pages\Components\BoxStatus.razor" />
     <None Include="Pages\Components\BoxTransport.razor" />
+    <None Include="Pages\Components\TdwBatchBatches.razor" />
+    <None Include="Pages\Components\TdwBatchBoxes.razor" />
   </ItemGroup>
 
 

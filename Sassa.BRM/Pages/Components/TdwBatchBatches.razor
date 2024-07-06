@@ -1,0 +1,110 @@
+﻿@inject Navigation Navigate
+@inject SessionService sessionservice
+@inject TdwBatchService db
+@inject IAlertService toast
+@inject IJSRuntime Js
+@inject IWebHostEnvironment env
+
+@inject ReportDataService rd
+
+@using System.Text
+@using System.IO;
+@using Sassa.BRM.Data.ViewModels;
+
+@if (batchedfiles != null)
+{
+    @if (batchedfiles.count > 0)
+    {
+        <div class="row">
+
+            <table class="table table-sm" style="font-size:small;">
+                <thead>
+                    <tr>
+                        <th scope="col">Batch No</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Boxes</th>
+                        <th scope="col">LC Files</th>
+                        <th scope="col">Region</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (TdwBatchViewModel p in batchedfiles.result)
+                    {
+                        <tr>
+                            <td>@p.TdwBatchNo</td>
+                            <td>@p.User</td>
+                            <td>@p.Boxes</td>
+                            <td>@p.Files</td>
+                            <td>@p.Region</td>
+                            <td>@p.TdwSendDate</td>
+                            <td>
+                                <div class="input-group mb-3">
+                                    <button type="button" class="btn btn-primary btn-sm" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click(@p.TdwBatchNo))">Reprint Cover</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <Pager Paged="OnHistoryPaged" TotalSize="@batchedfiles.count" PageSize="20"></Pager>
+        </div>
+    }
+    else
+    {
+        <p> No Dispatched Files history</p>
+    }
+}
+else
+{
+    <div class="row">
+        <div class="col">
+            <h5>Loading...</h5>
+        </div>
+    </div>
+}
+@code {
+
+    protected bool BoxLocked;
+    protected string RemoveBarcode;
+
+    protected string searchText;
+
+    //private ElementReference brmInput;
+
+    protected Reboxing rebox = new Reboxing();
+    //bool loaded = false;
+
+    PagedResult<TdwBatchViewModel> batchedfiles;
+
+
+    int historypage = 1;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //todo: Fix with new service
+        batchedfiles = await db.GetHistoryBoxes(historypage);
+        sessionservice.session.BookMark.BoxingTab = 4;
+    }
+
+    protected async Task btnPrint_Click()
+    {
+        int tdwBatch = await db.CreateTdwBatch(boxfiles.result.Where(b => b.IsSelected).ToList());
+        btnPrint_Click(tdwBatch);
+    }
+
+    protected void btnPrint_Click(int tdwBatch)
+    {
+        Navigate.NavigateTo($"tdwbatchcover/{tdwBatch}");
+    }
+
+    protected async Task OnHistoryPaged(int _page)
+    {
+        historypage = _page;
+        //todo: fix
+        batchedfiles = await db.GetHistoryBoxes(historypage);
+    }
+
+}
