@@ -249,13 +249,15 @@
             {
                 history = await db.GetDeleteHistory(idResults.First().ApplicantNo);
             }
-            loading = false;
+            
         }
         catch (Exception ex)
         {
-            //_cancellationTokenSource?.Cancel();
-            //_cancellationTokenSource?.Dispose();
             toast.Error(ex.Message);
+        }
+        finally
+        {
+            loading = false;
         }
     }
     protected void OnConfirmationClose()
