@@ -272,13 +272,13 @@
             {
                 rebox.BoxNo = rebox.BoxNo.ToUpper().Trim();
                 await OnPaged(page);//Load items in this box
-                //Todo: fix field in db
+                                    //Todo: fix field in db
                 rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
                 BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
                 BoxOpen = boxfiles.result.Where(r => r.TdwBatch == 0).Any();
                 //rebox.RegType = "";
                 //rebox.BoxNo = boxNo;
-                
+
                 if(BoxLocked)
                 {
                     toast.Warn("This box has been dispatched and is locked.");
@@ -300,7 +300,7 @@
                                 rebox.SelectedType = "18";
                                 break;
                             case "MAIN":
-                               rebox.SelectedType = "1";
+                                rebox.SelectedType = "1";
                                 break;
                             case "ARCHIVE":
                                 rebox.SelectedType = "14";
@@ -482,7 +482,7 @@
         archiveHidden = !(sservice.GetBoxTypes()[rebox.SelectedType]).Contains("Archive");
         if (!string.IsNullOrEmpty(rebox.RegType))
         {
-            toast.Warn($"Box only accepts {(rebox.RegType.Contains("LC") ? "LC" :rebox.RegType)}");
+            toast.Warn($"Box only accepts {(rebox.RegType.Contains("LC") ? "LC" : rebox.RegType)}");
         }
     }
 

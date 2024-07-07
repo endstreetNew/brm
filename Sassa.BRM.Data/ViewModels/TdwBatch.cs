@@ -21,7 +21,7 @@ namespace Sassa.BRM.Data.ViewModels
         public string User { get; set; }
         public DateTime? TdwSendDate { get; set; }
         public bool IsSelected { get; set; }
-
+        public bool IsLocked { get; set; }
     }
 }
 //i)	The batch inventory must contain:
