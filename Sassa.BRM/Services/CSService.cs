@@ -154,7 +154,7 @@ namespace Sassa.BRM.Services
         private void SaveAttachment(Attachment doc, string IdNo, string imagePath, long nodeId, long parentNode)
         {
 
-            if (!_context.DcDocumentImages.Where(d => d.Filename == doc.FileName).Any()) //skip if its downloaded already
+            if (!_context.DcDocumentImages.Where(d => d.Filename == doc.FileName).ToList().Any()) //skip if its downloaded already
             {
                 DcDocumentImage image = new DcDocumentImage();
                 image.Filename = doc.FileName;
@@ -180,7 +180,7 @@ namespace Sassa.BRM.Services
         private void SaveFolder(string folderName, long nodeId)
         {
 
-            if (!_context.DcDocumentImages.Where(d => d.Filename == folderName && d.IdNo == idNumber).Any()) //skip if folder exists
+            if (!_context.DcDocumentImages.Where(d => d.Filename == folderName && d.IdNo == idNumber).ToList().Any()) //skip if folder exists
             {
                 DcDocumentImage image = new DcDocumentImage();
                 image.Filename = folderName;
@@ -200,10 +200,14 @@ namespace Sassa.BRM.Services
         {
             Dictionary<string, string> folders = new Dictionary<string, string>();
 
-            DocumentList = _context.DcDocumentImages.Where(d => d.IdNo == idNumber && d.Type == false).ToList();
+            DocumentList = _context.DcDocumentImages.Where(d => d.IdNo == idNumber).ToList();
+            if (!DocumentList.Any()) return folders;
             foreach (DcDocumentImage doc in DocumentList)
             {
-                folders.Add(doc.Csnode.ToString(), doc.Filename);
+                if (!(bool)doc.Type)
+                { 
+                    folders.Add(doc.Csnode.ToString(), doc.Filename);
+                }
             }
 
             return folders;

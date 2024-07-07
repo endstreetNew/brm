@@ -26,8 +26,8 @@
     <TabPage Text="TDW Dispatch" Id="4" Enabled="@(sessionservice.session.Office.OfficeType != "LO" && sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">
         <TdwBatch></TdwBatch>
     </TabPage>
-    <TabPage Text="Box History" Id="5" Enabled="@(sessionservice.session.Office.OfficeType != "LO")">
-        <BoxHistory></BoxHistory>
+    <TabPage Text="TDW History" Id="5" Enabled="@(sessionservice.session.Office.OfficeType != "LO")">
+        <TdwBatchHistory></TdwBatchHistory>
     </TabPage>
 </TabControl>
 

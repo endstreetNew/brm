@@ -1259,7 +1259,8 @@ namespace Sassa.BRM.Services
         public async Task<TreeNode> GetCSFiles(string idNo)
         {
             TreeNode node = new TreeNode();
-            var files = await _context.DcDocumentImages.Where(d => d.IdNo == idNo && (d.Filename.ToLower().EndsWith(".pdf") || d.Type == false)).ToListAsync();
+            var intermediate  =  await _context.DcDocumentImages.Where(d => d.IdNo == idNo).ToListAsync();
+            var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(bool)d.Type));
             foreach (var file in files)
             {
                 TreeNode child = new TreeNode
