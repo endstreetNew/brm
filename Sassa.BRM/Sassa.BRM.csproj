@@ -33,6 +33,7 @@
 
 	<ItemGroup>
 	  <Content Remove="appsettings.Production.json" />
+	  <Content Remove="Pages\Admin\ActiveUsers.razor" />
 	  <Content Remove="Pages\Components\BoxTransport.razor" />
 	  <Content Remove="Pages\Print\BoxTransportCover.razor" />
 	</ItemGroup>
@@ -42,6 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Watch Remove="Pages\Admin\ActiveUsers.razor" />
 	  <Watch Remove="Pages\Admin\ServicePointAdmin.razor" />
 	  <Watch Remove="Pages\Components\BoxStatus.razor" />
 	  <Watch Remove="Pages\Components\BoxTransport.razor" />
@@ -66,6 +68,7 @@
     <None Include="appsettings.Production.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
+    <None Include="Pages\ActiveUsers.razor" />
     <None Include="Pages\Components\BoxStatus.razor" />
     <None Include="Pages\Components\BoxTransport.razor" />
   </ItemGroup>

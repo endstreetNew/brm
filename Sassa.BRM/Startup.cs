@@ -59,6 +59,9 @@ namespace Sassa.BRM
             services.AddScoped<ReportDataService>();
             services.AddScoped<ProgressService>();
 
+            services.AddScoped<ActiveUser>();
+            services.AddSingleton<ActiveUserList>();
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
