@@ -2213,6 +2213,9 @@ namespace Sassa.BRM.Services
             }
             DcFile file = dcfiles.First();
             CreateActivity("Enquiry" + GetFileArea(file.SrdNo, file.Lctype), "Enquiry", file.UnqFileNo);
+
+            var merged = await _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode).ToListAsync();
+
             result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
             result.ApplicantNo = file.ApplicantNo;
             result.AppType = sservice.GetTransactionType((int)file.TransType);
@@ -2223,12 +2226,11 @@ namespace Sassa.BRM.Services
             result.CsgStatus = "";
             result.GrantType = sservice.GetGrantType(file.GrantType);
             result.LastAction = file.UpdatedDate;
-            var merged = _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode);
-            if (merged.Any())
-            {
-                result.MergeParent = (await merged.FirstAsync()).ParentBrmBarcode;
-            }
             result.MultiGrant = merged.Any();
+            if (result.MultiGrant)
+            {
+                result.MergeParent = merged.First().ParentBrmBarcode;
+            }
             result.Province = sservice.GetRegion(file.RegionId);
             result.RegType = file.RegType;
             result.SocPenActive = false;
@@ -2237,7 +2239,7 @@ namespace Sassa.BRM.Services
             result.UnqFileNo = file.UnqFileNo;
 
             //Tdw
-            var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == brmBarCode);
+            var tdwresult = await _context.TdwFileLocations.Where(t => t.FilefolderCode == brmBarCode).ToListAsync();
             result.TdwRecord = tdwresult.Any();
 
             //SocPen
