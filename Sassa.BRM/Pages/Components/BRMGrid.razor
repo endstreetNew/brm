@@ -277,7 +277,7 @@
         {
             if (string.IsNullOrEmpty(NewBarCode) || NewBarCode.Trim().Length != 8) throw new Exception("Invalid Brm Barcode.");
             NewBarCode = NewBarCode.ToUpper().Trim();
-            if (db.checkBRMExists(NewBarCode))
+            if (await db.checkBRMExists(NewBarCode))
             {
                 throw new Exception("BarCode Exist!");
             }

@@ -62,10 +62,11 @@ namespace Sassa.BRM.Services
 
         #region BRM Records
 
-        public bool checkBRMExists(string brmno)
+        public async Task<bool> checkBRMExists(string brmno)
         {
-            return _context.DcFiles.Where(f => f.BrmBarcode == brmno).Any();
-            //return _context.DcFiles.Where(k => k.BrmBarcode.ToLower() == brmno.ToLower()).Any();
+           var interim = await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync();
+
+            return interim.Any();
         }
 
 
@@ -562,7 +563,7 @@ namespace Sassa.BRM.Services
             {
                 //Try the newBarcode in DCFiles
                 //candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
-                if (checkBRMExists(rebox.NewBarcode)) throw new Exception("The new barcode already exists!");
+                if (await checkBRMExists(rebox.NewBarcode)) throw new Exception("The new barcode already exists!");
                 //if (!candidates.Any())
                 //{
                 //Try the MisFile in BRM
@@ -1708,7 +1709,7 @@ namespace Sassa.BRM.Services
         public async Task RemoveBRM(string brmNo, string reason)
         {
 
-            var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
+            var files = await _context.DcFiles.Where(k => k.BrmBarcode == brmNo).ToListAsync();
             //int fileCount = files.Count();
             if (files.Any())
             {
@@ -1722,8 +1723,8 @@ namespace Sassa.BRM.Services
 
                 }
             }
-            var merges = _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo);
-            foreach (var merge in merges)
+            var merges = await _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo).ToListAsync();
+            foreach (var merge in merges.ToList())
             {
                 _context.DcMerges.Remove(merge);
             }
@@ -1750,7 +1751,8 @@ namespace Sassa.BRM.Services
             removed.FromDCFile(file);
             try
             {
-                if (!_context.DcFileDeleteds.Where(d => d.UnqFileNo == file.UnqFileNo).Any())
+                var interim = await _context.DcFileDeleteds.Where(d => d.UnqFileNo == file.UnqFileNo).ToListAsync();
+                if (!interim.Any())
                 {
                     _context.DcFileDeleteds.Add(removed);
                     await _context.SaveChangesAsync();

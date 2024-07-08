@@ -182,7 +182,7 @@
         }
         if (!IsValid()) return;
         br.Brm_BarCode = br.Brm_BarCode.ToUpper().Trim();
-        if (db.checkBRMExists(br.Brm_BarCode))
+        if (await db.checkBRMExists(br.Brm_BarCode))
         {
             await Task.Delay(10);
             showOverWrite = true;
@@ -224,7 +224,7 @@
             await BrmSave.InvokeAsync(br.IsMergeCandidate);
             //Run sync on purpose
             await db.SetBatchCount(br.BATCH_NO);
-            await JSRuntime.InvokeAsync<object>("open",System.Threading.CancellationToken.None, $"coversheet/{br.Brm_BarCode}", "_blank");
+            await JSRuntime.InvokeVoidAsync("open",System.Threading.CancellationToken.None, $"coversheet/{br.Brm_BarCode}", "_blank");
             //Navigate.NavigateTo($"coversheet/{br.Brm_BarCode}");
         }
         catch (TaskCanceledException ex)

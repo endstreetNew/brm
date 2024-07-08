@@ -16,7 +16,7 @@ namespace Sassa.BRM.Helpers
         /// <summary>
         ///  This is a demo to read the previously created basix.xlsx file
         /// </summary>
-        public static List<string> ReadDestroyList(string fileName,string targetColumnName= "B")
+        public static List<string> ReadDestroyList(string fileName,string targetColumnName= "A")
         {
             var DestroyList = new List<string>();
 
@@ -28,7 +28,7 @@ namespace Sassa.BRM.Helpers
                 SheetData sheetData = worksheetPart.Worksheet.Elements<SheetData>().First();
 
                 // Specify the column you want to read (e.g., column A)
-                string targetColumn = "B"; // Change this to the desired column letter
+                string targetColumn = "A"; // Change this to the desired column letter
 
 
                 foreach (Row row in sheetData.Elements<Row>())
