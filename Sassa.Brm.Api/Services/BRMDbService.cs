@@ -602,8 +602,12 @@ namespace Sassa.BRM.Services
 
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {
-            
 
+            application.ChildId = application.ChildId.Trim();
+            if (application.ChildId.Length > 13)
+            {
+                throw new Exception("Child ID too long.");
+            }
             decimal? batch = 0;
             var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
             if (office.ManualBatch == "A")
@@ -612,7 +616,7 @@ namespace Sassa.BRM.Services
             }
             else
             {
-                return null;
+                throw new Exception("Manual batch not set for this office.");
             }
             string region;
 
@@ -625,7 +629,11 @@ namespace Sassa.BRM.Services
                 throw new Exception("Office not found");
             }
             //Removes all duplicates in case LO retries after DC_Activity failure
-            await RemoveBRM(application.Brm_BarCode, "Api retry");
+            //await RemoveBRM(application.Brm_BarCode, "Api retry");
+            if(_context.DcFiles.Where(f => f.BrmBarcode == application.Brm_BarCode).ToList().Any())
+            {
+                throw new Exception("Duplicate BRM");
+            }
 
             DcFile file = new DcFile()
             {
@@ -646,7 +654,7 @@ namespace Sassa.BRM.Services
                 ApplicationStatus = application.AppStatus,
                 TransDate = application.AppDate.ToDate("dd/MMM/yy"),
                 SrdNo = application.Srd_No,
-                ChildIdNo = application.ChildId,
+                ChildIdNo = application.ChildId.Trim(),
                 Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
                 Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
                 ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
@@ -733,7 +741,7 @@ namespace Sassa.BRM.Services
                 dc_socpen.BeneficiaryId = application.Id;
                 dc_socpen.SrdNo = srd;
                 dc_socpen.GrantType = application.GrantType;
-                dc_socpen.ChildId = application.ChildId;
+                dc_socpen.ChildId = application.ChildId.Trim();
                 dc_socpen.Name = application.Name;
                 dc_socpen.Surname = application.SurName;
                 dc_socpen.CaptureReference = file.UnqFileNo;

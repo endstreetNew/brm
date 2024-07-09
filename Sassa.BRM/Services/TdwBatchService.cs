@@ -34,7 +34,7 @@ namespace Sassa.BRM.Services
 
     
 
-    public async Task<PagedResult<TdwBatchViewModel>> GetBox(string boxNo)
+        public async Task<PagedResult<TdwBatchViewModel>> GetBox(string boxNo)
     {
 
         

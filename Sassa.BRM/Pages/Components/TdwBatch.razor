@@ -100,7 +100,7 @@
                                                 <td>@p.Region</td>
                                                 <td>
                                                     <div class="input-group mb-3">
-                                                        @if(p.IsLocked)
+                                                        @if(p.IsLocked || p.TdwBatchNo != 0 || p.TdwSendDate != null)
                                                         {
                                                             <button type="button" class="btn btn-primary btn-sm" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnUnlock_Click(@p.BoxNo))">Unlock box </button>
                                                         }

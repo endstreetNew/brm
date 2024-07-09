@@ -38,23 +38,23 @@ namespace Sassa.BRM.Controller
         // POST: api/Users
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
-        public async Task<ActionResult<DcFile>> PostUser(Application app)
-        {
-            DcFile result;
-            //try
-            //{
-                sservice.SetUserOffice(app.OfficeId);
-                result = await _brmService.CreateBRM(app, "Inserted via API.");
-            //}
-            //catch (Exception ex)
-            //{
-            //    return GetLastError();
-            //}
-            //var xx = CreatedAtAction("GetUser", new { id = user.Id }, user);
-            //return xx;
-            return result;
-        }
+        //[HttpPost]
+        //public async Task<ActionResult<DcFile>> PostUser(Application app)
+        //{
+        //    DcFile result;
+        //    //try
+        //    //{
+        //        sservice.SetUserOffice(app.OfficeId);
+        //        result = await _brmService.CreateBRM(app, "Inserted via API.");
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    return GetLastError();
+        //    //}
+        //    //var xx = CreatedAtAction("GetUser", new { id = user.Id }, user);
+        //    //return xx;
+        //    return result;
+        //}
         //[HttpGet]
         //public ActionResult<string> GetLastError()
         //{

@@ -44,7 +44,7 @@ namespace Sassa.BRM.Services
             string barcodestring = BRMBarCode + "\t" + CLMno + "\t" + pensionNo + "\t" + fullname + "\t" + grantname;
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
             QRCodeData qrCodeData = qrGenerator.CreateQrCode(barcodestring, QRCodeGenerator.ECCLevel.Q);
-            SvgQRCode qrCode = new SvgQRCode(qrCodeData);
+            QRCoder.SvgQRCode qrCode = new QRCoder.SvgQRCode(qrCodeData);
             return qrCode.GetGraphic(new Size { Width = 120, Height = 120 });
         }
 

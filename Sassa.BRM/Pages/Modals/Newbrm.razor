@@ -156,7 +156,7 @@
             //•	When the child ID is not showing, you can scan it(then column under child Id No is blank)
             //if (string.IsNullOrEmpty(br.ChildId))
             //{
-                childIdVisible = true;
+            childIdVisible = true;
             //}
         }
         SelectedAppDate = br.AppDate.ToDate("dd/MMM/yy");
@@ -216,6 +216,11 @@
                     //    }
                     //}
                 }
+            }
+            br.ChildId = br.ChildId.Trim();
+            if (br.ChildId.Length > 13)
+            {
+                throw new Exception("Child ID too long");
             }
             DcFile file = await db.CreateBRM(br,reason);
             br.BATCH_NO = file.BatchNo.ToString();
