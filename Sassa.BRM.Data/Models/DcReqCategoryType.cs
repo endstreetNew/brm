@@ -1,19 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#nullable disable
+namespace Sassa.BRM.Models;
 
-namespace Sassa.BRM.Models
+public partial class DcReqCategoryType
 {
-    public partial class DcReqCategoryType
-    {
-        public DcReqCategoryType()
-        {
-            DcReqCategoryTypeLinks = new HashSet<DcReqCategoryTypeLink>();
-        }
+    public decimal TypeId { get; set; }
 
-        public decimal TypeId { get; set; }
-        public string TypeDescr { get; set; }
+    public string TypeDescr { get; set; }
 
-        public virtual ICollection<DcReqCategoryTypeLink> DcReqCategoryTypeLinks { get; set; }
-    }
+    public virtual ICollection<DcReqCategoryTypeLink> DcReqCategoryTypeLinks { get; set; } = new List<DcReqCategoryTypeLink>();
 }

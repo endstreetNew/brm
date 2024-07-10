@@ -1,22 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#nullable disable
+namespace Sassa.BRM.Models;
 
-namespace Sassa.BRM.Models
+public partial class DcRegion
 {
-    public partial class DcRegion
-    {
-        public DcRegion()
-        {
-            DcFileRequests = new HashSet<DcFileRequest>();
-            DcLocalOffices = new HashSet<DcLocalOffice>();
-        }
+    public string RegionId { get; set; }
 
-        public string RegionId { get; set; }
-        public string RegionName { get; set; }
-        public string RegionCode { get; set; }
+    public string RegionName { get; set; }
 
-        public virtual ICollection<DcFileRequest> DcFileRequests { get; set; }
-        public virtual ICollection<DcLocalOffice> DcLocalOffices { get; set; }
-    }
+    public string RegionCode { get; set; }
+
+    public virtual ICollection<DcFileRequest> DcFileRequests { get; set; } = new List<DcFileRequest>();
+
+    public virtual ICollection<DcLocalOffice> DcLocalOffices { get; set; } = new List<DcLocalOffice>();
 }

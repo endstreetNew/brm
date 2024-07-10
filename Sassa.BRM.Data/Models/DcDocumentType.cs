@@ -1,19 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#nullable disable
+namespace Sassa.BRM.Models;
 
-namespace Sassa.BRM.Models
+public partial class DcDocumentType
 {
-    public partial class DcDocumentType
-    {
-        public DcDocumentType()
-        {
-            DcGrantDocLinks = new HashSet<DcGrantDocLink>();
-        }
+    public decimal TypeId { get; set; }
 
-        public decimal TypeId { get; set; }
-        public string TypeName { get; set; }
+    public string TypeName { get; set; }
 
-        public virtual ICollection<DcGrantDocLink> DcGrantDocLinks { get; set; }
-    }
+    public virtual ICollection<DcGrantDocLink> DcGrantDocLinks { get; set; } = new List<DcGrantDocLink>();
 }

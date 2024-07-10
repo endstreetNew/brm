@@ -1,24 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#nullable disable
+namespace Sassa.BRM.Models;
 
-namespace Sassa.BRM.Models
+public partial class DcStakeholder
 {
-    public partial class DcStakeholder
-    {
-        public DcStakeholder()
-        {
-            DcFileRequests = new HashSet<DcFileRequest>();
-        }
+    public decimal StakeholderId { get; set; }
 
-        public decimal StakeholderId { get; set; }
-        public decimal DepartmentId { get; set; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string Email { get; set; }
-        public string RegionId { get; set; }
+    public decimal DepartmentId { get; set; }
 
-        public virtual DcReqCategory Department { get; set; }
-        public virtual ICollection<DcFileRequest> DcFileRequests { get; set; }
-    }
+    public string Name { get; set; }
+
+    public string Surname { get; set; }
+
+    public string Email { get; set; }
+
+    public string RegionId { get; set; }
+
+    public virtual ICollection<DcFileRequest> DcFileRequests { get; set; } = new List<DcFileRequest>();
+
+    public virtual DcReqCategory Department { get; set; }
 }

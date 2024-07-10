@@ -1,22 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#nullable disable
+namespace Sassa.BRM.Models;
 
-namespace Sassa.BRM.Models
+public partial class DcTransactionType
 {
-    public partial class DcTransactionType
-    {
-        public DcTransactionType()
-        {
-            DcFiles = new HashSet<DcFile>();
-            DcGrantDocLinks = new HashSet<DcGrantDocLink>();
-        }
+    public decimal TypeId { get; set; }
 
-        public decimal TypeId { get; set; }
-        public string TypeName { get; set; }
-        public string ServiceCategory { get; set; }
+    public string TypeName { get; set; }
 
-        public virtual ICollection<DcFile> DcFiles { get; set; }
-        public virtual ICollection<DcGrantDocLink> DcGrantDocLinks { get; set; }
-    }
+    public string ServiceCategory { get; set; }
+
+    public virtual ICollection<DcFile> DcFiles { get; set; } = new List<DcFile>();
+
+    public virtual ICollection<DcGrantDocLink> DcGrantDocLinks { get; set; } = new List<DcGrantDocLink>();
 }

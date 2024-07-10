@@ -1,7 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sassa.BRM.Models
 {
+    public partial class ModelContext
+    {
+        public virtual DbSet<Application> Applications { get; set; }
+
+        public virtual DbSet<IdResult> IdResults { get; set; }
+
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+
+        //    modelBuilder.Entity<IdResult>().HasNoKey();
+
+        //    modelBuilder.Entity<Application>().HasNoKey();
+        //}
+    }
     public partial class DcFileDeleted
     {
         public void FromDCFile(DcFile file)
@@ -152,7 +167,6 @@ namespace Sassa.BRM.Models
             }
         }
     }
-
     public partial class DcPicklistItem
     {
         public string nextStatus
