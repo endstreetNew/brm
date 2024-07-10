@@ -16,8 +16,8 @@ namespace Sassa.BRM.Controller
     {
 
         private readonly BRMDbService _brmService;
-        private readonly StaticService sservice;
-        private readonly SessionService sessionservice;
+        //private readonly StaticService sservice;
+        //private readonly SessionService sessionservice;
 
         public ApplicationController(BRMDbService context, IHttpContextAccessor ctx,StaticService staticService)
         {

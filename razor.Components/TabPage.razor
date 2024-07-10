@@ -1,4 +1,4 @@
-﻿@if (Parent.ActivePage == this)
+﻿@if (Parent != null && Parent.ActivePage == this)
 {
 
     @ChildContent

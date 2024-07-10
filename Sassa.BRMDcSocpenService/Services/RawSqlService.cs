@@ -9,7 +9,7 @@ namespace Sassa.BRM.Services
     public class RawSqlService
     {
 
-        string brmcs;
+        string? brmcs;
         public RawSqlService(IConfiguration config)
         {
             brmcs = config.GetConnectionString("BrmConnection");
@@ -25,11 +25,11 @@ namespace Sassa.BRM.Services
             }
         }
 
-        public string ExecuteScalar(string sql)
+        public string? ExecuteScalar(string sql)
         {
             try
             {
-                string result;
+                string? result;
                 using (OracleConnection connection = new OracleConnection(brmcs))
                 {
 

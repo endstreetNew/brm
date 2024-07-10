@@ -3,7 +3,7 @@
 
     public class TimedService : IHostedService, IDisposable
     {
-        private int executionCount = 0;
+        //private int executionCount = 0;
         //private readonly ILogger<TimedService> _logger;
         JsonFileUtils _fu;
 
@@ -13,7 +13,7 @@
 
         RawSqlService _raw;
 
-        private Timer schedule = null;
+        private Timer? schedule = null;
 
         public string? SassaTeamsUrl { get; set; }
 
@@ -32,7 +32,7 @@
             sqlPath = Path.Combine(env.ContentRootPath, "sql");
             _raw = raw;
             _fu = fu;
-            Globals = fu.ReadJson<TimedService.GlobalVars>(fileName);
+            Globals = _fu.ReadJson<TimedService.GlobalVars>(fileName)!;
             Globals.Status = true;
             fu.WriteJson(Globals, fileName);
         }

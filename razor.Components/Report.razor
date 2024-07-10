@@ -89,18 +89,23 @@ else
     int page;
     protected override void OnInitialized()
     {
-        if (!pagedResult.result.Any()) return;
         page = 1;
-        Type myType = pagedResult.result.First().GetType();
+        if (pagedResult.result == null || !pagedResult.result.Any())
+        {
+            return;
+        }
+        Type? myType = pagedResult.result.First()?.GetType();
+        if (myType == null) return;
         props = new List<PropertyInfo>(myType.GetProperties());
     }
     protected override void OnParametersSet()
     {
+        page = 1;
         if (!pagedResult.result.Any()) return;
         page = 1;
-        Type myType = pagedResult.result.First().GetType();
+        Type? myType = pagedResult.result.First()?.GetType();
+        if (myType == null) return;
         props = new List<PropertyInfo>(myType.GetProperties());
-        //StateHasChanged();
     }
     protected async Task OnPaged(int _page)
     {

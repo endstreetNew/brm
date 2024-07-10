@@ -542,7 +542,7 @@ namespace Sassa.BRM.Services
                     return true;
                 }
             }
-            catch(Exception ex)
+            catch
             {
 
             }
@@ -1759,7 +1759,7 @@ namespace Sassa.BRM.Services
                 }
                 
             }
-            catch(Exception ex)
+            catch
             {
                 //throw new Exception("Error backing up file: " + ex.Message);
             }
@@ -1808,7 +1808,7 @@ namespace Sassa.BRM.Services
 
                     await _context.SaveChangesAsync();
                 }
-                catch (Exception ex)
+                catch
                 {
                     throw;
                 }
@@ -2099,7 +2099,7 @@ namespace Sassa.BRM.Services
             }
             return result;
             }
-            catch(Exception ex)
+            catch
             {
                 throw;
             }

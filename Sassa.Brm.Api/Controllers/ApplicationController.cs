@@ -58,11 +58,7 @@ namespace Sassa.BRM.Controller
 
             //try
             //{
-            if (_brmService.session == null)
-            {
-                _brmService.SetUserSession(app.BrmUserName);
-                _brmService.SetUserOffice(app.OfficeId);
-            }
+
             //result = await _brmService.CreateBRM(app, "Inserted via API.");
             //if (result == null)
             //{
@@ -71,6 +67,11 @@ namespace Sassa.BRM.Controller
             ApiResponse<string> response = new ApiResponse<string>();
             try
             {
+                if (_brmService.session == null)
+                {
+                    _brmService.SetUserSession(app.BrmUserName);
+                    _brmService.SetUserOffice(app.OfficeId);
+                }
                 result = await _brmService.CreateBRM(app, "Inserted via API.");
                 return result;
             }

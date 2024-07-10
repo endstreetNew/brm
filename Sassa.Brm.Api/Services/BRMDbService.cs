@@ -27,7 +27,7 @@ namespace Sassa.BRM.Services
 
         ModelContext _context;
         //RawSqlService _raw;
-        UserSession? _session;
+        UserSession _session;
         //MailMessages _mail;
 
         public UserSession? session
@@ -37,11 +37,11 @@ namespace Sassa.BRM.Services
                 return _session;
             }
         }
-        public BRMDbService(ModelContext context)
+        public BRMDbService(ModelContext context,IConfiguration config)
         {
             //if (StaticD.Users == null) StaticD.Users = new List<string>();
             _context = context;
-
+            _session = new UserSession();
         }
 
         public void SetUserSession(string user)
@@ -73,7 +73,10 @@ namespace Sassa.BRM.Services
         }
         public async Task GetLocalOffice()
         {
-            string username = session == null ? "Unknown" : session.SamName;
+            if(_session == null)
+            {
+                throw new Exception("Session not initialized");
+            }
             if (StaticD.LocalOffices == null)
             {
                 StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
@@ -87,7 +90,7 @@ namespace Sassa.BRM.Services
             if (!(from lo in StaticD.LocalOffices
                   join lou in StaticD.DcOfficeKuafLinks
                       on lo.OfficeId equals lou.OfficeId
-                  where lou.Username == username
+                  where lou.Username == _session.SamName
                   select new
                   {
                       OfficeName = lo.OfficeName,
@@ -108,7 +111,7 @@ namespace Sassa.BRM.Services
             var value = (from lo in StaticD.LocalOffices
                          join lou in StaticD.DcOfficeKuafLinks
                          on lo.OfficeId equals lou.OfficeId
-                         where lou.Username == username
+                         where lou.Username == _session.SamName
                          select new
                          {
                              OfficeName = lo.OfficeName,
@@ -118,15 +121,17 @@ namespace Sassa.BRM.Services
                              FspId = lou.FspId
 
                          }).FirstOrDefault();
-
-            _session.Office.OfficeName = value.OfficeName;
-            _session.Office.OfficeId = value.OfficeId;
-            _session.Office.OfficeType = value.OfficeType;
-            _session.Office.RegionId = value.RegionId;
-            _session.Office.FspId = value.FspId;
-            _session.Office.RegionName = GetRegion(value.RegionId);
-            _session.Office.RegionCode = GetRegionCode(value.RegionId);
-            _session.Office.OfficeType = !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO"; //Default to local office
+            if (value != null)
+            {
+                _session.Office.OfficeName = value.OfficeName;
+                _session.Office.OfficeId = value.OfficeId;
+                _session.Office.OfficeType = value.OfficeType;
+                _session.Office.RegionId = value.RegionId;
+                _session.Office.FspId = value.FspId;
+                _session.Office.RegionName = GetRegion(value.RegionId);
+                _session.Office.RegionCode = GetRegionCode(value.RegionId);
+                _session.Office.OfficeType = !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO"; //Default to local office
+            }
             if (SessionInitialized != null) SessionInitialized(this, EventArgs.Empty);
         }
 
@@ -159,49 +164,22 @@ namespace Sassa.BRM.Services
                 StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
             var office = StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
-            
-            _session.Office.OfficeName = office.OfficeName;
-            _session.Office.OfficeId = office.OfficeId;
-            _session.Office.OfficeType = office.OfficeType;
-            _session.Office.RegionId = office.RegionId;
-            //_session.Office.FspId = office.FspId;
-            _session.Office.RegionName = GetRegion(office.RegionId);
-            _session.Office.RegionCode = GetRegionCode(office.RegionId);
-            _session.Office.OfficeType = !string.IsNullOrEmpty(office.OfficeType) ? office.OfficeType : "LO"; //Default to local office
-        }
-        public List<DcFixedServicePoint> GetServicePoints(string regionID)
-        {
-            if (StaticD.ServicePoints == null)
+            if (office != null)
             {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+                _session.Office.OfficeName = office.OfficeName;
+                _session.Office.OfficeId = office.OfficeId;
+                _session.Office.OfficeType = office.OfficeType;
+                _session.Office.RegionId = office.RegionId;
+                //_session.Office.FspId = office.FspId;
+                _session.Office.RegionName = GetRegion(office.RegionId);
+                _session.Office.RegionCode = GetRegionCode(office.RegionId);
+                _session.Office.OfficeType = !string.IsNullOrEmpty(office.OfficeType) ? office.OfficeType : "LO"; //Default to local office
             }
-            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices!.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
-        }
-        public List<DcFixedServicePoint> GetOfficeServicePoints(string officeID)
-        {
-            if (StaticD.ServicePoints == null)
-            {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
-            }
-            return StaticD.ServicePoints.Where(sp => sp.OfficeId == officeID).ToList();
-        }
-        public string GetServicePointName(decimal? fspID)
-        {
-            if (StaticD.ServicePoints == null)
-            {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
-            }
-            var result = StaticD.ServicePoints.Where(sp => sp.Id == fspID);
-            if (result.Any())
-            {
-                return result.First().ServicePointName;
-            }
-            return "";
         }
         public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId)
         {
             DcOfficeKuafLink officeLink;
-            var query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == session.SamName).ToListAsync();
+            var query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == _session.SamName).ToListAsync();
             if (query.Count() > 1)
             {
                 foreach (var ol in query)
@@ -209,7 +187,7 @@ namespace Sassa.BRM.Services
                     _context.DcOfficeKuafLinks.Remove(ol);
                 }
                 await _context.SaveChangesAsync();
-                query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == session.SamName).ToListAsync();
+                query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == _session.SamName).ToListAsync();
             }
 
             if (query.Any())
@@ -220,8 +198,8 @@ namespace Sassa.BRM.Services
             }
             else
             {
-                string supervisor = session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N";
-                officeLink = new DcOfficeKuafLink() { OfficeId = officeId, FspId = fspId, Username = session.SamName, Supervisor = supervisor };
+                string supervisor = _session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N";
+                officeLink = new DcOfficeKuafLink() { OfficeId = officeId, FspId = fspId, Username = _session.SamName, Supervisor = supervisor };
                 _context.DcOfficeKuafLinks.Add(officeLink);
             }
             try
@@ -726,8 +704,8 @@ namespace Sassa.BRM.Services
                 dc_socpen.CaptureReference = file.UnqFileNo;
                 dc_socpen.BrmBarcode = file.BrmBarcode;
                 dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = session.Office.RegionId;
-                dc_socpen.LocalofficeId = session.Office.OfficeId;
+                dc_socpen.RegionId = _session.Office.RegionId;
+                dc_socpen.LocalofficeId = _session.Office.OfficeId;
                 dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
                 dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
                 dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
@@ -747,8 +725,8 @@ namespace Sassa.BRM.Services
                 dc_socpen.CaptureReference = file.UnqFileNo;
                 dc_socpen.BrmBarcode = file.BrmBarcode;
                 dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = session.Office.RegionId;
-                dc_socpen.LocalofficeId = session.Office.OfficeId;
+                dc_socpen.RegionId = _session.Office.RegionId;
+                dc_socpen.LocalofficeId = _session.Office.OfficeId;
                 dc_socpen.Documents = file.DocsPresent;
 
 
@@ -1539,7 +1517,7 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public void CreateActivity(string Area, string Activity, string UniqueFileNo = "")
         {
-            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
+            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = _session.Office.RegionId, OfficeId = decimal.Parse(_session.Office.OfficeId), Userid = 0, Username = _session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
             try
             {
 

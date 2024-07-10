@@ -111,7 +111,7 @@ namespace Sassa.eServices.Admin.Services
             {
                 //StaticD.WriteEvent(ex.Message);
                 ota = null;
-                throw new Exception("An error occurred accessing ContentServer");
+                throw new Exception($"An error occurred accessing ContentServer {Environment.NewLine + ex.Message}");
             }
 
         }

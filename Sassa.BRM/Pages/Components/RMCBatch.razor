@@ -201,7 +201,7 @@
     protected bool editBatch;
     protected PagedResult<DcFile> items;
 
-    PagedResult<ReboxListItem> boxfiles;
+    //PagedResult<ReboxListItem> boxfiles;
 
     protected string BrmBarCode;
 
@@ -309,12 +309,13 @@
             if (string.IsNullOrEmpty(file.TdwBoxno))
             {
                 await LoadBox(rebox.BoxNo);
-                if (boxfiles.count == 0)
-                {
-                    rebox.AltBoxNo = await db.GetNexRegionAltBoxSequence();
-                }
 
-                file.PrintOrder = boxfiles.count;
+                // if (boxfiles.count == 0)
+                // {
+                //     rebox.AltBoxNo = await db.GetNexRegionAltBoxSequence();
+                // }
+
+                // file.PrintOrder = boxfiles.count;
                 await db.Rebox(rebox, file);
             }
             //string scanState = file.ScanDatetime == null ? "Not Scanned" : "Scanned";
@@ -336,21 +337,21 @@
         {
             boxNo = rebox.BoxNo.ToUpper().Trim();
             await OnPaged(1);
-            if( boxfiles.result.Where(r => r.BoxLocked).Any())
-            {
-                throw new Exception("Locked box!");
-            }
+            // if( boxfiles.result.Where(r => r.BoxLocked).Any())
+            // {
+            //     throw new Exception("Locked box!");
+            // }
             //rebox.RegType = "";
             rebox.BoxNo = boxNo;
             
-            if (boxfiles.count > 0)
-            {
-                rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
-            }
-            else
-            {
-                toast.Warn("Box not found");
-            }
+            // if (boxfiles.count > 0)
+            // {
+            //     rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
+            // }
+            // else
+            // {
+            //     toast.Warn("Box not found");
+            // }
             await Task.Delay(50);
         }
         catch //(Exception ex)

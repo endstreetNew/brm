@@ -9,12 +9,12 @@ namespace Sassa.BRM.Models
         public string Id { get; set; }
         //Change to accomodate invalid child ids from socpen
         private string child_id;
-        private string aRCHIVE_YEAR;
+        //private string aRCHIVE_YEAR;
 
         public string ChildId 
         {
             get { return child_id; }
-            set { child_id  = value == null ? null : value.PadLeft(13, ' '); }
+            set { child_id  = value == null ? null : value.Trim().PadLeft(13, ' '); }
         }//-----------------------------------------------
         public string Name { get; set; }
         public string SurName { get; set; }

@@ -33,7 +33,7 @@ namespace Sassa.BRM.Services
 
         }
 
-        public T ReadJson<T>(string fileName) where T : new()
+        public T? ReadJson<T>(string fileName) where T : new()
         {
             if (!File.Exists(fileName)) return new T();
             string jsonString = File.ReadAllText(fileName);

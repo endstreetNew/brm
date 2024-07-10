@@ -20,10 +20,11 @@ namespace Sassa.BRM.Services
             _smtpServer = smptpserver;
             _port = port;
             _credential = credential;
+            client = new SmtpClient(_smtpServer, _port);
         }
         public void SendMail(string from, string to, string subject, string body, List<string> attachments)
         {
-            client = new SmtpClient(_smtpServer, _port);
+            
             NetworkCredential basicCredential1 = _credential;
             client.EnableSsl = false;
             client.UseDefaultCredentials = true;// false;
