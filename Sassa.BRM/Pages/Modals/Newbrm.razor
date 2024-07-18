@@ -217,10 +217,13 @@
                     //}
                 }
             }
-            br.ChildId = br.ChildId.Trim();
-            if (br.ChildId.Length > 13)
+            if(br.ChildId != null)
             {
-                throw new Exception("Child ID too long");
+                br.ChildId = br.ChildId.Trim();
+                if (br.ChildId.Length > 13)
+                {
+                    throw new Exception("Child ID too long");
+                }
             }
             DcFile file = await db.CreateBRM(br,reason);
             br.BATCH_NO = file.BatchNo.ToString();

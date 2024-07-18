@@ -27,34 +27,43 @@ namespace Sassa.BRM.Services
     public class BRMDbService
     {
 
-        ModelContext _context;
+        //ModelContext _context;
         StaticService sservice;
         RawSqlService _raw;
         UserSession session;
         MailMessages _mail;
 
 
+        private readonly IDbContextFactory<ModelContext> _contextFactory;
 
-        public BRMDbService(ModelContext context, StaticService staticService,RawSqlService raw,  MailMessages mail,SessionService sessionService)
+        public BRMDbService(IDbContextFactory<ModelContext> contextFactory, StaticService staticService, RawSqlService raw, MailMessages mail, SessionService sessionService)
         {
-            //if (StaticD.Users == null) StaticD.Users = new List<string>();
-            _context = context;
+            _contextFactory = contextFactory;
             sservice = staticService;
             _raw = raw;
             _mail = mail;
             session = sessionService.session;
-
-            //try
-            //{
-            //    GetUserSession((WindowsIdentity)ctx.HttpContext.User.Identity);
-            //    //if (!StaticD.Users.Contains(session.SamName)) StaticD.Users.Add(session.SamName);
-            //}
-            //catch //(Exception ex)
-            //{
-            //    session = null;
-            //    //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
-            //}
         }
+        //public BRMDbService(ModelContext context, StaticService staticService,RawSqlService raw,  MailMessages mail,SessionService sessionService)
+        //{
+        //    //if (StaticD.Users == null) StaticD.Users = new List<string>();
+        //    _context = context;
+        //    sservice = staticService;
+        //    _raw = raw;
+        //    _mail = mail;
+        //    session = sessionService.session;
+
+        //    //try
+        //    //{
+        //    //    GetUserSession((WindowsIdentity)ctx.HttpContext.User.Identity);
+        //    //    //if (!StaticD.Users.Contains(session.SamName)) StaticD.Users.Add(session.SamName);
+        //    //}
+        //    //catch //(Exception ex)
+        //    //{
+        //    //    session = null;
+        //    //    //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
+        //    //}
+        //}
 
 
 
@@ -64,211 +73,224 @@ namespace Sassa.BRM.Services
 
         public async Task<bool> checkBRMExists(string brmno)
         {
-           var interim = await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync();
-
-            return interim.Any();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var interim = await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync();
+                return interim.Any();
+            }
         }
 
 
         public async Task EditBarCode(Application brm, string barCode)
         {
-
-            DcFile file = await _context.DcFiles.Where(d => d.BrmBarcode == brm.Brm_BarCode).FirstAsync();
-            file.BrmBarcode = barCode;
-            await _context.SaveChangesAsync();
-            CreateActivity("Update" + GetFileArea(file.SrdNo, file.Lctype), "Update BRM Barcode", file.UnqFileNo);
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                DcFile file = await _context.DcFiles.Where(d => d.BrmBarcode == brm.Brm_BarCode).FirstAsync();
+                file.BrmBarcode = barCode;
+                await _context.SaveChangesAsync();
+                CreateActivity("Update" + GetFileArea(file.SrdNo, file.Lctype), "Update BRM Barcode", file.UnqFileNo);
+            }
 
         }
 
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {
-            //Removes all duplicates
-            await RemoveBRM(application.Brm_BarCode, reason);
-            decimal? batch = null;
-            var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
-            if (office.ManualBatch == "A")
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                batch = 0;
-            }
-            else 
-            { 
-                string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
-                batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
-            }
+                //Removes all duplicates
+                await RemoveBRM(application.Brm_BarCode, reason);
+                decimal? batch = null;
+                var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
+                if (office.ManualBatch == "A")
+                {
+                    batch = 0;
+                }
+                else
+                {
+                    string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
+                    batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
+                }
 
-            DcFile file = new DcFile()
-            {
-                UnqFileNo = "",
-                ApplicantNo = application.Id,
-                BrmBarcode = application.Brm_BarCode,
-                BatchAddDate = DateTime.Now,
-                TransType = application.TRANS_TYPE,
-                BatchNo = batch,
-                GrantType = application.GrantType,
-                OfficeId = session.Office.OfficeId,
-                RegionId = session.Office.RegionId,
-                FspId = session.Office.FspId,
-                DocsPresent = application.DocsPresent,
-                UpdatedDate = DateTime.Now,
-                UserFirstname = application.Name,
-                UserLastname = application.SurName,
-                ApplicationStatus = application.AppStatus,
-                TransDate = application.AppDate.ToDate("dd/MMM/yy"),
-                SrdNo = application.Srd_No,
-                ChildIdNo = application.ChildId,
-                Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
-                Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
-                ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
-                Lctype = string.IsNullOrEmpty(application.LcType.Trim('0')) ? null : (Decimal?)Decimal.Parse(application.LcType),
-                TdwBoxno = application.TDW_BOXNO,
-                MiniBoxno = application.MiniBox,
-                FileComment = reason,
-                UpdatedByAd = session.SamName,
-                TdwBatch = 0
-            };
-            _context.ChangeTracker.Clear();
-            _context.DcFiles.Add(file);
-            try
-            {
+                DcFile file = new DcFile()
+                {
+                    UnqFileNo = "",
+                    ApplicantNo = application.Id,
+                    BrmBarcode = application.Brm_BarCode,
+                    BatchAddDate = DateTime.Now,
+                    TransType = application.TRANS_TYPE,
+                    BatchNo = batch,
+                    GrantType = application.GrantType,
+                    OfficeId = session.Office.OfficeId,
+                    RegionId = session.Office.RegionId,
+                    FspId = session.Office.FspId,
+                    DocsPresent = application.DocsPresent,
+                    UpdatedDate = DateTime.Now,
+                    UserFirstname = application.Name,
+                    UserLastname = application.SurName,
+                    ApplicationStatus = application.AppStatus,
+                    TransDate = application.AppDate.ToDate("dd/MMM/yy"),
+                    SrdNo = application.Srd_No,
+                    ChildIdNo = application.ChildId,
+                    Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
+                    Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
+                    ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
+                    Lctype = string.IsNullOrEmpty(application.LcType.Trim('0')) ? null : (Decimal?)Decimal.Parse(application.LcType),
+                    TdwBoxno = application.TDW_BOXNO,
+                    MiniBoxno = application.MiniBox,
+                    FileComment = reason,
+                    UpdatedByAd = session.SamName,
+                    TdwBatch = 0
+                };
+                _context.ChangeTracker.Clear();
+                _context.DcFiles.Add(file);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+                    throw;
+                }
+
+                //if (_context.DcBrmGrants.Where(g => g.ApplicantNo == file.ApplicantNo && g.GrantType == file.GrantType).Any())
+                //{
+
+                //    DcBrmGrant progress = new DcBrmGrant { ApplicantNo = file.ApplicantNo, GrantType = file.GrantType, BrmBarcode = file.BrmBarcode, CaptureDate = DateTime.Now };
+                //    _context.DcBrmGrants.Add(progress);
+                //    await _context.SaveChangesAsync();
+                //    string sql = $"UPDATE SASSA.SOCPEN_PERSONAL_GRANTS S SET BRM_Reference = '{file.BrmBarcode}', File_DATE = TO_DATE('{DateTime.Now.ToString("yyyy-MM-dd")}','YYYY-MM-DD') where S.PENSION_NO = '{file.ApplicantNo}' AND S.GRANT_TYPE = '{file.GrantType}' ";
+                //    _raw.ExecuteNonQuery(sql);
+                //}
+
+                file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
+                //await SetBatchCount((decimal)file.BatchNo);
+                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
+                DcSocpen dc_socpen;
+                //if (application.SocpenIsn > 0)
+                //{
+                //    dc_socpen = await _context.DcSocpen.FindAsync(application.SocpenIsn);
+                //    dc_socpen.CaptureReference = file.UnqFileNo;
+                //    dc_socpen.BrmBarcode = file.BrmBarcode;
+                //    dc_socpen.CaptureDate = DateTime.Now;
+                //    dc_socpen.RegionId = session.Office.RegionId;
+                //    dc_socpen.LocalofficeId = session.Office.OfficeId;
+
+                //}
+                //else
+                //{
+                long? srd;
+                try
+                {
+                    srd = long.Parse(application.Srd_No);
+                }
+                catch
+                {
+                    srd = null;
+                }
+                //Remove existing Barcode for this id/grant
+                _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
                 await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0,200), file.UnqFileNo);
-                throw;
-            }
 
-            //if (_context.DcBrmGrants.Where(g => g.ApplicantNo == file.ApplicantNo && g.GrantType == file.GrantType).Any())
-            //{
+                var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
+                if (result.Any())
+                {
+                    dc_socpen = result.First();
+                    dc_socpen.CaptureReference = file.UnqFileNo;
+                    dc_socpen.BrmBarcode = file.BrmBarcode;
+                    dc_socpen.CaptureDate = DateTime.Now;
+                    dc_socpen.RegionId = session.Office.RegionId;
+                    dc_socpen.LocalofficeId = session.Office.OfficeId;
+                    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
+                    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+                    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+                }
+                else
+                {
+                    dc_socpen = new DcSocpen();
+                    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+                    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+                    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
+                    dc_socpen.BeneficiaryId = application.Id;
+                    dc_socpen.SrdNo = srd;
+                    dc_socpen.GrantType = application.GrantType;
+                    dc_socpen.ChildId = application.ChildId;
+                    dc_socpen.Name = application.Name;
+                    dc_socpen.Surname = application.SurName;
+                    dc_socpen.CaptureReference = file.UnqFileNo;
+                    dc_socpen.BrmBarcode = file.BrmBarcode;
+                    dc_socpen.CaptureDate = DateTime.Now;
+                    dc_socpen.RegionId = session.Office.RegionId;
+                    dc_socpen.LocalofficeId = session.Office.OfficeId;
+                    dc_socpen.Documents = file.DocsPresent;
 
-            //    DcBrmGrant progress = new DcBrmGrant { ApplicantNo = file.ApplicantNo, GrantType = file.GrantType, BrmBarcode = file.BrmBarcode, CaptureDate = DateTime.Now };
-            //    _context.DcBrmGrants.Add(progress);
-            //    await _context.SaveChangesAsync();
-            //    string sql = $"UPDATE SASSA.SOCPEN_PERSONAL_GRANTS S SET BRM_Reference = '{file.BrmBarcode}', File_DATE = TO_DATE('{DateTime.Now.ToString("yyyy-MM-dd")}','YYYY-MM-DD') where S.PENSION_NO = '{file.ApplicantNo}' AND S.GRANT_TYPE = '{file.GrantType}' ";
-            //    _raw.ExecuteNonQuery(sql);
-            //}
+                    _context.DcSocpen.Add(dc_socpen);
+                }
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+                    throw;
+                }
 
-            file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
-            //await SetBatchCount((decimal)file.BatchNo);
-            CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
-            DcSocpen dc_socpen;
-            //if (application.SocpenIsn > 0)
-            //{
-            //    dc_socpen = await _context.DcSocpen.FindAsync(application.SocpenIsn);
-            //    dc_socpen.CaptureReference = file.UnqFileNo;
-            //    dc_socpen.BrmBarcode = file.BrmBarcode;
-            //    dc_socpen.CaptureDate = DateTime.Now;
-            //    dc_socpen.RegionId = session.Office.RegionId;
-            //    dc_socpen.LocalofficeId = session.Office.OfficeId;
-
-            //}
-            //else
-            //{
-            long? srd;
-            try
-            {
-                srd = long.Parse(application.Srd_No);
+                return file;
             }
-            catch
-            {
-                srd = null;
-            }
-            //Remove existing Barcode for this id/grant
-            _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
-            await _context.SaveChangesAsync();
-
-            var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
-            if(result.Any())
-            {
-                dc_socpen = result.First();
-                dc_socpen.CaptureReference = file.UnqFileNo;
-                dc_socpen.BrmBarcode = file.BrmBarcode;
-                dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = session.Office.RegionId;
-                dc_socpen.LocalofficeId = session.Office.OfficeId;
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
-                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-            }
-            else
-            {
-                dc_socpen = new DcSocpen();
-                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
-                dc_socpen.BeneficiaryId = application.Id;
-                dc_socpen.SrdNo = srd;
-                dc_socpen.GrantType = application.GrantType;
-                dc_socpen.ChildId = application.ChildId;
-                dc_socpen.Name = application.Name;
-                dc_socpen.Surname = application.SurName;
-                dc_socpen.CaptureReference = file.UnqFileNo;
-                dc_socpen.BrmBarcode = file.BrmBarcode;
-                dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = session.Office.RegionId;
-                dc_socpen.LocalofficeId = session.Office.OfficeId;
-                dc_socpen.Documents = file.DocsPresent;
-
-                _context.DcSocpen.Add(dc_socpen);
-            }
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch(Exception ex)
-            {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
-                throw;
-            }
-
-            return file;
         }
 
         public async Task<DcFile> GetBRMRecord(string barcode)
         {
-            return await _context.DcFiles.Where(f => f.BrmBarcode == barcode).FirstAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcFiles.Where(f => f.BrmBarcode == barcode).FirstAsync();
+            }
         }
 
         public async Task AutoMerge(Application app, List<Application> parents)
         {
-            //Is not merged 
-            if (string.IsNullOrEmpty(app.Brm_Parent))
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                //Is there a valid parent?
-                if (parents.Where(p => p.TDW_BOXNO == null).Any())
+                //Is not merged 
+                if (string.IsNullOrEmpty(app.Brm_Parent))
                 {
-                    var parent = parents.Where(p => p.TDW_BOXNO == null).First();
-
-                    DcMerge merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault();
-
-                    if (merge == null)//No existing merge create one
+                    //Is there a valid parent?
+                    if (parents.Where(p => p.TDW_BOXNO == null).Any())
                     {
-                        //this record will be the parent
+                        var parent = parents.Where(p => p.TDW_BOXNO == null).First();
+
+                        DcMerge merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault();
+
+                        if (merge == null)//No existing merge create one
+                        {
+                            //this record will be the parent
+                            DcMerge newMerge = new DcMerge();
+                            newMerge.BrmBarcode = app.Brm_BarCode;
+                            newMerge.ParentBrmBarcode = parent.Brm_BarCode;
+                            app.Brm_Parent = parent.Brm_BarCode;
+                            _context.DcMerges.Add(newMerge);
+                        }
+                        else//Existing merge modify it
+                        {
+                            merge.ParentBrmBarcode = parent.Brm_BarCode;
+                            app.Brm_Parent = parent.Brm_BarCode;
+                        }
+
+
+                    }
+                    else
+                    {
+                        //this record will be a parent
                         DcMerge newMerge = new DcMerge();
                         newMerge.BrmBarcode = app.Brm_BarCode;
-                        newMerge.ParentBrmBarcode = parent.Brm_BarCode;
-                        app.Brm_Parent = parent.Brm_BarCode;
+                        newMerge.ParentBrmBarcode = app.Brm_BarCode;
+                        app.Brm_Parent = app.Brm_BarCode;
                         _context.DcMerges.Add(newMerge);
+
                     }
-                    else//Existing merge modify it
-                    {
-                        merge.ParentBrmBarcode = parent.Brm_BarCode;
-                        app.Brm_Parent = parent.Brm_BarCode;
-                    }
-
-
+                    await _context.SaveChangesAsync();
                 }
-                else
-                {
-                    //this record will be a parent
-                    DcMerge newMerge = new DcMerge();
-                    newMerge.BrmBarcode = app.Brm_BarCode;
-                    newMerge.ParentBrmBarcode = app.Brm_BarCode;
-                    app.Brm_Parent = app.Brm_BarCode;
-                    _context.DcMerges.Add(newMerge);
-
-                }
-                await _context.SaveChangesAsync();
             }
         }
 
@@ -277,69 +299,78 @@ namespace Sassa.BRM.Services
         #region Boxing and Re-Boxing
         public async Task<PagedResult<ReboxListItem>> GetAllFilesByBoxNo(string boxNo, int page)
         {
-            bool repaired = await RepairAltBoxSequence(boxNo);
-
-            PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
-            if (StaticD.GrantTypes == null)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                _ = sservice.GetGrantTypes();
-            }
-            result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).Count();
+                bool repaired = await RepairAltBoxSequence(boxNo);
 
-            var interim  = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderByDescending(f => f.UpdatedDate).ToList();
-            result.result = interim.Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo)
-                        .Select(f => new ReboxListItem
-                        {
-                            ClmNo = f.UnqFileNo,
-                            BrmNo = f.BrmBarcode,
-                            IdNo = f.ApplicantNo,
-                            FullName = f.FullName,
-                            GrantType = StaticD.GrantTypes[f.GrantType],
-                            BoxNo = boxNo,
-                            AltBoxNo = f.AltBoxNo,
-                            Scanned = f.ScanDatetime != null,
-                            MiniBox = (int?)f.MiniBoxno,
-                            RegType = f.ApplicationStatus,
-                            TdwBatch = (int)f.TdwBatch
-                        }).ToList();
-            return result;
+                PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
+                if (StaticD.GrantTypes == null)
+                {
+                    _ = sservice.GetGrantTypes();
+                }
+                result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).Count();
+
+                var interim = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderByDescending(f => f.UpdatedDate).ToList();
+                result.result = interim.Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo)
+                            .Select(f => new ReboxListItem
+                            {
+                                ClmNo = f.UnqFileNo,
+                                BrmNo = f.BrmBarcode,
+                                IdNo = f.ApplicantNo,
+                                FullName = f.FullName,
+                                GrantType = StaticD.GrantTypes[f.GrantType],
+                                BoxNo = boxNo,
+                                AltBoxNo = f.AltBoxNo,
+                                Scanned = f.ScanDatetime != null,
+                                MiniBox = (int?)f.MiniBoxno,
+                                RegType = f.ApplicationStatus,
+                                TdwBatch = (int)f.TdwBatch
+                            }).ToList();
+                return result;
+            }
         }
 
 
 
         public async Task<PagedResult<ReboxListItem>> SearchBox(string boxNo, int page, string searchText)
         {
-            PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
-            searchText = searchText.ToUpper();
-            if (StaticD.GrantTypes == null)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                _ = sservice.GetGrantTypes();
+                PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
+                searchText = searchText.ToUpper();
+                if (StaticD.GrantTypes == null)
+                {
+                    _ = sservice.GetGrantTypes();
+                }
+                result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).Count();
+                if (result.count == 0) throw new Exception("No result!");
+                result.result = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking()
+                            .Select(f => new ReboxListItem
+                            {
+                                ClmNo = f.UnqFileNo,
+                                BrmNo = f.BrmBarcode,
+                                IdNo = f.ApplicantNo,
+                                FullName = f.FullName,
+                                GrantType = StaticD.GrantTypes[f.GrantType],
+                                BoxNo = boxNo,
+                                AltBoxNo = f.AltBoxNo,
+                                Scanned = f.ScanDatetime != null,
+                                MiniBox = (int?)f.MiniBoxno,
+                                TdwBatch = (int)f.TdwBatch
+                            }).ToListAsync();
+                return result;
             }
-            result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).Count();
-            if (result.count == 0) throw new Exception("No result!");
-            result.result = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking()
-                        .Select(f => new ReboxListItem
-                        {
-                            ClmNo = f.UnqFileNo,
-                            BrmNo = f.BrmBarcode,
-                            IdNo = f.ApplicantNo,
-                            FullName = f.FullName,
-                            GrantType = StaticD.GrantTypes[f.GrantType],
-                            BoxNo = boxNo,
-                            AltBoxNo = f.AltBoxNo,
-                            Scanned = f.ScanDatetime != null,
-                            MiniBox = (int?)f.MiniBoxno,
-                            TdwBatch = (int)f.TdwBatch
-                        }).ToListAsync();
-            return result;
         }
 
-        public async Task LockBox(string boxNo)
-        {
-            List<DcFile> boxfiles = await _context.DcFiles.Where(b => b.TdwBoxno == boxNo).ToListAsync();
-            boxfiles.ForEach(a => a.BoxLocked = 1);
-            await _context.SaveChangesAsync();
-        }
+        //public async Task LockBox(string boxNo)
+        //{
+        //    using (var _context = _contextFactory.CreateDbContext())
+        //    {
+        //        List<DcFile> boxfiles = await _context.DcFiles.Where(b => b.TdwBoxno == boxNo).ToListAsync();
+        //        boxfiles.ToList().ForEach(f => { f.TdwBatch = 0; f.BoxLocked = 0; });
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
 
         /// <summary>
         /// TDW Bat submit reboxing change
@@ -349,40 +380,63 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public async Task<bool> OpenCloseBox(string boxNo,bool IsOpen)
         {
-            int tdwBatch = IsOpen ? 1 : 0;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                int tdwBatch = IsOpen ? 1 : 0;
 
-            //await _context.DcFiles.Where(b => b.TdwBoxno == boxNo).ForEachAsync(f => f.TdwBatch = tdwBatch);
-            await _context.DcFiles.Where(f => f.TdwBoxno == boxNo).ForEachAsync(f => { f.TdwBatch = tdwBatch; f.BoxLocked = IsOpen ? 0:1; });
+                //await _context.DcFiles.Where(b => b.TdwBoxno == boxNo).ForEachAsync(f => f.TdwBatch = tdwBatch);
+                await _context.DcFiles.Where(f => f.TdwBoxno == boxNo).ForEachAsync(f => { f.TdwBatch = tdwBatch; f.BoxLocked = IsOpen ? 0 : 1; });
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-            return !IsOpen;
+                return !IsOpen;
+            }
         }
         public async Task<bool> IsBoxLocked(string boxNo)
         {
-            return await _context.DcFiles.Where(b => b.TdwBoxno == boxNo && b.BoxLocked == 1).AnyAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcFiles.Where(b => b.TdwBoxno == boxNo && b.BoxLocked == 1).AnyAsync();
+            }
         }
 
         public async Task RemoveFileFromBox(string brmBarcode)
         {
-            var files = _context.DcFiles.Where(b => b.BrmBarcode == brmBarcode);
-            foreach (var file in files)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                file.TdwBoxno = null;
+                var files = _context.DcFiles.Where(b => b.BrmBarcode == brmBarcode);
+                foreach (var file in files)
+                {
+                    file.TdwBoxno = null;
+                }
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
         }
 
         
         public async Task<List<ReboxListItem>> GetAllFilesByBoxNo(string boxNo, bool notScanned = false)
         {
 
-
-            _ = sservice.GetGrantTypes();
-            if (notScanned)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var interimNs = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && bn.ScanDatetime == null).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
-                return interimNs.Select(f => new ReboxListItem
+                _ = sservice.GetGrantTypes();
+                if (notScanned)
+                {
+                    var interimNs = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && bn.ScanDatetime == null).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                    return interimNs.Select(f => new ReboxListItem
+                    {
+                        ClmNo = f.UnqFileNo,
+                        BrmNo = f.BrmBarcode,
+                        IdNo = f.ApplicantNo,
+                        FullName = f.FullName,
+                        GrantType = StaticD.GrantTypes[f.GrantType],
+                        BoxNo = boxNo,
+                        AltBoxNo = f.AltBoxNo,
+                        Scanned = f.ScanDatetime != null
+                    }).ToList();
+                }
+                var interim = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
+                return interim.Select(f => new ReboxListItem
                 {
                     ClmNo = f.UnqFileNo,
                     BrmNo = f.BrmBarcode,
@@ -394,279 +448,283 @@ namespace Sassa.BRM.Services
                     Scanned = f.ScanDatetime != null
                 }).ToList();
             }
-            var interim = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
-            return interim.Select(f => new ReboxListItem
-            {
-                ClmNo = f.UnqFileNo,
-                BrmNo = f.BrmBarcode,
-                IdNo = f.ApplicantNo,
-                FullName = f.FullName,
-                GrantType = StaticD.GrantTypes[f.GrantType],
-                BoxNo = boxNo,
-                AltBoxNo = f.AltBoxNo,
-                Scanned = f.ScanDatetime != null
-            }).ToList();
         }
 
         public async Task SetBulkReturned(string boxNo, bool sendTDWMail)
         {
-            List<string> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().Select(f => f.BrmBarcode).ToListAsync();
-            IQueryable query = _context.DcMerges.AsNoTracking();
-            foreach (string parent in parentlist)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();
-                if (item == null) continue;
-                item.Status = "Returned";
-                List<string> childlist = await _context.DcMerges.AsNoTracking().Where(bn => bn.ParentBrmBarcode == parent).Select(c => c.BrmBarcode).ToListAsync();
-
-                foreach (string child in childlist)
+                List<string> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().Select(f => f.BrmBarcode).ToListAsync();
+                IQueryable query = _context.DcMerges.AsNoTracking();
+                foreach (string parent in parentlist)
                 {
-                    item = await _context.DcPicklistItems.Where(i => i.BrmNo == child).FirstOrDefaultAsync();
-                    if (item == null || item.Status == "Returned") continue;
+                    var item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();
+                    if (item == null) continue;
                     item.Status = "Returned";
+                    List<string> childlist = await _context.DcMerges.AsNoTracking().Where(bn => bn.ParentBrmBarcode == parent).Select(c => c.BrmBarcode).ToListAsync();
+
+                    foreach (string child in childlist)
+                    {
+                        item = await _context.DcPicklistItems.Where(i => i.BrmNo == child).FirstOrDefaultAsync();
+                        if (item == null || item.Status == "Returned") continue;
+                        item.Status = "Returned";
+                    }
+                    await _context.SaveChangesAsync();
+                    await SyncPicklistFromItems(item.UnqPicklist, "Returned");
                 }
-                await _context.SaveChangesAsync();
-                await SyncPicklistFromItems(item.UnqPicklist, "Returned");
-            }
 
-            //Return MisFiles
-            List<string> mislist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().Select(f => f.FileNumber).ToListAsync();
-            foreach (string parent in mislist)
-            {
-                var item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();//TDWData has the misfileno i.s.o.brmno in old records
-                if (item == null) continue;
-                item.Status = "Returned";
-                await _context.SaveChangesAsync();
-                await SyncPicklistFromItems(item.UnqPicklist, "Returned");
-            }
+                //Return MisFiles
+                List<string> mislist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().Select(f => f.FileNumber).ToListAsync();
+                foreach (string parent in mislist)
+                {
+                    var item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();//TDWData has the misfileno i.s.o.brmno in old records
+                    if (item == null) continue;
+                    item.Status = "Returned";
+                    await _context.SaveChangesAsync();
+                    await SyncPicklistFromItems(item.UnqPicklist, "Returned");
+                }
 
-            //Send tdw email with csv of returned files for LC boxes.
-            if (sendTDWMail)
-            {
-                await SendTDWReturnedMail(boxNo);
+                //Send tdw email with csv of returned files for LC boxes.
+                if (sendTDWMail)
+                {
+                    await SendTDWReturnedMail(boxNo);
+                }
             }
-
         }
 
         public async Task SendTDWReturnedMail(string boxNo)
         {
-            List<TDWRequestMain> tpl = new List<TDWRequestMain>();
-            List<DcFile> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
-            TDWRequestMain TdwFormat;
-            foreach (DcFile parent in parentlist)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                TdwFormat = new TDWRequestMain
+                List<TDWRequestMain> tpl = new List<TDWRequestMain>();
+                List<DcFile> parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();
+                TDWRequestMain TdwFormat;
+                foreach (DcFile parent in parentlist)
                 {
-                    BRM_No = parent.BrmBarcode,
-                    CLM_No = parent.UnqFileNo,
-                    Folder_ID = parent.UnqFileNo,
-                    Grant_Type = parent.GrantType,
-                    Firstname = parent.UserFirstname,
-                    Surname = parent.UserLastname,
-                    ID_Number = parent.ApplicantNo,
-                    Year = parent.UpdatedDate.Value.ToString("YYYY"),
-                    Location = parent.TdwBoxno,
-                    Reg = parent.RegType,
-                    //Bin  = parent. ,
-                    Box = parent.MiniBoxno.ToString(),
-                    //Pos  = parent. ,
-                    UserPicked = ""
-                };
-                tpl.Add(TdwFormat);
+                    TdwFormat = new TDWRequestMain
+                    {
+                        BRM_No = parent.BrmBarcode,
+                        CLM_No = parent.UnqFileNo,
+                        Folder_ID = parent.UnqFileNo,
+                        Grant_Type = parent.GrantType,
+                        Firstname = parent.UserFirstname,
+                        Surname = parent.UserLastname,
+                        ID_Number = parent.ApplicantNo,
+                        Year = parent.UpdatedDate.Value.ToString("YYYY"),
+                        Location = parent.TdwBoxno,
+                        Reg = parent.RegType,
+                        //Bin  = parent. ,
+                        Box = parent.MiniBoxno.ToString(),
+                        //Pos  = parent. ,
+                        UserPicked = ""
+                    };
+                    tpl.Add(TdwFormat);
 
-            }
-            string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-            //attachment list
-            List<string> files = new List<string>();
-            //write attachments for manual download/add to mail
-            File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
-            files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
-            //send mail to TDW
-            try
-            {
-                //if (!Environment.MachineName.ToLower().Contains("prod")) return;
-                _mail.SendTDWIncoming(session, boxNo, files);
-            }
-            catch
-            {
-                //ignore confirmation errors
+                }
+                string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+                //attachment list
+                List<string> files = new List<string>();
+                //write attachments for manual download/add to mail
+                File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+                files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+                //send mail to TDW
+                try
+                {
+                    //if (!Environment.MachineName.ToLower().Contains("prod")) return;
+                    _mail.SendTDWIncoming(session, boxNo, files);
+                }
+                catch
+                {
+                    //ignore confirmation errors
+                }
             }
         }
         public async Task<string> GetNexRegionAltBoxSequence()
         {
-            return session.Office.RegionCode + await _raw.GetNextAltbox(session.Office.RegionCode);
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return session.Office.RegionCode + await _raw.GetNextAltbox(session.Office.RegionCode);
+            }
         }
         private async Task<bool> RepairAltBoxSequence(string boxNo)
         {
-            string AltBoxNo;
-            //Repair null altbox values
-
-            //todo: test this
-            _context.ChangeTracker.Clear();
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                //nullaltboxfiles
-                var nullaltboxfiles = _context.DcFiles.Where(b => string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo).ToList();
-                if (nullaltboxfiles.Any())
+                string AltBoxNo;
+                //Repair null altbox values
+
+                //todo: test this
+                _context.ChangeTracker.Clear();
+                try
                 {
-                    var altboxes = _context.DcFiles.Where(b => !string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo);
-                    if (altboxes.Any())
+                    //nullaltboxfiles
+                    var nullaltboxfiles = _context.DcFiles.Where(b => string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo).ToList();
+                    if (nullaltboxfiles.Any())
                     {
-                        AltBoxNo = altboxes.First().AltBoxNo;
+                        var altboxes = _context.DcFiles.Where(b => !string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo);
+                        if (altboxes.Any())
+                        {
+                            AltBoxNo = altboxes.First().AltBoxNo;
+                        }
+                        else
+                        {
+                            AltBoxNo = await GetNexRegionAltBoxSequence();
+                        }
+                        var fix = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).ToListAsync();
+                        foreach (var file in fix)
+                        {
+                            file.AltBoxNo = AltBoxNo;
+                        }
+                        await _context.SaveChangesAsync();
+                        return true;
                     }
-                    else
+                    //Repair RegionMisMatch values
+                    var regionmismatchfiles = _context.DcFiles.Where(b => !b.AltBoxNo.Contains(session.Office.RegionCode) && b.TdwBoxno == boxNo).ToList();
+                    if (regionmismatchfiles.Any())
                     {
+
+
                         AltBoxNo = await GetNexRegionAltBoxSequence();
+                        var fix = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).ToListAsync();
+                        foreach (var file in fix)
+                        {
+                            file.AltBoxNo = AltBoxNo;
+                        }
+                        await _context.SaveChangesAsync();
+                        return true;
                     }
-                    var fix = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).ToListAsync();
-                    foreach (var file in fix)
-                    {
-                        file.AltBoxNo = AltBoxNo;
-                    }
-                    await _context.SaveChangesAsync();
-                    return true;
                 }
-                //Repair RegionMisMatch values
-                var regionmismatchfiles = _context.DcFiles.Where(b => !b.AltBoxNo.Contains(session.Office.RegionCode) && b.TdwBoxno == boxNo).ToList();
-                if (regionmismatchfiles.Any())
+                catch(Exception ex)
                 {
 
-
-                    AltBoxNo = await GetNexRegionAltBoxSequence();
-                    var fix = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).ToListAsync();
-                    foreach (var file in fix)
-                    {
-                        file.AltBoxNo = AltBoxNo;
-                    }
-                    await _context.SaveChangesAsync();
-                    return true;
                 }
+                return false;
             }
-            catch
-            {
-
-            }
-            return false;
         }
 
 
 
         public async Task<DcFile> GetReboxCandidate(Reboxing rebox)
         {
-            List<DcFile> candidates = new List<DcFile>();
-            //Find Barcode in DCFile
-            if (!string.IsNullOrEmpty(rebox.BrmBarcode))
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
-            }
-            else
-            {
-                //Try the newBarcode in DCFiles
-                //candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
-                if (await checkBRMExists(rebox.NewBarcode)) throw new Exception("The new barcode already exists!");
-                //if (!candidates.Any())
-                //{
-                //Try the MisFile in BRM
-                candidates = await _context.DcFiles.Where(k => k.FileNumber == rebox.MisFileNo).ToListAsync();
-                if (!candidates.Any())
+                List<DcFile> candidates = new List<DcFile>();
+                //Find Barcode in DCFile
+                if (!string.IsNullOrEmpty(rebox.BrmBarcode))
                 {
-                    //We need to create a record!
-                    var miss = await _context.MisLivelinkTbls.Where(mis => mis.FileNumber == rebox.MisFileNo).Select(
-                        mis => new DcFile
-                        {
-                            UnqFileNo = "",
-                            ApplicantNo = mis.IdNumber.GetDigitId(),
-                            ApplicationStatus = mis.RegistryType.ApplicationStatusFromMIS(),
-                            TransType = 0,
-                            BatchAddDate = DateTime.Now,
-                            BrmBarcode = rebox.NewBarcode,
-                            FileComment = "Added from TDW/MIS on reboxing.",
-                            FileNumber = mis.FileNumber,
-                            FileStatus = "Completed",
-                            GrantType = mis.GrantType.GrantTypeFromMIS(),
-                            Isreview = "N",
-                            MisBoxno = mis.BoxNumber,
-                            OfficeId = session.Office.OfficeId,
-                            RegionId = session.Office.RegionId,
-                            FspId = session.Office.FspId,
-                            TdwBoxno = "",//rebox.BoxNo,
-                            TransDate = "2016-05-29".ToDate("yyyy-mm-dd"),
-                            UpdatedByAd = session.SamName,
-                            UpdatedDate = DateTime.Now,
-                            UserFirstname = mis.Name,
-                            UserLastname = mis.Surname
-                        }).ToListAsync();
-                    if (!miss.Any()) throw new Exception("No suitable MIS record found to create BRM record, please recapture.");
-                    _context.ChangeTracker.Clear();
-                    var misfiledata = miss.First();
-                    if (string.IsNullOrEmpty(misfiledata.ApplicantNo)) throw new Exception("No suitable MIS record found to create BRM record, please recapture.");
-                    _context.DcFiles.Add(misfiledata);
-                    await _context.SaveChangesAsync();
-                    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
-                    // }
-                }
-                rebox.BrmBarcode = rebox.NewBarcode;
-                rebox.MisFileNo = string.Empty;
-                rebox.NewBarcode = string.Empty;
-            }
-
-            if (!candidates.Any())
-            {
-                throw new Exception("BRM record not found.");
-            }
-
-            if (candidates.Count() > 1)
-            {
-                ////Try Repair
-                //if (candidates.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).Any())
-                //{
-                //    DcFile corrupt = _context.DcFiles.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).First();
-                //    _context.DcFiles.Remove(corrupt);
-                //    await _context.SaveChangesAsync();
-                //    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
-                //}
-                //if (candidates.Count() > 1)
-                //{
-                    throw new Exception($"Duplicate BRM No {rebox.BrmBarcode} please delete/recapture this file.");
-                //}
-            }
-            if (candidates.Where(f => f.BrmBarcode == rebox.BrmBarcode && f.TdwBoxno == rebox.BoxNo).Any())
-            {
-                throw new Exception($"{rebox.BrmBarcode} is already in this box !");
-            }
-            return candidates.First();
-        }
-        public async Task Rebox(Reboxing rebox, DcFile file)
-        {
-
-            try
-            {
-                file.MisReboxDate = DateTime.Now;
-                file.MisReboxStatus = "Completed";
-                file.TdwBoxno = rebox.BoxNo;
-                file.MiniBoxno = rebox.MiniBox;
-                file.TdwBoxTypeId = decimal.Parse(rebox.SelectedType);
-                file.TdwBatch = 0;
-                //file.FileNumber = rebox.MisFileNo;
-                if ("14|15|16|17|18".Contains(rebox.SelectedType))
-                {
-                    file.TdwBoxArchiveYear = rebox.ArchiveYear;
+                    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
                 }
                 else
                 {
-                    file.TdwBoxArchiveYear = null;
+                    //Try the newBarcode in DCFiles
+                    //candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
+                    if (await checkBRMExists(rebox.NewBarcode)) throw new Exception("The new barcode already exists!");
+                    //if (!candidates.Any())
+                    //{
+                    //Try the MisFile in BRM
+                    candidates = await _context.DcFiles.Where(k => k.FileNumber == rebox.MisFileNo).ToListAsync();
+                    if (!candidates.Any())
+                    {
+                        //We need to create a record!
+                        var miss = await _context.MisLivelinkTbls.Where(mis => mis.FileNumber == rebox.MisFileNo).Select(
+                            mis => new DcFile
+                            {
+                                UnqFileNo = "",
+                                ApplicantNo = mis.IdNumber.GetDigitId(),
+                                ApplicationStatus = mis.RegistryType.ApplicationStatusFromMIS(),
+                                TransType = 0,
+                                BatchAddDate = DateTime.Now,
+                                BrmBarcode = rebox.NewBarcode,
+                                FileComment = "Added from TDW/MIS on reboxing.",
+                                FileNumber = mis.FileNumber,
+                                FileStatus = "Completed",
+                                GrantType = mis.GrantType.GrantTypeFromMIS(),
+                                Isreview = "N",
+                                MisBoxno = mis.BoxNumber,
+                                OfficeId = session.Office.OfficeId,
+                                RegionId = session.Office.RegionId,
+                                FspId = session.Office.FspId,
+                                TdwBoxno = "",//rebox.BoxNo,
+                                TransDate = "2016-05-29".ToDate("yyyy-mm-dd"),
+                                UpdatedByAd = session.SamName,
+                                UpdatedDate = DateTime.Now,
+                                UserFirstname = mis.Name,
+                                UserLastname = mis.Surname
+                            }).ToListAsync();
+                        if (!miss.Any()) throw new Exception("No suitable MIS record found to create BRM record, please recapture.");
+                        _context.ChangeTracker.Clear();
+                        var misfiledata = miss.First();
+                        if (string.IsNullOrEmpty(misfiledata.ApplicantNo)) throw new Exception("No suitable MIS record found to create BRM record, please recapture.");
+                        _context.DcFiles.Add(misfiledata);
+                        await _context.SaveChangesAsync();
+                        candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
+                        // }
+                    }
+                    rebox.BrmBarcode = rebox.NewBarcode;
+                    rebox.MisFileNo = string.Empty;
+                    rebox.NewBarcode = string.Empty;
                 }
 
-                file.AltBoxNo = rebox.AltBoxNo;
-                file.UpdatedDate = DateTime.Now;
-                file.UpdatedByAd = session.SamName;
+                if (!candidates.Any())
+                {
+                    throw new Exception("BRM record not found.");
+                }
 
-                await _context.SaveChangesAsync();
-                CreateActivity("Reboxing" + GetFileArea(file.SrdNo, file.Lctype), "Rebox file", file.UnqFileNo);
+                if (candidates.Count() > 1)
+                {
+                    ////Try Repair
+                    //if (candidates.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).Any())
+                    //{
+                    //    DcFile corrupt = _context.DcFiles.Where(c => string.IsNullOrEmpty(c.ApplicantNo) && c.BrmBarcode == rebox.BrmBarcode).First();
+                    //    _context.DcFiles.Remove(corrupt);
+                    //    await _context.SaveChangesAsync();
+                    //    candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).ToListAsync();
+                    //}
+                    //if (candidates.Count() > 1)
+                    //{
+                    throw new Exception($"Duplicate BRM No {rebox.BrmBarcode} please delete/recapture this file.");
+                    //}
+                }
+                if (candidates.Where(f => f.BrmBarcode == rebox.BrmBarcode && f.TdwBoxno == rebox.BoxNo).Any())
+                {
+                    throw new Exception($"{rebox.BrmBarcode} is already in this box !");
+                }
+                return candidates.First();
             }
-            catch //(Exception ex)
+        }
+        public async Task Rebox(Reboxing rebox, DcFile file)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                throw;
+                try
+                {
+                    file.MisReboxDate = DateTime.Now;
+                    file.MisReboxStatus = "Completed";
+                    file.TdwBoxno = rebox.BoxNo;
+                    file.MiniBoxno = rebox.MiniBox;
+                    file.TdwBoxTypeId = decimal.Parse(rebox.SelectedType);
+                    file.TdwBatch = 0;
+                    //file.FileNumber = rebox.MisFileNo;
+                    if ("14|15|16|17|18".Contains(rebox.SelectedType))
+                    {
+                        file.TdwBoxArchiveYear = rebox.ArchiveYear;
+                    }
+                    else
+                    {
+                        file.TdwBoxArchiveYear = null;
+                    }
+
+                    file.AltBoxNo = rebox.AltBoxNo;
+                    file.UpdatedDate = DateTime.Now;
+                    file.UpdatedByAd = session.SamName;
+
+                    await _context.SaveChangesAsync();
+                    CreateActivity("Reboxing" + GetFileArea(file.SrdNo, file.Lctype), "Rebox file", file.UnqFileNo);
+                }
+                catch //(Exception ex)
+                {
+                    throw;
+                }
             }
         }
 
@@ -676,196 +734,212 @@ namespace Sassa.BRM.Services
 
         public async Task AddFileRequest(RequestModel fr)
         {
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-
-                if (string.IsNullOrEmpty(fr.GrantType))
+                try
                 {
-                    foreach (string granttype in StaticD.GrantTypes.Keys) //All Grant types
-                    {
-                        fr.GrantType = granttype;
-                        await AddValidRequest(fr);
-                    }
-                    return;
-                }
-                await AddValidRequest(fr);
-            }
-            catch //(Exception ex)
-            {
-                throw;
-            }
 
+                    if (string.IsNullOrEmpty(fr.GrantType))
+                    {
+                        foreach (string granttype in StaticD.GrantTypes.Keys) //All Grant types
+                        {
+                            fr.GrantType = granttype;
+                            await AddValidRequest(fr);
+                        }
+                        return;
+                    }
+                    await AddValidRequest(fr);
+                }
+                catch //(Exception ex)
+                {
+                    throw;
+                }
+
+            }
         }
 
         public async Task AddValidRequest(RequestModel fr)
         {
-
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var requests = await _context.DcFileRequests.Where(r => r.IdNo == fr.IdNo && r.GrantType == fr.GrantType && r.Status != "Compliant" && r.Status != "NonCompliant").ToListAsync();
-                if (requests.Any())
+                try
                 {
-                    //throw new Exception("An in progress request exists. Please finalize the existing request first.");
-                    return;
+                    var requests = await _context.DcFileRequests.Where(r => r.IdNo == fr.IdNo && r.GrantType == fr.GrantType && r.Status != "Compliant" && r.Status != "NonCompliant").ToListAsync();
+                    if (requests.Any())
+                    {
+                        //throw new Exception("An in progress request exists. Please finalize the existing request first.");
+                        return;
+                    }
+                    List<TdwFileLocation> tdws = await _context.TdwFileLocations.Where(l => l.Description == fr.IdNo).AsNoTracking().ToListAsync();
+                    foreach (TdwFileLocation tdw in tdws.Where(t => t.GrantType == fr.GrantType))
+                    {
+                        await AddRequestFromTDW(tdw, fr);
+                    }
                 }
-                List<TdwFileLocation> tdws = await _context.TdwFileLocations.Where(l => l.Description == fr.IdNo).AsNoTracking().ToListAsync();
-                foreach (TdwFileLocation tdw in tdws.Where(t => t.GrantType == fr.GrantType))
+                catch //(Exception ex)
                 {
-                    await AddRequestFromTDW(tdw, fr);
+                    throw;
                 }
-            }
-            catch //(Exception ex)
-            {
-                throw;
             }
 
         }
         private async Task AddRequestFromTDW(TdwFileLocation tdw, RequestModel fr)
         {
-
-            var reqs = await _context.DcFileRequests.Where(r => r.IdNo == tdw.Description && r.GrantType == tdw.GrantType).ToListAsync();
-            DcFileRequest req;
-            if (!reqs.Any())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                _context.ChangeTracker.Clear();
-                req = new DcFileRequest();
-                req.IdNo = fr.IdNo;
+                var reqs = await _context.DcFileRequests.Where(r => r.IdNo == tdw.Description && r.GrantType == tdw.GrantType).ToListAsync();
+                DcFileRequest req;
+                if (!reqs.Any())
+                {
+                    _context.ChangeTracker.Clear();
+                    req = new DcFileRequest();
+                    req.IdNo = fr.IdNo;
+                    req.GrantType = tdw.GrantType;
+                    _context.DcFileRequests.Add(req);
+                }
+                else
+                {
+                    req = reqs.First();
+                    //if (req.Status  == "TDWPicklist")
+                    //{
+                    //    //Refresh the date
+                    //    req.RequestedByAd = session.SamName;
+                    //    req.RequestedOfficeId = session.Office.OfficeId;
+                    //    req.RequestedDate = DateTime.Now;
+                    //    req.RegionId = session.Office.RegionId;
+
+                    //    await _context.SaveChangesAsync();
+                    //}
+
+                }
+                //req.AppDate
+                req.Stakeholder = decimal.Parse(fr.Category);
+                req.ReqCategory = decimal.Parse(fr.Category);
+                req.ReqCategoryType = decimal.Parse(fr.CategoryType);
+                req.ReqCategoryDetail = fr.Description;
+                req.IdNo = tdw.Description;
+                if (!string.IsNullOrEmpty(tdw.FilefolderAltcode))
+                {
+                    req.MisFileNo = tdw.FilefolderAltcode.Length == 12 ? "" : tdw.FilefolderAltcode;
+                }
+                req.BrmBarcode = tdw.FilefolderCode;
                 req.GrantType = tdw.GrantType;
-                _context.DcFileRequests.Add(req);
+                req.TdwBoxno = tdw.ContainerCode;
+                req.RequestedByAd = session.SamName;
+                req.RequestedOfficeId = session.Office.OfficeId;
+                req.RequestedDate = DateTime.Now;
+                req.RegionId = session.Office.RegionId;
+                req.Name = tdw.Name;//Could query Socpen for the name and surname
+                req.Status = "TDWPicklist";
+                await _context.SaveChangesAsync();
             }
-            else
-            {
-                req = reqs.First();
-                //if (req.Status  == "TDWPicklist")
-                //{
-                //    //Refresh the date
-                //    req.RequestedByAd = session.SamName;
-                //    req.RequestedOfficeId = session.Office.OfficeId;
-                //    req.RequestedDate = DateTime.Now;
-                //    req.RegionId = session.Office.RegionId;
-
-                //    await _context.SaveChangesAsync();
-                //}
-
-            }
-            //req.AppDate
-            req.Stakeholder = decimal.Parse(fr.Category);
-            req.ReqCategory = decimal.Parse(fr.Category);
-            req.ReqCategoryType = decimal.Parse(fr.CategoryType);
-            req.ReqCategoryDetail = fr.Description;
-            req.IdNo = tdw.Description;
-            if (!string.IsNullOrEmpty(tdw.FilefolderAltcode))
-            {
-                req.MisFileNo = tdw.FilefolderAltcode.Length == 12 ? "" : tdw.FilefolderAltcode;
-            }
-            req.BrmBarcode = tdw.FilefolderCode;
-            req.GrantType = tdw.GrantType;
-            req.TdwBoxno = tdw.ContainerCode;
-            req.RequestedByAd = session.SamName;
-            req.RequestedOfficeId = session.Office.OfficeId;
-            req.RequestedDate = DateTime.Now;
-            req.RegionId = session.Office.RegionId;
-            req.Name = tdw.Name;//Could query Socpen for the name and surname
-            req.Status = "TDWPicklist";
-            await _context.SaveChangesAsync();
         }
 
         public async Task<string> GetSearchId(SearchModel sm)
         {
-            if (!string.IsNullOrEmpty(sm.SrdNo))
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                sm.SrdNo = sm.SrdNo.ToUpper();
-                sm.IdNo = await GetSocpenSearchId(sm.SrdNo);
-            }
-            else if (!string.IsNullOrEmpty(sm.ClmNo))
-            {
-                var src = await _context.DcFiles.Where(f => f.UnqFileNo == sm.ClmNo).FirstOrDefaultAsync();
-                if (src == null)
+                if (!string.IsNullOrEmpty(sm.SrdNo))
                 {
-                    throw new Exception("CLM No not found");
+                    sm.SrdNo = sm.SrdNo.ToUpper();
+                    sm.IdNo = await GetSocpenSearchId(sm.SrdNo);
                 }
-                sm.IdNo = src.ApplicantNo;
-            }
-            else if (!string.IsNullOrEmpty(sm.BrmNo))
-            {
-                var src = await _context.DcFiles.Where(f => f.BrmBarcode == sm.BrmNo).FirstOrDefaultAsync();
-                if (src == null)
+                else if (!string.IsNullOrEmpty(sm.ClmNo))
                 {
-                    throw new Exception("BRM Barcode not found");
+                    var src = await _context.DcFiles.Where(f => f.UnqFileNo == sm.ClmNo).FirstOrDefaultAsync();
+                    if (src == null)
+                    {
+                        throw new Exception("CLM No not found");
+                    }
+                    sm.IdNo = src.ApplicantNo;
                 }
-                sm.IdNo = src.ApplicantNo;
+                else if (!string.IsNullOrEmpty(sm.BrmNo))
+                {
+                    var src = await _context.DcFiles.Where(f => f.BrmBarcode == sm.BrmNo).FirstOrDefaultAsync();
+                    if (src == null)
+                    {
+                        throw new Exception("BRM Barcode not found");
+                    }
+                    sm.IdNo = src.ApplicantNo;
+                }
+                return sm.IdNo;
             }
-            return sm.IdNo;
         }
 
         public async Task<Dictionary<string, string>> GetTDWGrants(string IdNo)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            if (StaticD.GrantTypes == null)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                StaticD.GrantTypes = await _context.DcGrantTypes.AsNoTracking().ToDictionaryAsync(key => key.TypeId, value => value.TypeName);
-            }
-
-            List<TdwFileLocation> results = await _context.TdwFileLocations.Where(t => t.Description == IdNo).AsNoTracking().ToListAsync();
-            if (results.Any())
-            {
-                result.Add("", "All");
-                foreach (var gt in results.ToList())
+                Dictionary<string, string> result = new Dictionary<string, string>();
+                if (StaticD.GrantTypes == null)
                 {
-                    if (result.ContainsKey(gt.GrantType)) continue;
-                    result.Add(gt.GrantType, StaticD.GrantTypes[gt.GrantType]);
+                    StaticD.GrantTypes = await _context.DcGrantTypes.AsNoTracking().ToDictionaryAsync(key => key.TypeId, value => value.TypeName);
                 }
 
+                List<TdwFileLocation> results = await _context.TdwFileLocations.Where(t => t.Description == IdNo).AsNoTracking().ToListAsync();
+                if (results.Any())
+                {
+                    result.Add("", "All");
+                    foreach (var gt in results.ToList())
+                    {
+                        if (result.ContainsKey(gt.GrantType)) continue;
+                        result.Add(gt.GrantType, StaticD.GrantTypes[gt.GrantType]);
+                    }
+
+                }
+                return result;
             }
-            return result;
 
         }
 
         public PagedResult<DcFileRequest> GetFileRequests(bool filterUser, bool filterOffice, int page, string statusFilter = "", string reasonFilter = "")
         {
-            PagedResult<DcFileRequest> result = new PagedResult<DcFileRequest>();
-            var query = _context.DcFileRequests.AsQueryable();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                PagedResult<DcFileRequest> result = new PagedResult<DcFileRequest>();
+                var query = _context.DcFileRequests.AsQueryable();
 
-            if (filterUser)
-            {
-                query = query.Where(r => r.RequestedByAd == session.SamName);
-            }
-            if (filterOffice)
-            {
-                if (session.Office.OfficeType == "RMC")
+                if (filterUser)
                 {
-                    query = query.Where(r => r.RegionId == session.Office.RegionId);
+                    query = query.Where(r => r.RequestedByAd == session.SamName);
                 }
-                else
+                if (filterOffice)
                 {
-                    query = query.Where(r => r.RequestedOfficeId == session.Office.OfficeId);
+                    if (session.Office.OfficeType == "RMC")
+                    {
+                        query = query.Where(r => r.RegionId == session.Office.RegionId);
+                    }
+                    else
+                    {
+                        query = query.Where(r => r.RequestedOfficeId == session.Office.OfficeId);
+                    }
                 }
-            }
-            if (!string.IsNullOrEmpty(reasonFilter))
-            {
-                query = query.Where(r => r.ReqCategoryType.ToString() == reasonFilter);
-            }
-            if (!string.IsNullOrEmpty(statusFilter))
-            {
-                query = query.Where(r => r.Status == statusFilter);
-            }
+                if (!string.IsNullOrEmpty(reasonFilter))
+                {
+                    query = query.Where(r => r.ReqCategoryType.ToString() == reasonFilter);
+                }
+                if (!string.IsNullOrEmpty(statusFilter))
+                {
+                    query = query.Where(r => r.Status == statusFilter);
+                }
 
-            result.count = query.Count();
-            //var reversed = query.AsEnumerable().Reverse();
-            result.result = query.AsEnumerable().OrderByDescending(d => d.RequestedDate).Skip((page - 1) * 12).Take(12).ToList();
-            foreach (var req in result.result)
-            {
-                sservice.GetRequestCategoryTypes();
-                try
+                result.count = query.Count();
+                //var reversed = query.AsEnumerable().Reverse();
+                result.result = query.AsEnumerable().OrderByDescending(d => d.RequestedDate).Skip((page - 1) * 12).Take(12).ToList();
+                foreach (var req in result.result)
                 {
-                    req.Reason = StaticD.RequestCategoryTypes.Where(r => r.TypeId == req.ReqCategoryType).First().TypeDescr;
+                    sservice.GetRequestCategoryTypes();
+                    try
+                    {
+                        req.Reason = StaticD.RequestCategoryTypes.Where(r => r.TypeId == req.ReqCategoryType).First().TypeDescr;
+                    }
+                    catch (Exception ex)
+                    {
+                        var ss = ex.Message;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    var ss = ex.Message;
-                }
+                return result;
             }
-            return result;
         }
 
         //public async Task<PagedResult<DcFileRequest>> GetFilrR()
@@ -892,116 +966,140 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public async Task ChangeFileRequestStatus(DcFileRequest fr, string status)
         {
-            //Todo:
-            if (status == "Closed") throw new Exception("Feature in dev. Kofax data will set status");
-            if (fr.Status == "Requested") throw new Exception("Request is with TDW, can't change status now.");
-            DcFileRequest req = await _context.DcFileRequests.FindAsync(fr.IdNo, fr.GrantType);
-            req.Status = status;
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                //Todo:
+                if (status == "Closed") throw new Exception("Feature in dev. Kofax data will set status");
+                if (fr.Status == "Requested") throw new Exception("Request is with TDW, can't change status now.");
+                DcFileRequest req = await _context.DcFileRequests.FindAsync(fr.IdNo, fr.GrantType);
+                req.Status = status;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<PagedResult<DcPicklist>> GetPickLists(bool filterRequestUser, bool filterInProgress, int page)
         {
-            PagedResult<DcPicklist> result = new PagedResult<DcPicklist>();
-
-            var query = _context.DcPicklists.OrderByDescending(o => o.PicklistDate).AsQueryable();
-
-            if (filterRequestUser)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                query = query.Where(r => r.RequestedByAd.ToLower() == session.SamName.ToLower());
-            }
-            else if (filterInProgress)
-            {
-                query = query.Where(r => r.Status != "Returned");
-            }
-            else
-            {
-                query = query.Where(r => r.RegionId == session.Office.RegionId);
-            }
+                PagedResult<DcPicklist> result = new PagedResult<DcPicklist>();
 
-            result.count = query.Where(r => r.RegionId == session.Office.RegionId).Count();
-            result.result = await query.Where(r => r.RegionId == session.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
+                var query = _context.DcPicklists.OrderByDescending(o => o.PicklistDate).AsQueryable();
+
+                if (filterRequestUser)
+                {
+                    query = query.Where(r => r.RequestedByAd.ToLower() == session.SamName.ToLower());
+                }
+                else if (filterInProgress)
+                {
+                    query = query.Where(r => r.Status != "Returned");
+                }
+                else
+                {
+                    query = query.Where(r => r.RegionId == session.Office.RegionId);
+                }
+
+                result.count = query.Where(r => r.RegionId == session.Office.RegionId).Count();
+                result.result = await query.Where(r => r.RegionId == session.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+            }
         }
 
         public async Task<PagedResult<DcPicklist>> SearchPickLists(string searchTxt, int page)
         {
-            PagedResult<DcPicklist> result = new PagedResult<DcPicklist>();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                PagedResult<DcPicklist> result = new PagedResult<DcPicklist>();
 
-            var query = _context.DcPicklists.OrderByDescending(o => o.PicklistDate).AsQueryable();
+                var query = _context.DcPicklists.OrderByDescending(o => o.PicklistDate).AsQueryable();
 
 
-            query = query.Where(r => r.UnqPicklist.ToLower().Contains(searchTxt.ToLower()));
+                query = query.Where(r => r.UnqPicklist.ToLower().Contains(searchTxt.ToLower()));
 
 
-            result.count = query.Where(r => r.RegionId == session.Office.RegionId).Count();
-            result.result = await query.Where(r => r.RegionId == session.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
-        }
+                result.count = query.Where(r => r.RegionId == session.Office.RegionId).Count();
+                result.result = await query.Where(r => r.RegionId == session.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+            }
+         }
 
         public async Task ChangePickListStatus(DcPicklist pi)
         {
-            DcPicklist pl = await _context.DcPicklists.FindAsync(pi.UnqPicklist);
-            pl.Status = pi.nextStatus;
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                DcPicklist pl = await _context.DcPicklists.FindAsync(pi.UnqPicklist);
+                pl.Status = pi.nextStatus;
+                await _context.SaveChangesAsync();
+            }
         }
 
         internal async Task<PagedResult<DcPicklistItem>> GetPicklistItems(string unq_picklist, int page)
         {
-            PagedResult<DcPicklistItem> result = new PagedResult<DcPicklistItem>();
-            result.count = _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).Count();
-            result.result = await _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).OrderByDescending(p => p.PicklistItemId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                PagedResult<DcPicklistItem> result = new PagedResult<DcPicklistItem>();
+                result.count = _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).Count();
+                result.result = await _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).OrderByDescending(p => p.PicklistItemId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+            }
         }
 
         internal async Task ReceivePickList(string unq_picklist)
         {
-            var items = _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).ToList();
-            foreach (DcPicklistItem item in items)
+            using (var _context = _contextFactory.CreateDbContext())
             {
+                var items = _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).ToList();
+                foreach (DcPicklistItem item in items)
+                {
 
-                item.Status = "Received";
-                await SyncFileRequestStatusReceived(item);
+                    item.Status = "Received";
+                    await SyncFileRequestStatusReceived(item);
+                }
+                var picklist = _context.DcPicklists.Find(unq_picklist);
+                picklist.Status = "Received";
+                await _context.SaveChangesAsync();
+                _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
             }
-            var picklist = _context.DcPicklists.Find(unq_picklist);
-            picklist.Status = "Received";
-            await _context.SaveChangesAsync();
-            _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
         }
 
         internal async Task SyncFileRequestStatusReceived(DcPicklistItem item)
         {
-            var GrantId = sservice.GetGrantId(item.GrantType);
-            DcFileRequest fileReq = await _context.DcFileRequests.FindAsync(item.IdNumber, GrantId);
-            if (fileReq == null) return;
-            if (fileReq.Status == "Received") return;//skip nochange...
-            fileReq.Status = "Received";
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var GrantId = sservice.GetGrantId(item.GrantType);
+                DcFileRequest fileReq = await _context.DcFileRequests.FindAsync(item.IdNumber, GrantId);
+                if (fileReq == null) return;
+                if (fileReq.Status == "Received") return;//skip nochange...
+                fileReq.Status = "Received";
+                await _context.SaveChangesAsync();
+            }
         }
         public async Task SetStatusPickListItem(decimal ItemId)
         {
-            var item = _context.DcPicklistItems.Find(ItemId);
-            item.Status = item.nextStatus;
-            await _context.SaveChangesAsync();
-
-            //set picklist status if all items accounted for
-
-            await SyncPicklistFromItems(item.UnqPicklist, item.Status);
-            if (item.Status != "Received")
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                return;
-            }
-            else
-            {
-                var files = _context.DcFiles.Where(f => f.BrmBarcode == item.BrmNo);
-                if (files.Any())
+                var item = _context.DcPicklistItems.Find(ItemId);
+                item.Status = item.nextStatus;
+                await _context.SaveChangesAsync();
+
+                //set picklist status if all items accounted for
+
+                await SyncPicklistFromItems(item.UnqPicklist, item.Status);
+                if (item.Status != "Received")
                 {
-                    DcFile file = files.First();
-                    file.ScanDatetime = DateTime.Now;
-                    await _context.SaveChangesAsync();
+                    return;
                 }
+                else
+                {
+                    var files = _context.DcFiles.Where(f => f.BrmBarcode == item.BrmNo);
+                    if (files.Any())
+                    {
+                        DcFile file = files.First();
+                        file.ScanDatetime = DateTime.Now;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                await SyncFileRequestStatusReceived(item);
             }
-            await SyncFileRequestStatusReceived(item);
 
         }
 
@@ -1012,13 +1110,16 @@ namespace Sassa.BRM.Services
 
         public async Task SyncPicklistFromItems(string unqPicklist, string status)
         {
-            if (_context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).Any()) return;
-            var picklist = _context.DcPicklists.Find(unqPicklist);
-            picklist.Status = status;
-            await _context.SaveChangesAsync();
-            if (status == "Received")
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
+                if (_context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).Any()) return;
+                var picklist = _context.DcPicklists.Find(unqPicklist);
+                picklist.Status = status;
+                await _context.SaveChangesAsync();
+                if (status == "Received")
+                {
+                    _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
+                }
             }
 
         }
@@ -1030,205 +1131,228 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public async Task<bool> SetPickListItemStatus(string brmBarcode, string status)
         {
-            var item = await _context.DcPicklistItems.Where(i => i.BrmNo == brmBarcode).FirstOrDefaultAsync();
-            if (item == null) return false;
-            item.Status = status;
-            await _context.SaveChangesAsync();
-            //set picklist status if all items accounted for
-            await SyncPicklistFromItems(item.UnqPicklist, status);
-            return true;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var item = await _context.DcPicklistItems.Where(i => i.BrmNo == brmBarcode).FirstOrDefaultAsync();
+                if (item == null) return false;
+                item.Status = status;
+                await _context.SaveChangesAsync();
+                //set picklist status if all items accounted for
+                await SyncPicklistFromItems(item.UnqPicklist, status);
+                return true;
+            }
 
         }
         public async Task SendTDWRequestsPerRegion(int requestCount)
         {
 
-            TDWPicklist tpl = await GetTDWFILE(requestCount);
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                TDWPicklist tpl = await GetTDWFILE(requestCount);
 
-            if (!tpl.result.Any()) return;
-            string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + "-TDW_File_Request-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
-            //attachment list
-            List<string> files = new List<string>();
-            //write attachments for manual download/add to mail
-            File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.result.CreateCSV());
-            files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
-            //send mail to TDW
-            try
-            {
-                _mail.SendTDWRequest(session, StaticD.RegionEmails[session.Office.RegionName.ToUpper()], tpl.UnqPickList, files);
-            }
-            catch
-            {
-                //ignore confirmation errors
-            }
-            //Update the status to sent
-            foreach (var pli in _context.DcPicklistItems.Where(p => p.UnqPicklist == tpl.UnqPickList).ToList())
-            {
-                SelectedRequest request = new SelectedRequest { IDNo = pli.IdNumber, GrantTypeId = sservice.GetGrantId(pli.GrantType) };
-                await SetStatusTDWSent(request);
-            }
-            //Get the picklist
-            var pl = await _context.DcPicklists.Where(p => p.UnqPicklist == tpl.UnqPickList).FirstAsync();
-            ///Send mails
-            string tomail = pl.RequestedByAd.GetADEmail();
-            if (string.IsNullOrEmpty(tomail)) return; //Skip if no tomail address
-            try
-            {
-                _mail.SendRequestStatusChange(session, "Requested", pl.UnqPicklist, tomail);
-            }
-            catch
-            {
-                //ignore confirmation errors
+                if (!tpl.result.Any()) return;
+                string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + "-TDW_File_Request-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+                //attachment list
+                List<string> files = new List<string>();
+                //write attachments for manual download/add to mail
+                File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.result.CreateCSV());
+                files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+                //send mail to TDW
+                try
+                {
+                    _mail.SendTDWRequest(session, StaticD.RegionEmails[session.Office.RegionName.ToUpper()], tpl.UnqPickList, files);
+                }
+                catch
+                {
+                    //ignore confirmation errors
+                }
+                //Update the status to sent
+                foreach (var pli in _context.DcPicklistItems.Where(p => p.UnqPicklist == tpl.UnqPickList).ToList())
+                {
+                    SelectedRequest request = new SelectedRequest { IDNo = pli.IdNumber, GrantTypeId = sservice.GetGrantId(pli.GrantType) };
+                    await SetStatusTDWSent(request);
+                }
+                //Get the picklist
+                var pl = await _context.DcPicklists.Where(p => p.UnqPicklist == tpl.UnqPickList).FirstAsync();
+                ///Send mails
+                string tomail = pl.RequestedByAd.GetADEmail();
+                if (string.IsNullOrEmpty(tomail)) return; //Skip if no tomail address
+                try
+                {
+                    _mail.SendRequestStatusChange(session, "Requested", pl.UnqPicklist, tomail);
+                }
+                catch
+                {
+                    //ignore confirmation errors
+                }
             }
         }
 
         public async Task<TDWPicklist> GetTDWFILE(int maxRecords)
         {
-            TDWPicklist tpl = new TDWPicklist();
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var candidates = await (from tdw in _context.TdwFileLocations
-                                        join fr in _context.DcFileRequests
-                                        on tdw.Description equals fr.IdNo
-                                        where fr.Status == "TDWPicklist" && fr.RegionId == session.Office.RegionId && tdw.GrantType == fr.GrantType
-                                        orderby fr.RequestedDate descending
-                                        select new TDWRequestMain
-                                        {
-                                            BRM_No = tdw.FilefolderCode,
-                                            CLM_No = tdw.FilefolderAltcode.Length == 12 ? tdw.FilefolderAltcode : null,
-                                            Folder_ID = tdw.FilefolderAltcode.Length != 12 ? tdw.FilefolderAltcode : null,
-                                            Grant_Type = tdw.GrantType.Trim(),
-                                            Firstname = fr.Name,
-                                            Surname = fr.Surname,
-                                            ID_Number = tdw.Description,
-                                            Reg = "U",
-                                            Location = tdw.ContainerCode,
-                                            UserPicked = ""
-
-                                        }).AsNoTracking().Take(maxRecords).ToListAsync();
-                //Get filerequest Candidates
-                if (!candidates.Any()) throw new Exception("No files to request !");
-                //Create a picklist for every selected fr
-
-                //Create new PICKList
-                DcPicklist pl = new DcPicklist();
-                pl.UnqPicklist = string.Empty;
-                pl.PicklistDate = DateTime.Now;
-                pl.Status = "Requested";
-                pl.RegionId = session.Office.RegionId;
-                pl.RegistryType = "U";
-                pl.RequestedByAd = session.SamName;
-                pl.UpdatedBy = session.SamName;
-                pl.PicklistStatus = "N";
-                _context.ChangeTracker.Clear();
-                _context.DcPicklists.Add(pl);
-                await _context.SaveChangesAsync();
-                pl = _context.DcPicklists.OrderByDescending(p => p.PicklistDate).First();
-                //Create a new TDWPickList
-                tpl.UnqPickList = pl.UnqPicklist;
-                //Add Picklist items
-                foreach (var item in candidates)
+                TDWPicklist tpl = new TDWPicklist();
+                try
                 {
-                    item.Grant_Type = sservice.GetGrantType(item.Grant_Type);
-                    tpl.result.Add(item);
-                    DcPicklistItem pi = new DcPicklistItem();
-                    pi.UnqPicklist = pl.UnqPicklist;
-                    pi.IdNumber = item.ID_Number;
-                    pi.FolderId = item.Folder_ID;
-                    pi.GrantType = item.Grant_Type;
-                    pi.Bin = item.Bin;
-                    pi.BrmNo = item.BRM_No;
-                    pi.ClmNo = item.CLM_No;
-                    pi.Firstname = item.Firstname;
-                    pi.Surname = item.Surname;
-                    pi.Status = "Requested";
-                    pi.Year = item.Year;
-                    pi.Reg = item.Reg;
-                    pi.Position = item.Pos;
-                    pi.Minibox = "";
-                    pi.LooseCorrespondenceId = "";//Todo:
-                    pi.Location = item.Location;
-                    pi.LcType = "";//Todo:
+                    var candidates = await (from tdw in _context.TdwFileLocations
+                                            join fr in _context.DcFileRequests
+                                            on tdw.Description equals fr.IdNo
+                                            where fr.Status == "TDWPicklist" && fr.RegionId == session.Office.RegionId && tdw.GrantType == fr.GrantType
+                                            orderby fr.RequestedDate descending
+                                            select new TDWRequestMain
+                                            {
+                                                BRM_No = tdw.FilefolderCode,
+                                                CLM_No = tdw.FilefolderAltcode.Length == 12 ? tdw.FilefolderAltcode : null,
+                                                Folder_ID = tdw.FilefolderAltcode.Length != 12 ? tdw.FilefolderAltcode : null,
+                                                Grant_Type = tdw.GrantType.Trim(),
+                                                Firstname = fr.Name,
+                                                Surname = fr.Surname,
+                                                ID_Number = tdw.Description,
+                                                Reg = "U",
+                                                Location = tdw.ContainerCode,
+                                                UserPicked = ""
 
-                    _context.DcPicklistItems.Add(pi);
+                                            }).AsNoTracking().Take(maxRecords).ToListAsync();
+                    //Get filerequest Candidates
+                    if (!candidates.Any()) throw new Exception("No files to request !");
+                    //Create a picklist for every selected fr
+
+                    //Create new PICKList
+                    DcPicklist pl = new DcPicklist();
+                    pl.UnqPicklist = string.Empty;
+                    pl.PicklistDate = DateTime.Now;
+                    pl.Status = "Requested";
+                    pl.RegionId = session.Office.RegionId;
+                    pl.RegistryType = "U";
+                    pl.RequestedByAd = session.SamName;
+                    pl.UpdatedBy = session.SamName;
+                    pl.PicklistStatus = "N";
+                    _context.ChangeTracker.Clear();
+                    _context.DcPicklists.Add(pl);
                     await _context.SaveChangesAsync();
-                }
-                //Save the changes
+                    pl = _context.DcPicklists.OrderByDescending(p => p.PicklistDate).First();
+                    //Create a new TDWPickList
+                    tpl.UnqPickList = pl.UnqPicklist;
+                    //Add Picklist items
+                    foreach (var item in candidates)
+                    {
+                        item.Grant_Type = sservice.GetGrantType(item.Grant_Type);
+                        tpl.result.Add(item);
+                        DcPicklistItem pi = new DcPicklistItem();
+                        pi.UnqPicklist = pl.UnqPicklist;
+                        pi.IdNumber = item.ID_Number;
+                        pi.FolderId = item.Folder_ID;
+                        pi.GrantType = item.Grant_Type;
+                        pi.Bin = item.Bin;
+                        pi.BrmNo = item.BRM_No;
+                        pi.ClmNo = item.CLM_No;
+                        pi.Firstname = item.Firstname;
+                        pi.Surname = item.Surname;
+                        pi.Status = "Requested";
+                        pi.Year = item.Year;
+                        pi.Reg = item.Reg;
+                        pi.Position = item.Pos;
+                        pi.Minibox = "";
+                        pi.LooseCorrespondenceId = "";//Todo:
+                        pi.Location = item.Location;
+                        pi.LcType = "";//Todo:
 
-                return tpl;
-            }
-            catch //(Exception ex)
-            {
-                //foreach (var eve in e.EntityValidationErrors)
-                //{
-                //    Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
-                //        eve.Entry.Entity.GetType().Name, eve.Entry.State);
-                //    foreach (var ve in eve.ValidationErrors)
-                //    {
-                //        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
-                //            ve.PropertyName, ve.ErrorMessage);
-                //    }
-                //}
-                throw;
+                        _context.DcPicklistItems.Add(pi);
+                        await _context.SaveChangesAsync();
+                    }
+                    //Save the changes
+
+                    return tpl;
+                }
+                catch //(Exception ex)
+                {
+                    //foreach (var eve in e.EntityValidationErrors)
+                    //{
+                    //    Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
+                    //        eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                    //    foreach (var ve in eve.ValidationErrors)
+                    //    {
+                    //        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                    //            ve.PropertyName, ve.ErrorMessage);
+                    //    }
+                    //}
+                    throw;
+                }
             }
         }
 
         public async Task SetStatusTDWSent(SelectedRequest req)
         {
-            var fileReqs = await _context.DcFileRequests.Where(f => f.IdNo == req.IDNo && f.GrantType == req.GrantTypeId).ToListAsync();
-            if (!fileReqs.Any()) return;
-            DcFileRequest fileReq = fileReqs.First();
-            if (fileReq.Status == "Requested") return;//skip nochange...
-            fileReq.Status = "Requested";
-            fileReq.SentTdw = session.SamName;
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var fileReqs = await _context.DcFileRequests.Where(f => f.IdNo == req.IDNo && f.GrantType == req.GrantTypeId).ToListAsync();
+                if (!fileReqs.Any()) return;
+                DcFileRequest fileReq = fileReqs.First();
+                if (fileReq.Status == "Requested") return;//skip nochange...
+                fileReq.Status = "Requested";
+                fileReq.SentTdw = session.SamName;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<TreeNode> GetCSFiles(string idNo)
         {
-            TreeNode node = new TreeNode();
-            var intermediate  =  await _context.DcDocumentImages.Where(d => d.IdNo == idNo).ToListAsync();
-            var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(bool)d.Type));
-            foreach (var file in files)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                TreeNode child = new TreeNode
+                TreeNode node = new TreeNode();
+                var intermediate = await _context.DcDocumentImages.Where(d => d.IdNo == idNo).ToListAsync();
+                var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(bool)d.Type));
+                foreach (var file in files)
                 {
-                    ParentId = file.Parentnode == null ? 0 : (int)file.Parentnode,
-                    Id = (int)file.Csnode,
-                    NodeType = (bool)file.Type,
-                    NodeName = file.Filename,
-                    NodeContent = file.Image
-                };
-                if (file.Parentnode != null)
-                {
-                    node.AddOnParent((int)file.Parentnode, child);
-                }
-                else //Rootnode
-                {
-                    node.Add((int)file.Csnode, child);
-                }
+                    TreeNode child = new TreeNode
+                    {
+                        ParentId = file.Parentnode == null ? 0 : (int)file.Parentnode,
+                        Id = (int)file.Csnode,
+                        NodeType = (bool)file.Type,
+                        NodeName = file.Filename,
+                        NodeContent = file.Image
+                    };
+                    if (file.Parentnode != null)
+                    {
+                        node.AddOnParent((int)file.Parentnode, child);
+                    }
+                    else //Rootnode
+                    {
+                        node.Add((int)file.Csnode, child);
+                    }
 
+                }
+                return node;
             }
-            return node;
         }
         #endregion
 
         #region SocpenData
         public async Task<string> GetSocpenSearchId(string srdNo)
         {
-            if (!srdNo.IsNumeric()) throw new Exception("SRD is Invalid.");
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                if (!srdNo.IsNumeric()) throw new Exception("SRD is Invalid.");
 
-            long srd = long.Parse(srdNo);
-            var result = await _context.DcSocpen.Where(s => s.SrdNo == srd).ToListAsync();
+                long srd = long.Parse(srdNo);
+                var result = await _context.DcSocpen.Where(s => s.SrdNo == srd).ToListAsync();
 
-            if (!result.Any()) throw new Exception("SRD not found.");
+                if (!result.Any()) throw new Exception("SRD not found.");
 
-            return result.First().BeneficiaryId;
+                return result.First().BeneficiaryId;
+            }
         }
         #endregion
 
-        public async Task SaveChanges()
+        public async Task SaveChanges(string unqFileNo,string docsPresent)
         {
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                DcFile original = await _context.DcFiles.FindAsync(unqFileNo);
+                original.DocsPresent = docsPresent;
+                await _context.SaveChangesAsync();
+            }
         }
 
         /// <summary>
@@ -1248,17 +1372,20 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public void CreateActivity(string Area, string Activity, string UniqueFileNo = "")
         {
-            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
+                DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
+                try
+                {
 
-                _context.DcActivities.Add(activity);
-                _context.SaveChanges();
+                    _context.DcActivities.Add(activity);
+                    _context.SaveChanges();
 
-            }
-            catch
-            {
-                //just ignoring activity post errors for now.
+                }
+                catch
+                {
+                    //just ignoring activity post errors for now.
+                }
             }
         }
         public string GetFileArea(string srdNo, decimal? lcType)
@@ -1297,40 +1424,15 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public async Task<List<Application>> SearchSocpenId(string SearchId, bool FullSearch)
         {
-
-            List<Application> idquery;
-            sservice.GetGrantType("S");//Dummy call to ensure static loaded
-            sservice.GetRegionCode("7");//Dummy call to ensure static loaded
-            List<Application> oldidquery = new List<Application>();
-            idquery = await _context.DcSocpen.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                SocpenIsn = d.Id,
-                Id = d.BeneficiaryId,
-                Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
-                Name = d.Name,
-                SurName = d.Surname,
-                GrantType = d.GrantType,
-                GrantName = StaticD.GrantTypes[d.GrantType],
-                AppDate = d.ApplicationDate.ToStandardDateString(),
-                OfficeId = session.Office.OfficeId,
-                RegionId = d.RegionId,
-                RegionCode = StaticD.RegionCode(d.RegionId),
-                RegionName = StaticD.RegionName(d.RegionId),
-                AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = StaticD.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
-                ChildId = d.ChildId,
-                LcType = "0",
-                IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
-                DocsPresent = d.Documents,
-                IdHistory = d.IdHistory,
-                Source = "Socpen"
-            }).AsNoTracking().ToListAsync();
-
-            if (FullSearch)
-            {
-                oldidquery = await _context.DcSocpen.Where(d => d.IdHistory.Contains(SearchId)).Select(d => new Application
+                List<Application> idquery;
+                sservice.GetGrantType("S");//Dummy call to ensure static loaded
+                sservice.GetRegionCode("7");//Dummy call to ensure static loaded
+                List<Application> oldidquery = new List<Application>();
+                idquery = await _context.DcSocpen.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
                 {
-                    SocpenIsn = d.Id,
+                    SocpenIsn = (long)d.Id,
                     Id = d.BeneficiaryId,
                     Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
                     Name = d.Name,
@@ -1343,7 +1445,7 @@ namespace Sassa.BRM.Services
                     RegionCode = StaticD.RegionCode(d.RegionId),
                     RegionName = StaticD.RegionName(d.RegionId),
                     AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                    ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                    ARCHIVE_YEAR = StaticD.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
                     ChildId = d.ChildId,
                     LcType = "0",
                     IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
@@ -1351,15 +1453,42 @@ namespace Sassa.BRM.Services
                     IdHistory = d.IdHistory,
                     Source = "Socpen"
                 }).AsNoTracking().ToListAsync();
-            }
-            var result = idquery.Union(oldidquery).ToList();
 
-            foreach (var item in result)
-            {
-                item.IsMergeCandidate = result.Where(s => s.AppDate == item.AppDate).Count() > 1;
-                item.DocsPresent = await GetDocsPresent(item.Id, item.GrantType, item.AppDate);
+                if (FullSearch)
+                {
+                    oldidquery = await _context.DcSocpen.Where(d => d.IdHistory.Contains(SearchId)).Select(d => new Application
+                    {
+                        SocpenIsn = (long)d.Id,
+                        Id = d.BeneficiaryId,
+                        Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
+                        Name = d.Name,
+                        SurName = d.Surname,
+                        GrantType = d.GrantType,
+                        GrantName = StaticD.GrantTypes[d.GrantType],
+                        AppDate = d.ApplicationDate.ToStandardDateString(),
+                        OfficeId = session.Office.OfficeId,
+                        RegionId = d.RegionId,
+                        RegionCode = StaticD.RegionCode(d.RegionId),
+                        RegionName = StaticD.RegionName(d.RegionId),
+                        AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
+                        ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                        ChildId = d.ChildId,
+                        LcType = "0",
+                        IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
+                        DocsPresent = d.Documents,
+                        IdHistory = d.IdHistory,
+                        Source = "Socpen"
+                    }).AsNoTracking().ToListAsync();
+                }
+                var result = idquery.Union(oldidquery).ToList();
+
+                foreach (var item in result)
+                {
+                    item.IsMergeCandidate = result.Where(s => s.AppDate == item.AppDate).Count() > 1;
+                    item.DocsPresent = await GetDocsPresent(item.Id, item.GrantType, item.AppDate);
+                }
+                return result;
             }
-            return result;
         }
 
 
@@ -1479,36 +1608,41 @@ namespace Sassa.BRM.Services
 
         public async Task<List<Application>> SearchSocpenSrd(long srd)
         {
-            List<Application> srdsquery = await _context.DcSocpen.Where(d => d.SrdNo == srd).Select(d => new Application
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                SocpenIsn = d.Id,
-                Id = d.BeneficiaryId,
-                Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
-                Name = d.Name,
-                SurName = d.Surname,
-                GrantType = d.GrantType,
-                GrantName = StaticD.GrantTypes[d.GrantType],
-                AppDate = d.ApplicationDate.ToStandardDateString(),
-                OfficeId = session.Office.OfficeId,  
-                RegionId = d.RegionId,
-                RegionCode = StaticD.RegionCode(d.RegionId),
-                RegionName = StaticD.RegionName(d.RegionId),
-                AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
-                ChildId = d.ChildId,
-                LcType = "0",
-                IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
-                DocsPresent = d.Documents,
-                IdHistory = d.IdHistory,
-                Source = "Socpen"
-            }).AsNoTracking().ToListAsync();
+                List<Application> srdsquery = await _context.DcSocpen.Where(d => d.SrdNo == srd).Select(d => new Application
+                {
+                    SocpenIsn = (long)d.Id,
+                    Id = d.BeneficiaryId,
+                    Srd_No = d.SrdNo > 0 ? d.SrdNo.ToString() : "",
+                    Name = d.Name,
+                    SurName = d.Surname,
+                    GrantType = d.GrantType,
+                    GrantName = StaticD.GrantTypes[d.GrantType],
+                    AppDate = d.ApplicationDate.ToStandardDateString(),
+                    OfficeId = session.Office.OfficeId,
+                    RegionId = d.RegionId,
+                    RegionCode = StaticD.RegionCode(d.RegionId),
+                    RegionName = StaticD.RegionName(d.RegionId),
+                    AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
+                    ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                    ChildId = d.ChildId,
+                    LcType = "0",
+                    IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
+                    DocsPresent = d.Documents,
+                    IdHistory = d.IdHistory,
+                    Source = "Socpen"
+                }).AsNoTracking().ToListAsync();
 
-            return srdsquery;
+                return srdsquery;
+            }
         }
 
         public async Task<List<Application>> SearchBRMID(string SearchId)
         {
-            string sql = $@"select f.APPLICANT_NO as Id,
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                string sql = $@"select f.APPLICANT_NO as Id,
                                 f.USER_FirstName as Name,
                                 f.USER_LASTNAME as Surname,
                                 f.GRANT_TYPE as GrantType,
@@ -1557,7 +1691,8 @@ namespace Sassa.BRM.Services
                             where f.APPLICANT_NO  = '{SearchId}' and f.BRM_BARCODE is not null
                         order by f.TRANS_DATE desc";
 
-            return await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
+                return await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
+            }
 
         }
 
@@ -1570,12 +1705,15 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         private async Task<string> GetDocsPresent(string idNo, string grantype, string applicationDate)
         {
+
             try
             {
-                string sql = "";
-                if (string.IsNullOrEmpty(applicationDate))
+                using (var _context = _contextFactory.CreateDbContext())
                 {
-                    sql = $@"select DISTINCT DI.DOC_NO_IN AS IdString
+                    string sql = "";
+                    if (string.IsNullOrEmpty(applicationDate))
+                    {
+                        sql = $@"select DISTINCT DI.DOC_NO_IN AS IdString
                             from SASSA.SOCPEN_DOW_APPLICATIONS_CHEC01 DAC
                             LEFT JOIN SASSA.SOCPEN_DOCUMENTS_IN DI ON DI.ADABAS_ISN = DAC.ADABAS_ISN
                             LEFT JOIN SASSA.SOCPEN_DOC_REL_IN DRI ON DRI.ADABAS_ISN = DI.ADABAS_ISN AND DRI.DPS_PE_SEQ = DI.DPS_PE_SEQ
@@ -1583,11 +1721,11 @@ namespace Sassa.BRM.Services
                             and GRANT_TYPE = '{grantype}'
                             and DPS_MU_SEQ = '001'
                             and DOC_REL_IN = 'Y'";
-                }
-                else
-                {
+                    }
+                    else
+                    {
 
-                    sql = $@"select DISTINCT DI.DOC_NO_IN AS IdString
+                        sql = $@"select DISTINCT DI.DOC_NO_IN AS IdString
                             from SASSA.SOCPEN_DOW_APPLICATIONS_CHEC01 DAC
                             LEFT JOIN SASSA.SOCPEN_DOCUMENTS_IN DI ON DI.ADABAS_ISN = DAC.ADABAS_ISN
                             LEFT JOIN SASSA.SOCPEN_DOC_REL_IN DRI ON DRI.ADABAS_ISN = DI.ADABAS_ISN AND DRI.DPS_PE_SEQ = DI.DPS_PE_SEQ
@@ -1596,23 +1734,24 @@ namespace Sassa.BRM.Services
                             and DPS_MU_SEQ = '001'
                             and DOC_REL_IN = 'Y' 
                             AND APPLICATION_DATE = '{applicationDate.ToUpper()}'";
-                }
-                var query = await _context.IdResults.FromSqlRaw(sql).AsNoTracking().ToListAsync();
-
-                if (query.Any())
-                {
-                    query = query.Distinct().ToList();
-                    StringBuilder result = new StringBuilder();
-                    foreach (var doc in query)
-                    {
-                        result.Append(doc.IdString + ";");
                     }
+                    var query = await _context.IdResults.FromSqlRaw(sql).AsNoTracking().ToListAsync();
 
-                    return result.ToString().TrimEnd(';');
-                }
-                else
-                {
-                    return null;
+                    if (query.Any())
+                    {
+                        query = query.Distinct().ToList();
+                        StringBuilder result = new StringBuilder();
+                        foreach (var doc in query)
+                        {
+                            result.Append(doc.IdString + ";");
+                        }
+
+                        return result.ToString().TrimEnd(';');
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
             catch
@@ -1708,35 +1847,36 @@ namespace Sassa.BRM.Services
 
         public async Task RemoveBRM(string brmNo, string reason)
         {
-
-            var files = await _context.DcFiles.Where(k => k.BrmBarcode == brmNo).ToListAsync();
-            //int fileCount = files.Count();
-            if (files.Any())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                foreach (var dcfile in files)
+                var files = await _context.DcFiles.Where(k => k.BrmBarcode == brmNo).ToListAsync();
+                //int fileCount = files.Count();
+                if (files.Any())
                 {
-                    //if (!deleteAll && fileCount-- == 1) continue;//leave one record
-                    dcfile.FileComment = reason;
-                    await BackupDcFileEntry(dcfile);
-                    _context.DcFiles.Remove(dcfile);
-                    CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
+                    foreach (var dcfile in files)
+                    {
+                        //if (!deleteAll && fileCount-- == 1) continue;//leave one record
+                        dcfile.FileComment = reason;
+                        await BackupDcFileEntry(dcfile);
+                        _context.DcFiles.Remove(dcfile);
+                        CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
 
+                    }
+                }
+                var merges = await _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo).ToListAsync();
+                foreach (var merge in merges.ToList())
+                {
+                    _context.DcMerges.Remove(merge);
+                }
+                //if (_context.DcBrmGrants.Where(d => d.BrmBarcode == brmNo).Any())
+                //{
+                //    _context.DcBrmGrants.Remove(_context.DcBrmGrants.Where(d => d.BrmBarcode == brmNo).First());
+                //}
+                if (files.Any() || merges.Any())
+                {
+                    await _context.SaveChangesAsync();
                 }
             }
-            var merges = await _context.DcMerges.Where(m => m.BrmBarcode == brmNo || m.ParentBrmBarcode == brmNo).ToListAsync();
-            foreach (var merge in merges.ToList())
-            {
-                _context.DcMerges.Remove(merge);
-            }
-            //if (_context.DcBrmGrants.Where(d => d.BrmBarcode == brmNo).Any())
-            //{
-            //    _context.DcBrmGrants.Remove(_context.DcBrmGrants.Where(d => d.BrmBarcode == brmNo).First());
-            //}
-            if (files.Any() || merges.Any())
-            {
-                await _context.SaveChangesAsync();
-            }
-
         }
 
         /// <summary>
@@ -1745,23 +1885,26 @@ namespace Sassa.BRM.Services
         /// <param name="file">Original File</param>
         public async Task BackupDcFileEntry(DcFile file)
         {
-            DcFileDeleted removed = new DcFileDeleted();
-            file.UpdatedByAd = session.SamName;
-            file.UpdatedDate = System.DateTime.Now;
-            removed.FromDCFile(file);
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var interim = await _context.DcFileDeleteds.Where(d => d.UnqFileNo == file.UnqFileNo).ToListAsync();
-                if (!interim.Any())
+                DcFileDeleted removed = new DcFileDeleted();
+                file.UpdatedByAd = session.SamName;
+                file.UpdatedDate = System.DateTime.Now;
+                removed.FromDCFile(file);
+                try
                 {
-                    _context.DcFileDeleteds.Add(removed);
-                    await _context.SaveChangesAsync();
+                    var interim = await _context.DcFileDeleteds.Where(d => d.UnqFileNo == file.UnqFileNo).ToListAsync();
+                    if (!interim.Any())
+                    {
+                        _context.DcFileDeleteds.Add(removed);
+                        await _context.SaveChangesAsync();
+                    }
+
                 }
-                
-            }
-            catch
-            {
-                //throw new Exception("Error backing up file: " + ex.Message);
+                catch
+                {
+                    //throw new Exception("Error backing up file: " + ex.Message);
+                }
             }
         }
         #endregion
@@ -1770,51 +1913,54 @@ namespace Sassa.BRM.Services
 
         public async Task<decimal?> CreateBatchForUser(string sRegType)
         {
-            DcBatch batch;
-            List<DcBatch> batches = new List<DcBatch>();
-            //Get open batch for User
-            if (session.IsRmc())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus == "RMCBatch" && b.UpdatedByAd == session.SamName && b.RegType == sRegType).ToListAsync();
-            }
-            else
-            {
-                batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus == "Open" && b.UpdatedByAd == session.SamName && b.RegType == sRegType).ToListAsync();
-            }
-
-            if (batches.Any())
-            {
-                batch = batches.First();
-                if (batch.NoOfFiles > 34 && !sRegType.StartsWith("LC"))
+                DcBatch batch;
+                List<DcBatch> batches = new List<DcBatch>();
+                //Get open batch for User
+                if (session.IsRmc())
                 {
-                    throw new Exception($"Batch is full. Please verify and close batch before adding more to batch for {sRegType}");
+                    batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus == "RMCBatch" && b.UpdatedByAd == session.SamName && b.RegType == sRegType).ToListAsync();
                 }
-            }
-            else
-            {
-                try
+                else
                 {
-                    batch = new DcBatch
-                {
-                    BatchStatus = session.IsRmc() ? "RMCBatch" : "Open",
-                    BatchCurrent = "Y",
-                    OfficeId = session.Office.OfficeId,
-                    RegType = sRegType,
-                    UpdatedDate = DateTime.Now,
-                    UpdatedBy = 0,
-                    UpdatedByAd = session.SamName
-                };
-                _context.DcBatches.Add(batch);
-
-                    await _context.SaveChangesAsync();
-                }
-                catch
-                {
-                    throw;
+                    batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus == "Open" && b.UpdatedByAd == session.SamName && b.RegType == sRegType).ToListAsync();
                 }
 
+                if (batches.ToList().Any())
+                {
+                    batch = batches.First();
+                    if (batch.NoOfFiles > 34 && !sRegType.StartsWith("LC"))
+                    {
+                        throw new Exception($"Batch is full. Please verify and close batch before adding more to batch for {sRegType}");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        batch = new DcBatch
+                        {
+                            BatchStatus = session.IsRmc() ? "RMCBatch" : "Open",
+                            BatchCurrent = "Y",
+                            OfficeId = session.Office.OfficeId,
+                            RegType = sRegType,
+                            UpdatedDate = DateTime.Now,
+                            UpdatedBy = 0,
+                            UpdatedByAd = session.SamName
+                        };
+                        _context.DcBatches.Add(batch);
+
+                        await _context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+
+                }
+                return batch.BatchNo;
             }
-            return batch.BatchNo;
         }
 
         /// <summary>
@@ -1825,144 +1971,168 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public async Task<PagedResult<DcBatch>> GetBatches(string status, int page)
         {
-            PagedResult<DcBatch> result = new PagedResult<DcBatch>();
-            if (session.IsRmc())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId).Count();
-                result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            }
-            else
-            {
-                if (status != "")
+                PagedResult<DcBatch> result = new PagedResult<DcBatch>();
+                if (session.IsRmc())
                 {
-                    result.count = _context.DcBatches.Where(b => b.BatchStatus == status && b.OfficeId == session.Office.OfficeId).Count();
-                    result.result = await _context.DcBatches.Where(b => b.BatchStatus == status && b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                    result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId).Count();
+                    result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
                 }
                 else
                 {
-                    result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
-                    result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                    if (status != "")
+                    {
+                        result.count = _context.DcBatches.Where(b => b.BatchStatus == status && b.OfficeId == session.Office.OfficeId).Count();
+                        result.result = await _context.DcBatches.Where(b => b.BatchStatus == status && b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                    }
+                    else
+                    {
+                        result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
+                        result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                    }
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
         //The query uses a row limiting operator ('Skip'/'Take') without an 'OrderBy' operator.
         //This may lead to unpredictable results.
         //If the 'Distinct' operator is used after 'OrderBy', then make sure to use the 'OrderBy' operator after 'Distinct' as the ordering would otherwise get erased.
         public async Task<PagedResult<DcBatch>> FindBatch(decimal searchBatch, int page = 1)
         {
-
-            PagedResult<DcBatch> result = new PagedResult<DcBatch>();
-            if (session.IsRmc())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).Count();
-                result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            }
-            else
-            {
-                 result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
-                 result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            }
+                PagedResult<DcBatch> result = new PagedResult<DcBatch>();
+                if (session.IsRmc())
+                {
+                    result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).Count();
+                    result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                }
+                else
+                {
+                    result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
+                    result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchNo == searchBatch).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                }
 
-            return result;
+                return result;
+            }
         }
 
         public async Task<PagedResult<DcBatch>> GetMyBatches( bool myBatches, int page = 1)
         {
-            PagedResult<DcBatch> result = new PagedResult<DcBatch>();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                PagedResult<DcBatch> result = new PagedResult<DcBatch>();
 
-            if (myBatches)
-            {
-                result.count = _context.DcBatches.Where(b => b.UpdatedByAd == session.SamName).Count();
-                result.result = await _context.DcBatches.Where(b => b.UpdatedByAd == session.SamName).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            }
-            else
-            {
-                result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
-                result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            }
-
-            return result;
-        }
-        public async Task SetBatchCount(string batchIds)
-        {
-            //if (session.IsRmc()) return;
-            if (string.IsNullOrEmpty(batchIds)) return;
-            decimal batchId = decimal.Parse(batchIds);
-            int fileCount = await GetBatchCount(batchId);
-            if (fileCount == 0)
-            {
-                _context.DcBatches.Remove(_context.DcBatches.Where(b => b.BatchNo == batchId).First());
-                await _context.SaveChangesAsync();
-                return;
-            }
-            DcBatch batch = await _context.DcBatches.Where(b => b.BatchNo == batchId).FirstAsync();
-            if (batch == null) return;
-            batch.NoOfFiles = fileCount;
-            await _context.SaveChangesAsync();
-        }
-        public async Task<int> GetBatchCount(decimal batchId)
-        {
-            return await _context.DcFiles.CountAsync(b => b.BatchNo == batchId);
-        }
-        public async Task SetBatchStatus(string batchIdS, string newStatus)
-        {
-            if (string.IsNullOrEmpty(batchIdS)) return;
-            decimal batchId = decimal.Parse(batchIdS);
-            DcBatch batch = _context.DcBatches.Where(b => b.BatchNo == batchId).First();
-            batch.BatchStatus = newStatus;
-            if (newStatus == "Closed" && session.Office.OfficeType == "LO")
-            {
-                batch.BrmWaybill = await GetNextOpenBrmWaybill(batchId);
-            }
-            await _context.SaveChangesAsync();
-
-            //Set the batchcount
-            if (newStatus == "Closed")
-            {
-                await SetBatchCount(batchIdS);
-
-            }
-
-            CreateActivity("Batching", $"Status {newStatus}");
-        }
-        public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
-        {
-            //See if there is an Open Waybill for this office
-            var waybillbatches = await _context.DcBatches.Where(b => b.BatchStatus == "Closed" && b.OfficeId == session.Office.OfficeId).ToListAsync();
-            if (waybillbatches.Any())
-            {
-                string waybillNo;
-                if (string.IsNullOrEmpty(waybillbatches.First().BrmWaybill))
+                if (myBatches)
                 {
-                    waybillNo = $"{session.Office.OfficeId}-{_raw.GetNextWayBill()}";
-                    foreach (var batch in waybillbatches)
-                    {
-                        batch.BrmWaybill = waybillNo;
-                    }
-                    await _context.SaveChangesAsync();
+                    result.count = _context.DcBatches.Where(b => b.UpdatedByAd == session.SamName).Count();
+                    result.result = await _context.DcBatches.Where(b => b.UpdatedByAd == session.SamName).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
                 }
                 else
                 {
-                    waybillNo = waybillbatches.First().BrmWaybill;
+                    result.count = _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).Count();
+                    result.result = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
                 }
 
-                return waybillNo;
+                return result;
             }
-            else
+        }
+        public async Task SetBatchCount(string batchIds)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                return $"{session.Office.OfficeId}-{_raw.GetNextWayBill()}";
+                //if (session.IsRmc()) return;
+                if (string.IsNullOrEmpty(batchIds)) return;
+                decimal batchId = decimal.Parse(batchIds);
+                int fileCount = await GetBatchCount(batchId);
+                if (fileCount == 0)
+                {
+                    _context.DcBatches.Remove(_context.DcBatches.Where(b => b.BatchNo == batchId).First());
+                    await _context.SaveChangesAsync();
+                    return;
+                }
+                DcBatch batch = await _context.DcBatches.Where(b => b.BatchNo == batchId).FirstAsync();
+                if (batch == null) return;
+                batch.NoOfFiles = fileCount;
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task<int> GetBatchCount(decimal batchId)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcFiles.CountAsync(b => b.BatchNo == batchId);
+            }
+        }
+        public async Task SetBatchStatus(string batchIdS, string newStatus)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                if (string.IsNullOrEmpty(batchIdS)) return;
+                decimal batchId = decimal.Parse(batchIdS);
+                DcBatch batch = _context.DcBatches.Where(b => b.BatchNo == batchId).First();
+                batch.BatchStatus = newStatus;
+                if (newStatus == "Closed" && session.Office.OfficeType == "LO")
+                {
+                    batch.BrmWaybill = await GetNextOpenBrmWaybill(batchId);
+                }
+                await _context.SaveChangesAsync();
+
+                //Set the batchcount
+                if (newStatus == "Closed")
+                {
+                    await SetBatchCount(batchIdS);
+
+                }
+            }
+                CreateActivity("Batching", $"Status {newStatus}");
+        }
+        public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                //See if there is an Open Waybill for this office
+                var waybillbatches = await _context.DcBatches.Where(b => b.BatchStatus == "Closed" && b.OfficeId == session.Office.OfficeId).ToListAsync();
+                if (waybillbatches.Any())
+                {
+                    string waybillNo;
+                    if (string.IsNullOrEmpty(waybillbatches.First().BrmWaybill))
+                    {
+                        waybillNo = $"{session.Office.OfficeId}-{_raw.GetNextWayBill()}";
+                        foreach (var batch in waybillbatches)
+                        {
+                            batch.BrmWaybill = waybillNo;
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        waybillNo = waybillbatches.First().BrmWaybill;
+                    }
+
+                    return waybillNo;
+                }
+                else
+                {
+                    return $"{session.Office.OfficeId}-{_raw.GetNextWayBill()}";
+                }
             }
         }
 
         public async Task RemoveFileFromBatch(string brmBarCode)
         {
-            _context.ChangeTracker.Clear();
-            var file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
-            decimal? batchNo = file.BatchNo;
-            file.BatchNo = 0;
-            await _context.SaveChangesAsync();
+            decimal? batchNo;
+            DcFile file;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                _context.ChangeTracker.Clear();
+                file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
+                batchNo = file.BatchNo;
+                file.BatchNo = 0;
+                await _context.SaveChangesAsync();
+            }
             CreateActivity("Batching" + GetFileArea(file.SrdNo, file.Lctype), "Remove File", file.UnqFileNo);
             if (batchNo != 0) await SetBatchCount(batchNo.ToString());
 
@@ -1972,25 +2142,31 @@ namespace Sassa.BRM.Services
         {
             try
             {
-                var file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
+                DcFile file;
                 decimal sourceBatch = 0;
-                if (file.BatchNo != 0)
+                using (var _context = _contextFactory.CreateDbContext())
                 {
-                    if (_context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").Any())
+                    file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
+                    
+                    if (file.BatchNo != 0)
                     {
-                        throw new Exception($"This file is in closed batch: {file.BatchNo} and cant be added.");
+                        if (_context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").Any())
+                        {
+                            throw new Exception($"This file is in closed batch: {file.BatchNo} and cant be added.");
+                        }
+                        sourceBatch = (decimal)file.BatchNo;
                     }
-                    sourceBatch = (decimal)file.BatchNo;
-                }
-                var batch = await _context.DcBatches.Where(b => b.BatchNo == batchNo && b.BatchStatus == "Open").FirstAsync();
-                if (file.RegType != batch.RegType)
-                {
-                    throw new Exception($"This file is not of reg Type {batch.RegType} and cant be added.");
-                }
+                    var batch = await _context.DcBatches.Where(b => b.BatchNo == batchNo && b.BatchStatus == "Open").FirstAsync();
+                    if (file.RegType != batch.RegType)
+                    {
+                        throw new Exception($"This file is not of reg Type {batch.RegType} and cant be added.");
+                    }
 
-                file.BatchNo = batchNo;
+                    file.BatchNo = batchNo;
+
+                    await _context.SaveChangesAsync();
+                }
                 CreateActivity("Batching" + GetFileArea(file.SrdNo, file.Lctype), "Add File", file.UnqFileNo);
-                await _context.SaveChangesAsync();
                 await SetBatchCount(batchNo.ToString());
                 if (sourceBatch != 0) await SetBatchCount(sourceBatch.ToString());
             }
@@ -2002,21 +2178,27 @@ namespace Sassa.BRM.Services
 
         public async Task<List<DcFile>> GetAllFilesByBatchNo(decimal BatchId)
         {
-            return await _context.DcFiles.Where(f => f.BatchNo == BatchId).ToListAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcFiles.Where(f => f.BatchNo == BatchId).ToListAsync();
+            }
         }
         public async Task<PagedResult<DcFile>> GetAllFilesByBatchNo(decimal batchId, int page)
         {
-            //List<DcFile> files = await _context.DcFiles.Where(f => f.BatchNo == batchId).ToListAsync();
-            PagedResult<DcFile> result = new PagedResult<DcFile>();
-            result.count = _context.DcFiles.Where(f => f.BatchNo == batchId).Count();
-            result.result = await _context.DcFiles.OrderByDescending(f => f.UpdatedDate).Where(f => f.BatchNo == batchId).Skip((page - 1) * 12).Take(12).ToListAsync();
-            foreach (var file in result.result)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var merge = await _context.DcMerges.FirstOrDefaultAsync(m => m.BrmBarcode == file.BrmBarcode);
-                if (merge == null) continue;
-                file.MergeStatus = merge.BrmBarcode == merge.ParentBrmBarcode ? "Parent" : "Merged";
+                //List<DcFile> files = await _context.DcFiles.Where(f => f.BatchNo == batchId).ToListAsync();
+                PagedResult<DcFile> result = new PagedResult<DcFile>();
+                result.count = _context.DcFiles.Where(f => f.BatchNo == batchId).Count();
+                result.result = await _context.DcFiles.OrderByDescending(f => f.UpdatedDate).Where(f => f.BatchNo == batchId).Skip((page - 1) * 12).Take(12).ToListAsync();
+                foreach (var file in result.result)
+                {
+                    var merge = await _context.DcMerges.FirstOrDefaultAsync(m => m.BrmBarcode == file.BrmBarcode);
+                    if (merge == null) continue;
+                    file.MergeStatus = merge.BrmBarcode == merge.ParentBrmBarcode ? "Parent" : "Merged";
+                }
+                return result;
             }
-            return result;
         }
         /// <summary>
         /// Remove Merged files from batch
@@ -2029,21 +2211,27 @@ namespace Sassa.BRM.Services
             if (string.IsNullOrEmpty(batchIds)) return;
             decimal batchId = decimal.Parse(batchIds);
             bool updated = false;
-            List<DcFile> files = await _context.DcFiles.Where(f => f.BatchNo == batchId).ToListAsync();
-            foreach (var file in files)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                var merge = await _context.DcMerges.FirstOrDefaultAsync(m => m.BrmBarcode == file.BrmBarcode);
-                if (merge == null) continue;
-                file.MergeStatus = merge.BrmBarcode == merge.ParentBrmBarcode ? "Parent" : "Merged";
-                if (merge.BrmBarcode != merge.ParentBrmBarcode)
+                List<DcFile> files = await _context.DcFiles.Where(f => f.BatchNo == batchId).ToListAsync();
+                foreach (var file in files)
                 {
-                    file.BatchNo = 0;
-                    updated = true;
+                    var merge = await _context.DcMerges.FirstOrDefaultAsync(m => m.BrmBarcode == file.BrmBarcode);
+                    if (merge == null) continue;
+                    file.MergeStatus = merge.BrmBarcode == merge.ParentBrmBarcode ? "Parent" : "Merged";
+                    if (merge.BrmBarcode != merge.ParentBrmBarcode)
+                    {
+                        file.BatchNo = 0;
+                        updated = true;
+                    }
+                }
+                if (updated)
+                {
+                    await _context.SaveChangesAsync();
                 }
             }
             if (updated)
             {
-                await _context.SaveChangesAsync();
                 await SetBatchCount(batchIds);
             }
 
@@ -2056,48 +2244,51 @@ namespace Sassa.BRM.Services
             {
                 List<Waybill> result = new List<Waybill>();
             List<DcBatch> batches;
-            if (session.Office.OfficeType == "RMC")
-            {
-                List<string> offices = sservice.GetOfficeIds(session.Office.RegionId);
-
-                    batches = await _context.DcBatches.Where(b => b.BatchStatus == "Transport" && offices.Contains(b.OfficeId)).ToListAsync();
-
-            }
-            else
-            {
-                batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus != "Completed").ToListAsync();
-            }
-
-            string brmWaybill = "";
-            Waybill waybill = null;
-            foreach (var batch in batches.OrderBy(b => b.BrmWaybill))
-            {
-                if (string.IsNullOrEmpty(batch.BrmWaybill)) continue;
-                if (batch.BrmWaybill != brmWaybill)
+                using (var _context = _contextFactory.CreateDbContext())
                 {
+                    if (session.Office.OfficeType == "RMC")
+                    {
+                        List<string> offices = sservice.GetOfficeIds(session.Office.RegionId);
+
+                        batches = await _context.DcBatches.Where(b => b.BatchStatus == "Transport" && offices.Contains(b.OfficeId)).ToListAsync();
+
+                    }
+                    else
+                    {
+                        batches = await _context.DcBatches.Where(b => b.OfficeId == session.Office.OfficeId && b.BatchStatus != "Completed").ToListAsync();
+                    }
+
+                    string brmWaybill = "";
+                    Waybill waybill = null;
+                    foreach (var batch in batches.OrderBy(b => b.BrmWaybill))
+                    {
+                        if (string.IsNullOrEmpty(batch.BrmWaybill)) continue;
+                        if (batch.BrmWaybill != brmWaybill)
+                        {
+                            if (waybill != null)
+                            {
+                                result.Add(waybill);
+                            }
+                            brmWaybill = batch.BrmWaybill;
+                            waybill = new Waybill();
+                            waybill.OfficeId = batch.OfficeId;
+                            waybill.Status = batch.BatchStatus;
+                            waybill.BrmWaybill = batch.BrmWaybill;
+                            waybill.CourierName = batch.CourierName;
+                            waybill.WaybillNo = batch.WaybillNo;
+                            waybill.UpdatedByAd = session.SamName;
+                            waybill.UpdatedDate = batch.UpdatedDate;//DateTime.Now;
+
+                        }
+                        waybill.NoOfFiles = waybill.NoOfFiles + (int)batch.NoOfFiles;
+                        waybill.NoOfBatches++;
+                    }
                     if (waybill != null)
                     {
                         result.Add(waybill);
                     }
-                    brmWaybill = batch.BrmWaybill;
-                    waybill = new Waybill();
-                    waybill.OfficeId = batch.OfficeId;
-                    waybill.Status = batch.BatchStatus;
-                    waybill.BrmWaybill = batch.BrmWaybill;
-                    waybill.CourierName = batch.CourierName;
-                    waybill.WaybillNo = batch.WaybillNo;
-                    waybill.UpdatedByAd = session.SamName;
-                    waybill.UpdatedDate = batch.UpdatedDate;//DateTime.Now;
-
+                    return result;
                 }
-                waybill.NoOfFiles = waybill.NoOfFiles + (int)batch.NoOfFiles;
-                waybill.NoOfBatches++;
-            }
-            if (waybill != null)
-            {
-                result.Add(waybill);
-            }
-            return result;
             }
             catch
             {
@@ -2105,99 +2296,122 @@ namespace Sassa.BRM.Services
             }
         }
 
+
+
         public async Task<List<DcBatch>> GetWaybillBatches(string brmWaybill)
         {
-            return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+            }
         }
 
         public async Task<List<DcBatch>> GetWaybillBoxes(string brmWaybill)
         {
-            //todo:Create DC_Box
-            return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                //todo:Create DC_Box
+                return await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+            }
         }
 
         public async Task<List<string>> GetBatchBarcodes(string BatchNo)
         {
             decimal batch;
-            if (!decimal.TryParse(BatchNo, out batch))
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                throw new Exception("Invalid batch No.");
+                if (!decimal.TryParse(BatchNo, out batch))
+                {
+                    throw new Exception("Invalid batch No.");
+                }
+                return await (from file in _context.DcFiles.Where(f => f.BatchNo == batch) select file.BrmBarcode).ToListAsync();
             }
-            return await (from file in _context.DcFiles.Where(f => f.BatchNo == batch) select file.BrmBarcode).ToListAsync();
         }
 
         public async Task<List<string>> GetPickListBarcodes(string pickListNo)
         {
-            return await (from pli in _context.DcPicklistItems.Where(f => f.UnqPicklist == pickListNo) select pli.BrmNo).ToListAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await (from pli in _context.DcPicklistItems.Where(f => f.UnqPicklist == pickListNo) select pli.BrmNo).ToListAsync();
+            }
         }
         public async Task DispatchWaybill(string brmWaybill, string tdwWaybill)
         {
-            List<DcBatch> batches = await GetWaybillBatches(brmWaybill);
-
-            foreach (var batch in batches)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                batch.BatchStatus = "Transport";
-                batch.WaybillNo = tdwWaybill;
-                batch.WaybillDate = DateTime.Now;
-                batch.CourierName = "TDW";
-                batch.BatchCurrent = "N";
+                List<DcBatch> batches = await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+
+                foreach (var batch in batches)
+                {
+                    batch.BatchStatus = "Transport";
+                    batch.WaybillNo = tdwWaybill;
+                    batch.WaybillDate = DateTime.Now;
+                    batch.CourierName = "TDW";
+                    batch.BatchCurrent = "N";
+                }
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
         }
 
         public async Task ReceiveWaybill(string brmWaybill, string tdwWaybill)
         {
-            List<DcBatch> batches = await GetWaybillBatches(brmWaybill);
-            foreach (var batch in batches)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                batch.BatchStatus = "Received";
+                List<DcBatch> batches = await _context.DcBatches.Where(b => b.BrmWaybill == brmWaybill).ToListAsync();
+                foreach (var batch in batches)
+                {
+                    batch.BatchStatus = "Received";
+                }
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
         }
 
         public async Task<Reboxing> GetBoxCounts(Reboxing rebox)
         {
-            var boxFiles = await _context.DcFiles.Where(f => f.TdwBoxno == rebox.BoxNo).ToListAsync();
-            if (boxFiles.Any())
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                rebox.BoxCount = boxFiles.Count();
-                rebox.RegType = boxFiles.First().RegType;
-                if (string.IsNullOrEmpty(rebox.SelectedType))
+                var boxFiles = await _context.DcFiles.Where(f => f.TdwBoxno == rebox.BoxNo).ToListAsync();
+                if (boxFiles.Any())
                 {
-                    // 1 main 14 archive
-                    //13 main lc 18 archive lc
-                    switch (rebox.RegType)
+                    rebox.BoxCount = boxFiles.Count();
+                    rebox.RegType = boxFiles.First().RegType;
+                    if (string.IsNullOrEmpty(rebox.SelectedType))
                     {
-                        case "LC-MAIN":
-                            rebox.SelectedType = "13";
-                            break;
-                        case "LC-ARCHIVE":
-                            rebox.SelectedType = "18";
-                            break;
-                        case "MAIN":
-                            rebox.SelectedType = "1";
-                            break;
-                        case "ARCHIVE":
-                            rebox.SelectedType = "14";
-                            break;
-                        default:
-                            rebox.SelectedType = "1";
-                            break;
+                        // 1 main 14 archive
+                        //13 main lc 18 archive lc
+                        switch (rebox.RegType)
+                        {
+                            case "LC-MAIN":
+                                rebox.SelectedType = "13";
+                                break;
+                            case "LC-ARCHIVE":
+                                rebox.SelectedType = "18";
+                                break;
+                            case "MAIN":
+                                rebox.SelectedType = "1";
+                                break;
+                            case "ARCHIVE":
+                                rebox.SelectedType = "14";
+                                break;
+                            default:
+                                rebox.SelectedType = "1";
+                                break;
+                        }
+
                     }
-
+                    rebox.MiniBoxCount = boxFiles.Where(b => b.MiniBoxno == rebox.MiniBox).Count();
                 }
-                rebox.MiniBoxCount = boxFiles.Where(b => b.MiniBoxno == rebox.MiniBox).Count();
-            }
-            else
-            {
-                rebox.BoxCount = 0;
-                rebox.RegType = null;
-                rebox.MiniBoxCount = 0;
-            }
+                else
+                {
+                    rebox.BoxCount = 0;
+                    rebox.RegType = null;
+                    rebox.MiniBoxCount = 0;
+                }
 
-            //rebox.MiniBoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo && b.MiniBoxno == rebox.MiniBox);
+                //rebox.MiniBoxCount = await _context.DcFiles.CountAsync(b => b.TdwBoxno == rebox.BoxNo && b.MiniBoxno == rebox.MiniBox);
 
-            return rebox;
+                return rebox;
+            }
         }
         #endregion
 
@@ -2205,84 +2419,34 @@ namespace Sassa.BRM.Services
         public async Task<Enquiry> GetEnquiry(string brmBarCode)
         {
             Enquiry result = new Enquiry();
-            var dcfiles = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode && !string.IsNullOrEmpty(f.ApplicantNo)).ToListAsync();
-            if (!dcfiles.Any()) throw new Exception("Barcode not found");
-            if (dcfiles.Count() > 1)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                throw new Exception("Duplicate Brm Record please delete duplicate first.");
-            }
-            DcFile file = dcfiles.First();
-            CreateActivity("Enquiry" + GetFileArea(file.SrdNo, file.Lctype), "Enquiry", file.UnqFileNo);
+                var dcfiles = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode && !string.IsNullOrEmpty(f.ApplicantNo)).ToListAsync();
+                if (!dcfiles.Any()) throw new Exception("Barcode not found");
+                if (dcfiles.Count() > 1)
+                {
+                    throw new Exception("Duplicate Brm Record please delete duplicate first.");
+                }
+                DcFile file = dcfiles.First();
+                CreateActivity("Enquiry" + GetFileArea(file.SrdNo, file.Lctype), "Enquiry", file.UnqFileNo);
 
-            var merged = await _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode).ToListAsync();
-
-            result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
-            result.ApplicantNo = file.ApplicantNo;
-            result.AppType = sservice.GetTransactionType((int)file.TransType);
-            result.BrmBarCode = brmBarCode;
-            result.MisFileNo = file.FileNumber;
-            result.BrmRecord = true;
-            result.CaptureDate = (DateTime)file.BatchAddDate;
-            result.CsgStatus = "";
-            result.GrantType = sservice.GetGrantType(file.GrantType);
-            result.LastAction = file.UpdatedDate;
-            result.MultiGrant = merged.Any();
-            if (result.MultiGrant)
-            {
-                result.MergeParent = merged.First().ParentBrmBarcode;
-            }
-            result.Province = sservice.GetRegion(file.RegionId);
-            result.RegType = file.RegType;
-            result.SocPenActive = false;
-            result.SocPenRecord = false;
-
-            result.UnqFileNo = file.UnqFileNo;
-
-            //Tdw
-            var tdwresult = await _context.TdwFileLocations.Where(t => t.FilefolderCode == brmBarCode).ToListAsync();
-            result.TdwRecord = tdwresult.Any();
-
-            //SocPen
-            var socpenresult = await _context.DcSocpen.Where(s => s.BeneficiaryId == file.ApplicantNo && s.GrantType == file.GrantType).ToListAsync();//SearchSocpenId(file.ApplicantNo, false);
-            if (socpenresult.Any())
-            {
-                result.SocPenRecord = true;
-                result.SocPenActive = socpenresult.Where( s => s.StatusCode =="ACTIVE").Any();
-            }
-            return result;
-        }
-
-        public async Task<List<DcFileDeleted>> GetDeleteHistory(string idNumber)
-        {
-            return await _context.DcFileDeleteds.Where( d => d.ApplicantNo == idNumber).ToListAsync();
-        }
-
-        public async Task<List<Enquiry>> GetEnquiryById(string idNumber)
-        {
-            List<Enquiry> resultlist = new List<Enquiry>();
-            var dcfiles = await _context.DcFiles.Where(f => f.ApplicantNo.Contains(idNumber.Trim())).ToListAsync();
-            if (!dcfiles.Any()) throw new Exception("Applicant Id not found");
-            CreateActivity("Enquiry" + GetFileArea(dcfiles.First().SrdNo, dcfiles.First().Lctype), "Enquiry", dcfiles.First().UnqFileNo);
-            foreach (DcFile file in dcfiles)
-            {
-                Enquiry result = new Enquiry();
+                var merged = await _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode).ToListAsync();
 
                 result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
                 result.ApplicantNo = file.ApplicantNo;
                 result.AppType = sservice.GetTransactionType((int)file.TransType);
-                result.BrmBarCode = file.BrmBarcode;
+                result.BrmBarCode = brmBarCode;
                 result.MisFileNo = file.FileNumber;
                 result.BrmRecord = true;
                 result.CaptureDate = (DateTime)file.BatchAddDate;
                 result.CsgStatus = "";
                 result.GrantType = sservice.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
-                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode).ToList();
-                if (merged.Any())
-                {
-                    result.MergeParent = (merged.First()).ParentBrmBarcode;
-                }
                 result.MultiGrant = merged.Any();
+                if (result.MultiGrant)
+                {
+                    result.MergeParent = merged.First().ParentBrmBarcode;
+                }
                 result.Province = sservice.GetRegion(file.RegionId);
                 result.RegType = file.RegType;
                 result.SocPenActive = false;
@@ -2291,115 +2455,180 @@ namespace Sassa.BRM.Services
                 result.UnqFileNo = file.UnqFileNo;
 
                 //Tdw
-                //var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
+                var tdwresult = await _context.TdwFileLocations.Where(t => t.FilefolderCode == brmBarCode).ToListAsync();
+                result.TdwRecord = tdwresult.Any();
 
-                List<Application> spresult = null;
                 //SocPen
-                if (idNumber.Contains("S"))
+                var socpenresult = await _context.DcSocpen.Where(s => s.BeneficiaryId == file.ApplicantNo && s.GrantType == file.GrantType).ToListAsync();//SearchSocpenId(file.ApplicantNo, false);
+                if (socpenresult.Any())
                 {
-                    if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
-                    {
-                        spresult = await SearchSocpenSrd(lsrd);
-                        result.SocPenRecord = true;
-                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
-                    }
-
+                    result.SocPenRecord = true;
+                    result.SocPenActive = socpenresult.Where(s => s.StatusCode == "ACTIVE").Any();
                 }
-                else
+                return result;
+            }
+        }
+
+        public async Task<List<DcFileDeleted>> GetDeleteHistory(string idNumber)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcFileDeleteds.Where(d => d.ApplicantNo == idNumber).ToListAsync();
+            }
+        }
+
+        public async Task<List<Enquiry>> GetEnquiryById(string idNumber)
+        {
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                List<Enquiry> resultlist = new List<Enquiry>();
+                var dcfiles = await _context.DcFiles.Where(f => f.ApplicantNo.Contains(idNumber.Trim())).ToListAsync();
+                if (!dcfiles.Any()) throw new Exception("Applicant Id not found");
+                CreateActivity("Enquiry" + GetFileArea(dcfiles.First().SrdNo, dcfiles.First().Lctype), "Enquiry", dcfiles.First().UnqFileNo);
+                foreach (DcFile file in dcfiles)
                 {
-                    spresult = await SearchSocpenId(idNumber, false);
-                    if (spresult.Any())
+                    Enquiry result = new Enquiry();
+
+                    result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
+                    result.ApplicantNo = file.ApplicantNo;
+                    result.AppType = sservice.GetTransactionType((int)file.TransType);
+                    result.BrmBarCode = file.BrmBarcode;
+                    result.MisFileNo = file.FileNumber;
+                    result.BrmRecord = true;
+                    result.CaptureDate = (DateTime)file.BatchAddDate;
+                    result.CsgStatus = "";
+                    result.GrantType = sservice.GetGrantType(file.GrantType);
+                    result.LastAction = file.UpdatedDate;
+                    var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode).ToList();
+                    if (merged.Any())
                     {
-                        foreach (Application sr in spresult)
+                        result.MergeParent = (merged.First()).ParentBrmBarcode;
+                    }
+                    result.MultiGrant = merged.Any();
+                    result.Province = sservice.GetRegion(file.RegionId);
+                    result.RegType = file.RegType;
+                    result.SocPenActive = false;
+                    result.SocPenRecord = false;
+
+                    result.UnqFileNo = file.UnqFileNo;
+
+                    //Tdw
+                    //var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
+                    result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
+
+                    List<Application> spresult = null;
+                    //SocPen
+                    if (idNumber.Contains("S"))
+                    {
+                        if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
                         {
-                            if (string.IsNullOrEmpty(result.AppDate)) continue;
-                            if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
+                            spresult = await SearchSocpenSrd(lsrd);
+                            result.SocPenRecord = true;
+                            result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
+                        }
+
+                    }
+                    else
+                    {
+                        spresult = await SearchSocpenId(idNumber, false);
+                        if (spresult.Any())
+                        {
+                            foreach (Application sr in spresult)
                             {
-                                result.SocPenRecord = true;
-                                result.SocPenActive = sr.AppStatus.Contains("MAIN");
-                                break;
+                                if (string.IsNullOrEmpty(result.AppDate)) continue;
+                                if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
+                                {
+                                    result.SocPenRecord = true;
+                                    result.SocPenActive = sr.AppStatus.Contains("MAIN");
+                                    break;
+                                }
                             }
                         }
                     }
+
+
+
+                    resultlist.Add(result);
                 }
-
-
-
-                resultlist.Add(result);
+                return resultlist;
             }
-            return resultlist;
         }
 
         public async Task<List<Enquiry>> GetEnquiryBySrd(string idNumber)
         {
             List<Enquiry> resultlist = new List<Enquiry>();
-            var dcfiles = await _context.DcFiles.Where(f => f.SrdNo.Contains(idNumber.Trim())).ToListAsync();
-            if (!dcfiles.Any()) throw new Exception("SRD not found");
-
-            foreach (DcFile file in dcfiles)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                Enquiry result = new Enquiry();
+                var dcfiles = await _context.DcFiles.Where(f => f.SrdNo.Contains(idNumber.Trim())).ToListAsync();
+                if (!dcfiles.Any()) throw new Exception("SRD not found");
 
-                result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
-                result.ApplicantNo = file.ApplicantNo;
-                result.AppType = sservice.GetTransactionType((int)file.TransType);
-                result.BrmBarCode = file.BrmBarcode;
-                result.MisFileNo = file.FileNumber;
-                result.BrmRecord = true;
-                result.CaptureDate = (DateTime)file.BatchAddDate;
-                result.CsgStatus = "";
-                result.GrantType = sservice.GetGrantType(file.GrantType);
-                result.LastAction = file.UpdatedDate;
-                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode);
-                if (merged.Any())
+                foreach (DcFile file in dcfiles)
                 {
-                    result.MergeParent = (await merged.FirstAsync()).ParentBrmBarcode;
-                }
-                result.MultiGrant = merged.Any();
-                result.Province = sservice.GetRegion(file.RegionId);
-                result.RegType = file.RegType;
-                result.SocPenActive = false;
-                result.SocPenRecord = false;
+                    Enquiry result = new Enquiry();
 
-                result.UnqFileNo = file.UnqFileNo;
-
-                //Tdw
-                var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = tdwresult.Any();
-
-                //SocPen
-                if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
-                {
-                    var spresult = await SearchSocpenSrd(lsrd);
-                    if (spresult.Any())
+                    result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
+                    result.ApplicantNo = file.ApplicantNo;
+                    result.AppType = sservice.GetTransactionType((int)file.TransType);
+                    result.BrmBarCode = file.BrmBarcode;
+                    result.MisFileNo = file.FileNumber;
+                    result.BrmRecord = true;
+                    result.CaptureDate = (DateTime)file.BatchAddDate;
+                    result.CsgStatus = "";
+                    result.GrantType = sservice.GetGrantType(file.GrantType);
+                    result.LastAction = file.UpdatedDate;
+                    var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode);
+                    if (merged.Any())
                     {
-                        result.SocPenRecord = true;
-                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
+                        result.MergeParent = (await merged.FirstAsync()).ParentBrmBarcode;
                     }
-                }
-                //var socpenresult = await SearchSocPenID(file.ApplicantNo, false);
-                //if (socpenresult.Any())
-                //{
-                //    foreach (Application sr in socpenresult)
-                //    {
-                //        if (string.IsNullOrEmpty(result.AppDate)) continue;
-                //        if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
-                //        {
-                //            result.SocPenRecord = true;
-                //            result.SocPenActive = GetStatusFromSocpen(sr).Contains("MAIN");
-                //            break;
-                //        }
-                //    }
-                //}
+                    result.MultiGrant = merged.Any();
+                    result.Province = sservice.GetRegion(file.RegionId);
+                    result.RegType = file.RegType;
+                    result.SocPenActive = false;
+                    result.SocPenRecord = false;
 
-                resultlist.Add(result);
+                    result.UnqFileNo = file.UnqFileNo;
+
+                    //Tdw
+                    var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
+                    result.TdwRecord = tdwresult.Any();
+
+                    //SocPen
+                    if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
+                    {
+                        var spresult = await SearchSocpenSrd(lsrd);
+                        if (spresult.Any())
+                        {
+                            result.SocPenRecord = true;
+                            result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
+                        }
+                    }
+                    //var socpenresult = await SearchSocPenID(file.ApplicantNo, false);
+                    //if (socpenresult.Any())
+                    //{
+                    //    foreach (Application sr in socpenresult)
+                    //    {
+                    //        if (string.IsNullOrEmpty(result.AppDate)) continue;
+                    //        if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
+                    //        {
+                    //            result.SocPenRecord = true;
+                    //            result.SocPenActive = GetStatusFromSocpen(sr).Contains("MAIN");
+                    //            break;
+                    //        }
+                    //    }
+                    //}
+
+                    resultlist.Add(result);
+                }
+                return resultlist;
             }
-            return resultlist;
         }
         public async Task<List<DcActivity>> GetFileActivity(string unqFile)
         {
-            return await _context.DcActivities.Where(a => a.UnqFileNo == unqFile).ToListAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                return await _context.DcActivities.Where(a => a.UnqFileNo == unqFile).ToListAsync();
+            }
         }
         #endregion
 
@@ -2410,57 +2639,63 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public PieData GetRequestPieData()
         {
-            PieData pd = new PieData();
-            pd.ChartName = "File request progress";
-            int colorindex = 0;
-            double total = _context.DcFileRequests.Count();
-            pd.TotalItems = (int)total;
-            List<RawSegment> query = _context.DcFileRequests
-                .GroupBy(c => c.Status)
-                .Select(o => new RawSegment
-                {
-                    Name = o.Key,
-                    Count = o.Where(c => c.Status == o.Key).Count()
-                }).ToList();
-
-            foreach (var rs in query)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                PieSegment ps = new PieSegment();
-                ps.Name = rs.Name;
-                ps.Percent = rs.Count / (total / 100);
-                ps.Color = StaticD.PastelColors[colorindex++];
-                pd.Segments.Add(ps);
-            }
+                PieData pd = new PieData();
+                pd.ChartName = "File request progress";
+                int colorindex = 0;
+                double total = _context.DcFileRequests.Count();
+                pd.TotalItems = (int)total;
+                List<RawSegment> query = _context.DcFileRequests
+                    .GroupBy(c => c.Status)
+                    .Select(o => new RawSegment
+                    {
+                        Name = o.Key,
+                        Count = o.Where(c => c.Status == o.Key).Count()
+                    }).ToList();
 
-            return pd;
+                foreach (var rs in query)
+                {
+                    PieSegment ps = new PieSegment();
+                    ps.Name = rs.Name;
+                    ps.Percent = rs.Count / (total / 100);
+                    ps.Color = StaticD.PastelColors[colorindex++];
+                    pd.Segments.Add(ps);
+                }
+
+                return pd;
+            }
         }
 
         public PieData GetRequestPieData(string regionId)
         {
-            PieData pd = new PieData();
-            pd.ChartName = sservice.GetRegion(regionId) + " region.";
-            int colorindex = 0;
-            double total = _context.DcFileRequests.Where(r => r.RegionId == regionId).Count();
-            pd.TotalItems = (int)total;
-            List<RawSegment> query = _context.DcFileRequests
-                .Where(r => r.RegionId == regionId)
-                .GroupBy(c => c.Status)
-                .Select(o => new RawSegment
-                {
-                    Name = o.Key,
-                    Count = o.Where(c => c.Status == o.Key).Count()
-                }).ToList();
-
-            foreach (var rs in query)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                PieSegment ps = new PieSegment();
-                ps.Name = rs.Name;
-                ps.Percent = rs.Count / (total / 100);
-                ps.Color = StaticD.PastelColors[colorindex++];
-                pd.Segments.Add(ps);
-            }
+                PieData pd = new PieData();
+                pd.ChartName = sservice.GetRegion(regionId) + " region.";
+                int colorindex = 0;
+                double total = _context.DcFileRequests.Where(r => r.RegionId == regionId).Count();
+                pd.TotalItems = (int)total;
+                List<RawSegment> query = _context.DcFileRequests
+                    .Where(r => r.RegionId == regionId)
+                    .GroupBy(c => c.Status)
+                    .Select(o => new RawSegment
+                    {
+                        Name = o.Key,
+                        Count = o.Where(c => c.Status == o.Key).Count()
+                    }).ToList();
 
-            return pd;
+                foreach (var rs in query)
+                {
+                    PieSegment ps = new PieSegment();
+                    ps.Name = rs.Name;
+                    ps.Percent = rs.Count / (total / 100);
+                    ps.Color = StaticD.PastelColors[colorindex++];
+                    pd.Segments.Add(ps);
+                }
+
+                return pd;
+            }
         }
         #endregion
 
@@ -2495,8 +2730,11 @@ namespace Sassa.BRM.Services
 
         public List<string> UndestroyedYears()
         {
-            var existingyears = _context.DcExclusionBatches.Where(ex => ex.RegionId == int.Parse(session.Office.RegionId)).Select(ex => ex.ExclusionYear).ToList();
-            return StaticD.DestructionYears.Except(existingyears).ToList();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var existingyears = _context.DcExclusionBatches.Where(ex => ex.RegionId == int.Parse(session.Office.RegionId)).Select(ex => ex.ExclusionYear).ToList();
+                return StaticD.DestructionYears.Except(existingyears).ToList();
+            }
         }
 
         public async Task UpdateDestructionStatus(string pension_no, string status)
@@ -2508,18 +2746,19 @@ namespace Sassa.BRM.Services
             }
             try
             {
-
-
-                DcDestruction de = _context.DcDestructions.Where(d => d.PensionNo == pension_no).First();
-                if (de == null)
+                using (var _context = _contextFactory.CreateDbContext())
                 {
-                    BatchResult += pension_no + " Not Found. " + Environment.NewLine;
-                }
-                else
-                {
-                    de.Status = status;
-                    de.StatusDate = DateTime.Now.ToString("yyyyMMdd");
-                    await _context.SaveChangesAsync();
+                    DcDestruction de = _context.DcDestructions.Where(d => d.PensionNo == pension_no).First();
+                    if (de == null)
+                    {
+                        BatchResult += pension_no + " Not Found. " + Environment.NewLine;
+                    }
+                    else
+                    {
+                        de.Status = status;
+                        de.StatusDate = DateTime.Now.ToString("yyyyMMdd");
+                        await _context.SaveChangesAsync();
+                    }
                 }
 
             }
@@ -2531,94 +2770,105 @@ namespace Sassa.BRM.Services
 
         public async Task AddExclusion(string pension_no, string exclusionType)
         {
-            if (string.IsNullOrEmpty(pension_no)) throw new System.Exception("Invalid Id");
-            string PensionNo = pension_no.GetDigitId();
-            if (string.IsNullOrEmpty(exclusionType)) throw new System.Exception("Invalid Exclusion type");
-            //check for valid exclusionType
-            if (!StaticD.ExclusionTypes.Contains(exclusionType))
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                ErrorCount++;
-                throw new System.Exception("Invalid Exclusion type");
-            }
-            //Check if duplicate
-            if (_context.DcExclusions.Where(d => d.IdNo == pension_no).Any())
-            {
+                if (string.IsNullOrEmpty(pension_no)) throw new System.Exception("Invalid Id");
+                string PensionNo = pension_no.GetDigitId();
+                if (string.IsNullOrEmpty(exclusionType)) throw new System.Exception("Invalid Exclusion type");
+                //check for valid exclusionType
+                if (!StaticD.ExclusionTypes.Contains(exclusionType))
+                {
+                    ErrorCount++;
+                    throw new System.Exception("Invalid Exclusion type");
+                }
+                //Check if duplicate
+                if (_context.DcExclusions.Where(d => d.IdNo == pension_no).Any())
+                {
 
-                ErrorCount++;
-                throw new System.Exception("Duplicate exclusion");
-            }
+                    ErrorCount++;
+                    throw new System.Exception("Duplicate exclusion");
+                }
 
-            //todo: Check if batch exists for this year/region
-            DcExclusion exclusion = new DcExclusion
-            {
-                ExclusionType = exclusionType,
-                RegionId = decimal.Parse(session.Office.RegionId),
-                IdNo = pension_no,
-                Username = session.SamName,
-                ExclusionBatchId = 0,
-                ExclDate = DateTime.Now
-            };
-            //Check if Destruction record exists
-            if (_context.DcDestructions.Where(d => d.PensionNo == pension_no).Any())
-            {
-                await UpdateDestructionStatus(pension_no, "Excluded");
-            }
+                //todo: Check if batch exists for this year/region
+                DcExclusion exclusion = new DcExclusion
+                {
+                    ExclusionType = exclusionType,
+                    RegionId = decimal.Parse(session.Office.RegionId),
+                    IdNo = pension_no,
+                    Username = session.SamName,
+                    ExclusionBatchId = 0,
+                    ExclDate = DateTime.Now
+                };
+                //Check if Destruction record exists
+                if (_context.DcDestructions.Where(d => d.PensionNo == pension_no).Any())
+                {
+                    await UpdateDestructionStatus(pension_no, "Excluded");
+                }
 
-            _context.DcExclusions.Add(exclusion);
-            await _context.SaveChangesAsync();
-        }
+                _context.DcExclusions.Add(exclusion);
+                await _context.SaveChangesAsync();
+            }
+         }
 
         public async Task RemoveExclusion(decimal id)
         {
-            var exclusion = await _context.DcExclusions.FindAsync(id);
-            if (exclusion == null) return;
-            _context.DcExclusions.Remove(exclusion);
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var exclusion = await _context.DcExclusions.FindAsync(id);
+                if (exclusion == null) return;
+                _context.DcExclusions.Remove(exclusion);
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task<int> GetExclusionBatch(string destructionYear)
         {
             DcExclusionBatch exclusionb;
-
-            if (string.IsNullOrEmpty(destructionYear)) throw new System.Exception("Destruction Year is required");
-            //if there is a batch for this year , use it.
-            exclusionb = await _context.DcExclusionBatches.Where(eb => eb.RegionId == decimal.Parse(session.Office.RegionId) && eb.ExclusionYear == destructionYear.Replace(" ", "")).FirstOrDefaultAsync();
-            if (exclusionb == null)
+            using (var _context = _contextFactory.CreateDbContext())
             {
-
-                exclusionb = new DcExclusionBatch
+                if (string.IsNullOrEmpty(destructionYear)) throw new System.Exception("Destruction Year is required");
+                //if there is a batch for this year , use it.
+                exclusionb = await _context.DcExclusionBatches.Where(eb => eb.RegionId == decimal.Parse(session.Office.RegionId) && eb.ExclusionYear == destructionYear.Replace(" ", "")).FirstOrDefaultAsync();
+                if (exclusionb == null)
                 {
-                    RegionId = decimal.Parse(session.Office.RegionId),
-                    ExclusionYear = destructionYear.Replace(" ", ""),
-                    CreatedBy = session.SamName,
-                    CreatedDate = DateTime.Now.ToString("yyyyMMdd")
-                };
 
-                _context.DcExclusionBatches.Add(exclusionb);
-                await _context.SaveChangesAsync();
+                    exclusionb = new DcExclusionBatch
+                    {
+                        RegionId = decimal.Parse(session.Office.RegionId),
+                        ExclusionYear = destructionYear.Replace(" ", ""),
+                        CreatedBy = session.SamName,
+                        CreatedDate = DateTime.Now.ToString("yyyyMMdd")
+                    };
+
+                    _context.DcExclusionBatches.Add(exclusionb);
+                    await _context.SaveChangesAsync();
+                }
+                return Decimal.ToInt32(exclusionb.BatchId);
             }
-            return Decimal.ToInt32(exclusionb.BatchId);
         }
 
         public async Task UpdateExclusionBatch(string destructionYear)
         {
             try
             {
-                int batchId = await GetExclusionBatch(destructionYear);
-
-                var exlusions = _context.DcExclusions.Where(e => e.RegionId == decimal.Parse(session.Office.RegionId) && e.ExclusionBatchId == 0);
-                if (!exlusions.Any()) return;
-                foreach (var excl in exlusions.ToList())
+                using (var _context = _contextFactory.CreateDbContext())
                 {
-                    DcDestruction dd = _context.DcDestructions.Where(d => d.PensionNo == excl.IdNo).FirstOrDefault();
-                    if (dd != null)
-                    {
-                        dd.ExclusionbatchId = batchId;
-                    }
-                    excl.ExclusionBatchId = batchId;
+                    int batchId = await GetExclusionBatch(destructionYear);
 
+                    var exlusions = _context.DcExclusions.Where(e => e.RegionId == decimal.Parse(session.Office.RegionId) && e.ExclusionBatchId == 0);
+                    if (!exlusions.Any()) return;
+                    foreach (var excl in exlusions.ToList())
+                    {
+                        DcDestruction dd = _context.DcDestructions.Where(d => d.PensionNo == excl.IdNo).FirstOrDefault();
+                        if (dd != null)
+                        {
+                            dd.ExclusionbatchId = batchId;
+                        }
+                        excl.ExclusionBatchId = batchId;
+
+                    }
+                    await _context.SaveChangesAsync();
                 }
-                await _context.SaveChangesAsync();
             }
             catch
             {
@@ -2629,71 +2879,82 @@ namespace Sassa.BRM.Services
         public async Task<PagedResult<DcExclusionBatch>> GetExclusionBatches(string year, int page)
         {
             PagedResult<DcExclusionBatch> result = new PagedResult<DcExclusionBatch>();
-            result.count = _context.DcExclusionBatches.Where(p => p.ExclusionYear == year).Count();
-            result.result = await _context.DcExclusionBatches.Where(p => p.ExclusionYear == year).OrderByDescending(d => d.CreatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
-            //using (Entities context = new Entities())
-            //{
-            //    var regions =
-            //        (from r in context.DC_REGION
-            //         select new VIEW_REGION()
-            //         {
-            //             RegionString = r.REGION_ID,
-            //             RegionName = r.REGION_NAME
-            //         }).ToList();
-            //    return context.DC_EXCLUSION_BATCH
-            //     .Where(e => e.APPROVED_BY == null && e.EXCLUSION_YEAR == year)
-            //     .Select(x =>
-            //     new VIEW_EXCLUSION_BATCH()
-            //     {
-            //         REGION_ID = (int)x.REGION_ID,
-            //         APPROVED_BY = x.APPROVED_BY,
-            //         BATCH_ID = (int)x.BATCH_ID,
-            //         EXCLUSION_YEAR = x.EXCLUSION_YEAR,
-            //         CREATED_BY = x.CREATED_BY,
-            //         CREATED_DATE = x.CREATED_DATE
-            //     })
-            //     .AsEnumerable() // database query ends here, the rest is a query in memory
-            //     .Join(regions, f => f.REGION_ID, p => p.RegionId, (f, p) =>
-            //     new VIEW_EXCLUSION_BATCH()
-            //     {
-            //         REGION_NAME = p.RegionName,
-            //         APPROVED_BY = f.APPROVED_BY,
-            //         BATCH_ID = f.BATCH_ID,
-            //         EXCLUSION_YEAR = f.EXCLUSION_YEAR,
-            //         CREATED_BY = f.CREATED_BY,
-            //         CREATED_DATE = f.CREATED_DATE
-            //     })
-            //     .ToList();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                result.count = _context.DcExclusionBatches.Where(p => p.ExclusionYear == year).Count();
+                result.result = await _context.DcExclusionBatches.Where(p => p.ExclusionYear == year).OrderByDescending(d => d.CreatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+                //using (Entities context = new Entities())
+                //{
+                //    var regions =
+                //        (from r in context.DC_REGION
+                //         select new VIEW_REGION()
+                //         {
+                //             RegionString = r.REGION_ID,
+                //             RegionName = r.REGION_NAME
+                //         }).ToList();
+                //    return context.DC_EXCLUSION_BATCH
+                //     .Where(e => e.APPROVED_BY == null && e.EXCLUSION_YEAR == year)
+                //     .Select(x =>
+                //     new VIEW_EXCLUSION_BATCH()
+                //     {
+                //         REGION_ID = (int)x.REGION_ID,
+                //         APPROVED_BY = x.APPROVED_BY,
+                //         BATCH_ID = (int)x.BATCH_ID,
+                //         EXCLUSION_YEAR = x.EXCLUSION_YEAR,
+                //         CREATED_BY = x.CREATED_BY,
+                //         CREATED_DATE = x.CREATED_DATE
+                //     })
+                //     .AsEnumerable() // database query ends here, the rest is a query in memory
+                //     .Join(regions, f => f.REGION_ID, p => p.RegionId, (f, p) =>
+                //     new VIEW_EXCLUSION_BATCH()
+                //     {
+                //         REGION_NAME = p.RegionName,
+                //         APPROVED_BY = f.APPROVED_BY,
+                //         BATCH_ID = f.BATCH_ID,
+                //         EXCLUSION_YEAR = f.EXCLUSION_YEAR,
+                //         CREATED_BY = f.CREATED_BY,
+                //         CREATED_DATE = f.CREATED_DATE
+                //     })
+                //     .ToList();
 
-            //}
-
+                //}
+            }
         }
 
         public async Task<PagedResult<DcExclusionBatch>> GetApprovedBatches(string year, int page)
         {
             PagedResult<DcExclusionBatch> result = new PagedResult<DcExclusionBatch>();
-            result.count = _context.DcExclusionBatches.Where(p => p.ExclusionYear == year && !string.IsNullOrEmpty(p.ApprovedBy)).Count();
-            result.result = await _context.DcExclusionBatches.Where(p => p.ExclusionYear == year && !string.IsNullOrEmpty(p.ApprovedBy)).OrderByDescending(e => e.CreatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                result.count = _context.DcExclusionBatches.Where(p => p.ExclusionYear == year && !string.IsNullOrEmpty(p.ApprovedBy)).Count();
+                result.result = await _context.DcExclusionBatches.Where(p => p.ExclusionYear == year && !string.IsNullOrEmpty(p.ApprovedBy)).OrderByDescending(e => e.CreatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+            }
         }
 
         public async Task ApproveBatch(decimal batchId)
         {
-            DcExclusionBatch batch = _context.DcExclusionBatches.Find(batchId);
-            if (batch == null) throw new Exception("Batch not Found");
-            batch.ApprovedBy = session.SamName;
-            batch.ApprovedDate = System.DateTime.Now.ToString("yyyyMMdd");
-            await _context.SaveChangesAsync();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                DcExclusionBatch batch = _context.DcExclusionBatches.Find(batchId);
+                if (batch == null) throw new Exception("Batch not Found");
+                batch.ApprovedBy = session.SamName;
+                batch.ApprovedDate = System.DateTime.Now.ToString("yyyyMMdd");
+                await _context.SaveChangesAsync();
+            }
 
         }
 
         public async Task<PagedResult<DcExclusion>> getExclusions(int page)
         {
             PagedResult<DcExclusion> result = new PagedResult<DcExclusion>();
-            result.count = _context.DcExclusions.Where(p => p.RegionId == decimal.Parse(session.Office.RegionId)).Count();
-            result.result = await _context.DcExclusions.Where(p => p.RegionId == decimal.Parse(session.Office.RegionId)).OrderByDescending(e => e.ExclDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
-            return result;
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                result.count = _context.DcExclusions.Where(p => p.RegionId == decimal.Parse(session.Office.RegionId)).Count();
+                result.result = await _context.DcExclusions.Where(p => p.RegionId == decimal.Parse(session.Office.RegionId)).OrderByDescending(e => e.ExclDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                return result;
+            }
         }
 
         public async Task SaveDestructionList()

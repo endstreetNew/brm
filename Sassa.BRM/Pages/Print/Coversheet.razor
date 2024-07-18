@@ -114,9 +114,7 @@
 
     private async Task OnDocsChanged(string docspresent)
     {
-        file.DocsPresent = docspresent;
-        await db.SaveChanges();
-        //toast.Success("Documents updated.");
+        await db.SaveChanges(file.UnqFileNo,docspresent);
     }
 
     private async Task btnPrint_Click()

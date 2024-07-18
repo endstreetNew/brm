@@ -4,7 +4,7 @@ namespace Sassa.BRM.Models
 {
     public class Application
     {
-        public decimal SocpenIsn { get; set; }
+        public long SocpenIsn { get; set; }
         public string ARCHIVE_YEAR { get; set; }
         public string Id { get; set; }
         //Change to accomodate invalid child ids from socpen

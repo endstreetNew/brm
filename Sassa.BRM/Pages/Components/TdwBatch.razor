@@ -246,7 +246,6 @@
     int page = 1;
     int historypage = 1;
     int sendpage = 1;
-    bool loading = false;
 
 
     protected override void OnInitialized()
@@ -298,14 +297,11 @@
     {
         try
         {
-            if (!loading)
-            {
-                loading = true;
+
                 historypage = _page;
                 //todo:fix
                 batchedfiles = await db.GetTdwBatches(historypage,period);
-                loading = false;
-            }
+
         }
         catch
         {
@@ -323,14 +319,12 @@
     {
         try
         {
-            if (!loading)
-            {
-                loading = true;
+
+
                 page = _page;
                 //todo:fix
                 boxfiles = await db.GetAllBoxes(page,period);
-                loading = false;
-            }
+
         }
         catch
         {

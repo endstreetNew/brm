@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.eServices.Admin", "Sa
 		{07D09F37-05A4-40C8-B52B-05C794BCE51F} = {07D09F37-05A4-40C8-B52B-05C794BCE51F}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XlxsImport", "XlxsImport\XlxsImport.csproj", "{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -360,6 +362,26 @@ Global
 		{E2D79769-3E45-4234-B5BC-59177A80BBF9}.Release|x64.Build.0 = Release|Any CPU
 		{E2D79769-3E45-4234-B5BC-59177A80BBF9}.Release|x86.ActiveCfg = Release|Any CPU
 		{E2D79769-3E45-4234-B5BC-59177A80BBF9}.Release|x86.Build.0 = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|ARM.Build.0 = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|x64.Build.0 = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Debug|x86.Build.0 = Debug|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|ARM.ActiveCfg = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|ARM.Build.0 = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|ARM64.Build.0 = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|x64.ActiveCfg = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|x64.Build.0 = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|x86.ActiveCfg = Release|Any CPU
+		{F10052A5-A8F6-4310-A6D9-AFF4E1BC5C12}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

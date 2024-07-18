@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using razor.Components;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
@@ -34,6 +35,10 @@ namespace Sassa.BRM
             services.AddHttpContextAccessor();
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
             services.AddSingleton<StaticD>();
+            //Factory pattern
+            services.AddDbContextFactory<ModelContext>(options => 
+            options.UseOracle(BrmConnectionString));
+            //Services 
             services.AddScoped<SessionService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
@@ -47,7 +52,7 @@ namespace Sassa.BRM
             services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString)); 
             services.AddScoped<TdwBatchService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString), ServiceLifetime.Transient); 
+            options.UseOracle(BrmConnectionString)); 
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
             services.AddSingleton<MailMessages>();

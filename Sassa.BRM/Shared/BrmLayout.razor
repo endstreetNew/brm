@@ -1,8 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @inject SessionService sessionservice
-@inject BRMDbService db
+@* @inject BRMDbService db *@
 @inject StaticService sservice
-@inject NavigationManager navigation
+@* @inject NavigationManager navigation *@
 
 @implements IDisposable
 @inject ActiveUser _ConnectedUser
@@ -20,7 +20,7 @@
             <p class="site-title">
                 Beneficiary Records Management
             </p>
-            <LoginDisplay />
+            <LoginDisplay /><span style="font-size: 0.875em;">Users (@_ConnectedUserList.Users.Count())</span>
         </div>
     </div>
     <div class="crumbs">
@@ -73,11 +73,6 @@
             Status = ex.Message;
         }
 
-    }
-
-    protected override void OnInitialized()
-    {
-        
     }
 
     // Don't forget to remove `ConnectedUser` from

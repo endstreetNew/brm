@@ -115,7 +115,7 @@
     }
 
     private List<IBrowserFile> loadedFiles = new();
-    private long maxFileSize = 1024 * 31000;
+    private long maxFileSize = 1000 * 100000;
     private int maxAllowedFiles = 3;
     private bool isLoading;
 
@@ -139,7 +139,7 @@
                 //Process content
                 try
                 {
-                     await dProcess.DestroyXlsxFile(path,"ID");
+                      await dProcess.DestroyXlsxFile(path,"ID");
                 }
                 catch (IOException fe)
                 {
@@ -149,7 +149,7 @@
 
             }
         }
-        catch
+        catch(Exception ex)
         {
             toast.Error("File upload failed.");
             isLoading = false;
