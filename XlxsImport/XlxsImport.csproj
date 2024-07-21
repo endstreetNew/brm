@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="8.23.40" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.4.0" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="8.23.50" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.0" />
   </ItemGroup>
 
   <ItemGroup>

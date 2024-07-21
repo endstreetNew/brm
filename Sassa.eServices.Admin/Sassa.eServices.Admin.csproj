@@ -29,7 +29,6 @@
   <ItemGroup>
     <ProjectReference Include="..\razor.Components\razor.Components.csproj" />
     <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
-    <ProjectReference Include="..\Sassa.Monitor.Shared\Sassa.Monitor.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,4 +6,6 @@ builder.AddProject<Projects.Sassa_Monitor_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(apiService);
 
+builder.AddProject<Projects.Sassa_Brm_WA>("sassa-brm-wa");
+
 builder.Build().Run();

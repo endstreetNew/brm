@@ -1,0 +1,94 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controller\**" />
+    <Content Remove="Controller\**" />
+    <EmbeddedResource Remove="Controller\**" />
+    <None Remove="Controller\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\ActiveUsers.razor" />
+    <Content Remove="Pages\Components\BoxStatus.razor" />
+    <Content Remove="Pages\Components\BoxTransport.razor" />
+    <Content Remove="wwwroot\appsettings.Production.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+	  <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="8.0.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.7" PrivateAssets="all" />
+	  <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
+	  <PackageReference Include="SvgLib" Version="1.0.0.3" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.0" />
+	  <PackageReference Include="System.ServiceModel.Http" Version="8.0.0" />
+  </ItemGroup>
+	<Target Name="AllowUsingAspNetCoreInBlazorWasm" AfterTargets="ProcessFrameworkReferences">
+		<ItemGroup>
+			<UnavailableRuntimePack Remove="Microsoft.AspNetCore.App" />
+		</ItemGroup>
+	</Target>
+  <ItemGroup>
+    <Content Update="Layout\NoLayout.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    <Content Update="Layout\PrintLayout.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    <Content Update="wwwroot\appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Layout\BrmLayout.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Layout\BrmLayout.razor" />
+    <_ContentIncludedByDefault Remove="Layout\BrmNav.razor" />
+    <_ContentIncludedByDefault Remove="Layout\LoginDisplay.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Layout\BrmNav.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Layout\LoginDisplay.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\ActiveUsers.razor" />
+    <None Include="Pages\Components\BoxStatus.razor" />
+    <None Include="Pages\Components\BoxTransport.razor" />
+    <None Include="wwwroot\appsettings.Production.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\razor.Components\razor.Components.csproj" />
+    <ProjectReference Include="..\Sassa.Barcoder\Sassa.Barcoder.csproj" />
+    <ProjectReference Include="..\Sassa.Brm.Common\Sassa.Brm.Common.csproj" />
+    <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
+    <ProjectReference Include="..\Sassa.QrCoder\Sassa.QrCoder.csproj" />
+    <ProjectReference Include="..\Sassa.Socpen.Data\Sassa.Socpen.Data.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,161 @@
+﻿@inject SessionService sessionservice
+@inject BRMDbService db
+@inject StaticService sservice
+@inject SocpenService ss
+@namespace Sassa.BRM.Pages.Admin
+@using Sassa.Socpen.Data
+@using Sassa.BRM.Shared
+@layout Sassa.BRM.Shared.NoLayout
+@inject IAlertService toast
+
+<h5>BRM Fixed Service Point Admin</h5>
+
+<div class="row">
+
+    <div class="col">
+        <div class="input-group mb-1">
+            <span class="input-group-text">Region</span>
+            <select class="form-select" @bind="regionId">
+                <option value="" selected></option>
+                @foreach (var region in sservice.GetRegions())
+                {
+                    <option value="@region.Key">@region.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class ="col">
+        <button class="btn btn-primary active" @onclick="btnLoad_Click">Load</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col" style="float:right;">
+        <button class="btn btn-primary active" @onclick="@(() => {IsAdding = !IsAdding;})">Add Service point</button>
+    </div>
+</div>
+
+<div class="whiteArea">
+    @if(IsAdding)
+    {
+        <AddServicePoint RegionId="@regionId" Ok="OnOkClick" Cancel="OnOkClick"></AddServicePoint>
+    }
+    else
+    {
+    @if (IsLoaded)
+    {
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-sm" style="font-size:x-small;">
+                    <thead>
+                        <tr>
+                            <th scope="col">ServicePoint Id</th>
+                            <th scope="col">Service Point</th>
+                            <th scope="col">Office</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var u in regionServicePoints)
+                        {
+                            <tr>
+                                <td>@u.Id</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                   <input class="form-control form-control-sm" type="text" @bind="u.ServicePointName">
+                                            <button class="btn btn-primary btn-sm active" @onclick="@(() => btnUpdate_Click(u))">Rename</button>
+                                   </div>
+                                </td>
+                                <td>
+                                  <div class="input-group input-group-sm">
+                                    <span class="input-group-text input-group-sm">Brm Office</span>
+                                            <select class="form-select" value="@u.OfficeId" @onchange="@(e => OnValueChanged(e,u))">
+                                    @foreach (var bOffice in regionOffices)
+                                    {
+                                    <option value="@bOffice.OfficeId">@bOffice.OfficeName</option>
+                                    }
+                                    </select>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        }
+                    </tbody>
+                    </table>
+                </div>
+                <br/>
+            </div>
+            }
+            }
+</div>
+
+@code {
+    protected List<RegionOffice> regionOffices;
+    protected List<DcFixedServicePoint> regionServicePoints;
+    protected string regionId;
+    protected bool IsLoaded = false;
+    protected bool IsAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        regionId = sessionservice.session.Office.RegionId;
+        await GetRegionOffices();
+    }
+
+    protected async Task btnLoad_Click()
+    {
+        await GetRegionOffices();
+
+    }
+
+    protected async Task GetRegionOffices()
+    {
+        List<CustRescode> ResCodes = await ss.GetResCodes(regionId);
+        regionOffices = StaticD.LocalOffices.Where(o => o.RegionId == regionId).Select(o =>
+        new RegionOffice
+        {
+            OfficeId = int.Parse(o.OfficeId),
+            OfficeName = o.OfficeName,
+            Status = o.ActiveStatus
+            //ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault().ResCode : 0
+        }).ToList();
+
+        regionOffices = regionOffices.OrderBy(o => o.OfficeName).ToList();
+        regionServicePoints = sservice.GetServicePoints(regionId);
+        IsLoaded = true;
+    }
+
+    //protected async void  btnActive_Click(RegionOffice u)
+    //{
+    //    //toggle current Status
+    //    string status  = u.Status == "A" ? "I" : "A";
+    //    if (u.OfficeId > 0)
+    //    {
+    //        await db.ChangeOfficeStatus(u.OfficeId.ToString(),status);
+    //    }
+    //    if (u.ResCode > 0)
+    //    {
+    //        await ss.ChangeOfficeStatus(u.ResCode,status);
+    //    }
+    //    IsLoaded = false;
+    //    await GetRegionOffices();
+    //}
+    protected void OnOkClick()
+    {
+        IsAdding = false;
+    }
+
+    private void OnValueChanged(ChangeEventArgs e, DcFixedServicePoint u)
+    {
+        u.OfficeId = e.Value?.ToString() ?? u.OfficeId;
+        btnUpdate_Click(u);
+    }
+
+    protected async void  btnUpdate_Click(DcFixedServicePoint u)
+    {
+        
+        await sservice.UpdateServicePoint(u);
+        IsLoaded = false;
+        await GetRegionOffices();
+    }
+
+}

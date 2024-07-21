@@ -1,0 +1,107 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	<Version>4.2.0</Version>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Watch Include="**\*.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="wwwroot\brmFiles\**" />
+	  <Compile Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Compile Remove="wwwroot\Documents\**" />
+	  <Content Remove="wwwroot\brmFiles\**" />
+	  <Content Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Content Remove="wwwroot\Documents\**" />
+	  <EmbeddedResource Remove="wwwroot\brmFiles\**" />
+	  <EmbeddedResource Remove="wwwroot\CSImages\NewFolder\**" />
+	  <EmbeddedResource Remove="wwwroot\Documents\**" />
+	  <None Remove="wwwroot\brmFiles\**" />
+	  <None Remove="wwwroot\CSImages\NewFolder\**" />
+	  <None Remove="wwwroot\Documents\**" />
+	  <Watch Remove="wwwroot\brmFiles\**" />
+	  <Watch Remove="wwwroot\CSImages\NewFolder\**" />
+	  <Watch Remove="wwwroot\Documents\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Services\AssetService.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="appsettings.Production.json" />
+	  <Content Remove="Pages\Admin\ActiveUsers.razor" />
+	  <Content Remove="Pages\Components\BoxTransport.razor" />
+	  <Content Remove="Pages\Print\BoxTransportCover.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Pages\Print\BoxTransportCover.razor.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Watch Remove="Pages\Admin\ActiveUsers.razor" />
+	  <Watch Remove="Pages\Admin\ServicePointAdmin.razor" />
+	  <Watch Remove="Pages\Components\BoxStatus.razor" />
+	  <Watch Remove="Pages\Components\BoxTransport.razor" />
+	  <Watch Remove="Pages\Components\BRMHistory.razor" />
+	  <Watch Remove="Pages\Components\TdwBatch - Copy.razor" />
+	  <Watch Remove="Pages\Components\TdwBatch.razor" />
+	  <Watch Remove="Pages\Modals\AddServicePoint.razor" />
+	  <Watch Remove="Pages\Modals\ManualCapture.razor" />
+	  <Watch Remove="Pages\Print\BoxTransportCover.razor" />
+	  <Watch Remove="Pages\Print\TdwBatchCover.razor" />
+	</ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="BRMfiles\" />
+    <Folder Include="wwwroot\CSImages\" />
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="appsettings.Production.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="Pages\ActiveUsers.razor" />
+    <None Include="Pages\Components\BoxStatus.razor" />
+    <None Include="Pages\Components\BoxTransport.razor" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
+    <PackageReference Include="SvgLib" Version="1.0.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="System.ServiceModel.Http" Version="8.0.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\razor.Components\razor.Components.csproj" />
+    <ProjectReference Include="..\Sassa.Barcoder\Sassa.Barcoder.csproj" />
+    <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
+    <ProjectReference Include="..\Sassa.QrCoder\Sassa.QrCoder.csproj" />
+    <ProjectReference Include="..\Sassa.Socpen.Data\Sassa.Socpen.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="tasklist /fi &quot;imagename eq iisexpress.exe&quot; |find &quot;:&quot; &gt; nul&#xD;&#xA;if errorlevel 1 taskkill /f /im &quot;iisexpress.exe&quot;" />
+  </Target>
+</Project>

@@ -1,0 +1,6 @@
+@Sassa.Authentication.Api_HostAddress = http://localhost:5108
+
+GET {{Sassa.Authentication.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
