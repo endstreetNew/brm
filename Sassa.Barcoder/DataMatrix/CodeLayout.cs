@@ -1,5 +1,5 @@
-using System;
 using Barcoder.Utils;
+using System;
 
 namespace Barcoder.DataMatrix
 {
@@ -145,7 +145,7 @@ namespace Barcoder.DataMatrix
 
                     row -= 2;
                     col += 2;
-        
+
                     if (row < 0 || col >= Size.MatrixColumns)
                         break;
                 }

@@ -1,5 +1,5 @@
-﻿using System;
-using Barcoder.Utils;
+﻿using Barcoder.Utils;
+using System;
 
 namespace Barcoder.Aztec
 {
@@ -38,7 +38,7 @@ namespace Barcoder.Aztec
             {
                 int value = 0;
                 for (int j = 0; j < wordSize; j++)
-                    if (stuffedBits.GetBit(i*wordSize + j))
+                    if (stuffedBits.GetBit(i * wordSize + j))
                         value |= (1 << (wordSize - j - 1));
 
                 message[i] = value;

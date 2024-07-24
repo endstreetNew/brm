@@ -1,11 +1,11 @@
-﻿using Sassa.BRM.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Sassa.Brm.Common.Models;
+using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
+using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
-using System.Linq.Expressions;
 
 namespace Sassa.BRM.Services
 {
@@ -31,7 +31,7 @@ namespace Sassa.BRM.Services
             }
             return StaticD.TransactionTypes[key];
         }
-        public async Task<UserOffice> GetUserLocalOffice(string samName,string supervisor)
+        public async Task<UserOffice> GetUserLocalOffice(string samName, string supervisor)
         {
             if (StaticD.LocalOffices == null)
             {
@@ -56,13 +56,13 @@ namespace Sassa.BRM.Services
                       FspId = lou.FspId
 
                   }).Any())
-                    {
-                        DcLocalOffice ioffice = GetOffices("7").FirstOrDefault();
-                        //Attach to first or default office in Gauteng.
-                        await UpdateUserLocalOffice(ioffice.OfficeId, null,samName, supervisor);
-                        //try again..
-                        await GetUserLocalOffice(samName,supervisor);
-                    }
+            {
+                DcLocalOffice ioffice = GetOffices("7").FirstOrDefault();
+                //Attach to first or default office in Gauteng.
+                await UpdateUserLocalOffice(ioffice.OfficeId, null, samName, supervisor);
+                //try again..
+                await GetUserLocalOffice(samName, supervisor);
+            }
 
             var value = (from lo in StaticD.LocalOffices
                          join lou in StaticD.DcOfficeKuafLinks
@@ -147,7 +147,7 @@ namespace Sassa.BRM.Services
             }
             return "";
         }
-        public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId,string SamName,string supervisor)
+        public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId, string SamName, string supervisor)
         {
             DcOfficeKuafLink officeLink;
             var query = await _context.DcOfficeKuafLinks.Where(okl => okl.Username == SamName).ToListAsync();

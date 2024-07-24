@@ -1,7 +1,7 @@
+using Barcoder.Utils;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Barcoder.Utils;
 
 namespace Barcoder.UpcA
 {

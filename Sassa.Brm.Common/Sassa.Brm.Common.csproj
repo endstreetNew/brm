@@ -6,4 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
+    <PackageReference Include="SvgLib" Version="1.0.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sassa.Barcoder\Sassa.Barcoder.csproj" />
+    <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
+    <ProjectReference Include="..\Sassa.QrCoder\Sassa.QrCoder.csproj" />
+  </ItemGroup>
+
 </Project>

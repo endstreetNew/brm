@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Sassa.Socpen.Data
+﻿namespace Sassa.Socpen.Data
 {
     public partial class CustRescode
     {

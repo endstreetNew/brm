@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace razor.Components.Models
 {
@@ -16,21 +12,21 @@ namespace razor.Components.Models
         public byte[]? NodeContent;
 
         private List<TreeNode> _files = new List<TreeNode>();
-        public bool HasChildren 
+        public bool HasChildren
         {
             get { return this.Keys.Where(e => e == this.ParentId).Any(); }
         }
 
-        public void AddOnParent(int parentId,TreeNode node)
+        public void AddOnParent(int parentId, TreeNode node)
         {
             FindParent(parentId).AddNode(node);
         }
 
         public void AddNode(TreeNode node)
         {
-            if (node.NodeType)_files.Add(node);
-            if (node.Equals(this))return;
-            this.Add(node.Id,node);
+            if (node.NodeType) _files.Add(node);
+            if (node.Equals(this)) return;
+            this.Add(node.Id, node);
         }
         public List<TreeNode> GetFiles()
         {
@@ -38,9 +34,9 @@ namespace razor.Components.Models
         }
         private TreeNode FindParent(int parentid)
         {
-            foreach(TreeNode node in this.Values)
+            foreach (TreeNode node in this.Values)
             {
-                if(node.HasChildren)
+                if (node.HasChildren)
                 {
                     FindParent(parentid);
                 }

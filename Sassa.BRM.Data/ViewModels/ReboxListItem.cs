@@ -11,12 +11,12 @@
         public string FullName { get; set; }
         public string GrantType { get; set; }
         public bool Scanned { get; set; }
-        public bool BoxLocked 
+        public bool BoxLocked
         {
             get
             {
                 return TdwBatch > 1;
-            } 
+            }
         }
         public bool BoxOpen
         {

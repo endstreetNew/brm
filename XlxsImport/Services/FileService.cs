@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using XlsxImport.Services;
+﻿using XlsxImport.Services;
 
 namespace XlxsImport.Services
 {
@@ -9,7 +7,7 @@ namespace XlxsImport.Services
 
         RawSqlService _raw;
         XlsxHelper _import;
-        public FileService(RawSqlService raw,XlsxHelper import)
+        public FileService(RawSqlService raw, XlsxHelper import)
         {
             _raw = raw;
             _import = import;

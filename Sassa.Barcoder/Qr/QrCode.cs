@@ -1,5 +1,5 @@
-using System;
 using Barcoder.Utils;
+using System;
 
 namespace Barcoder.Qr
 {

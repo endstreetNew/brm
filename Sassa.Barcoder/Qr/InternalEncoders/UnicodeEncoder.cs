@@ -1,7 +1,6 @@
+using Barcoder.Utils;
 using System;
 using System.Linq;
-using Barcoder.Utils;
-using TextEncoding = System.Text.Encoding;
 
 namespace Barcoder.Qr.InternalEncoders
 {

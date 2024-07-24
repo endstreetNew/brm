@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace BlazorApp1.HttpClients;
 
-public class BackendApiHttpClient: IBackendApiHttpClient
+public class BackendApiHttpClient : IBackendApiHttpClient
 {
     private readonly HttpClient _httpClient;
 
@@ -40,7 +40,7 @@ public class BackendApiHttpClient: IBackendApiHttpClient
     {
         return await ApiResponse<AuthResponse>.HandleExceptionAsync(async () =>
         {
-            var response = await _httpClient.PostAsJsonAsync("api/account/refresh", new{ refreshToken });
+            var response = await _httpClient.PostAsJsonAsync("api/account/refresh", new { refreshToken });
 
             response.EnsureSuccessStatusCode();
 

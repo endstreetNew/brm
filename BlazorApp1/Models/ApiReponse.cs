@@ -17,7 +17,7 @@ public class ApiResponse<T>
             Console.WriteLine(e);
             return new ApiResponse<T>
             {
-                Errors = new List<string> {e.Message}
+                Errors = new List<string> { e.Message }
             };
         }
     }

@@ -1,6 +1,6 @@
+using Barcoder.Utils;
 using System;
 using System.Linq;
-using Barcoder.Utils;
 
 namespace Barcoder.Qr
 {

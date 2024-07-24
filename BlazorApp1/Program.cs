@@ -1,6 +1,11 @@
+using BlazorApp1;
+using BlazorApp1.Code;
+using BlazorApp1.HttpClients;
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using BlazorApp1;
 //using Microsoft.AspNetCore.Builder;
 //using Microsoft.AspNetCore.Diagnostics;
 //using Microsoft.AspNetCore.Hosting;
@@ -14,15 +19,8 @@ using Microsoft.EntityFrameworkCore;
 using razor.Components;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
-using Sassa.eDocs;
 using Sassa.Socpen.Data;
-using System;
-using Microsoft.AspNetCore.Authentication.Negotiate;
-using BlazorApp1.Code;
-using BlazorApp1.HttpClients;
-using Microsoft.AspNetCore.Components.Authorization;
 using System.Reflection;
-using Blazored.LocalStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

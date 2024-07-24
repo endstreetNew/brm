@@ -1,8 +1,8 @@
+using Barcoder.Qr.InternalEncoders;
+using Barcoder.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Barcoder.Qr.InternalEncoders;
-using Barcoder.Utils;
 
 namespace Barcoder.Qr
 {
@@ -24,16 +24,16 @@ namespace Barcoder.Qr
         {
             switch (encoding)
             {
-            case Encoding.Auto:
-                return new AutoEncoder();
-            case Encoding.Numeric:
-                return new NumericEncoder();
-            case Encoding.AlphaNumeric:
-                return new AlphaNumericEncoder();
-            case Encoding.Unicode:
-                return new UnicodeEncoder();
-            default:
-                throw new InvalidOperationException($"Unknown encoding type {encoding}");
+                case Encoding.Auto:
+                    return new AutoEncoder();
+                case Encoding.Numeric:
+                    return new NumericEncoder();
+                case Encoding.AlphaNumeric:
+                    return new AlphaNumericEncoder();
+                case Encoding.Unicode:
+                    return new UnicodeEncoder();
+                default:
+                    throw new InvalidOperationException($"Unknown encoding type {encoding}");
             }
         }
 
@@ -335,30 +335,30 @@ namespace Barcoder.Qr
         {
             switch (mask)
             {
-            case 0:
-                value = value != (((y + x) % 2) == 0);
-                break;
-            case 1:
-                value = value != ((y % 2) == 0);
-                break;
-            case 2:
-                value = value != ((x % 3) == 0);
-                break;
-            case 3:
-                value = value != (((y + x) % 3) == 0);
-                break;
-            case 4:
-                value = value != (((y / 2 + x / 3) % 2) == 0);
-                break;
-            case 5:
-                value = value != (((y * x) % 2) + ((y * x) % 3) == 0);
-                break;
-            case 6:
-                value = value != ((((y * x) % 2) + ((y * x) % 3)) % 2 == 0);
-                break;
-            case 7:
-                value = value != ((((y + x) % 2) + ((y * x) % 3)) % 2 == 0);
-                break;
+                case 0:
+                    value = value != (((y + x) % 2) == 0);
+                    break;
+                case 1:
+                    value = value != ((y % 2) == 0);
+                    break;
+                case 2:
+                    value = value != ((x % 3) == 0);
+                    break;
+                case 3:
+                    value = value != (((y + x) % 3) == 0);
+                    break;
+                case 4:
+                    value = value != (((y / 2 + x / 3) % 2) == 0);
+                    break;
+                case 5:
+                    value = value != (((y * x) % 2) + ((y * x) % 3) == 0);
+                    break;
+                case 6:
+                    value = value != ((((y * x) % 2) + ((y * x) % 3)) % 2 == 0);
+                    break;
+                case 7:
+                    value = value != ((((y + x) % 2) + ((y * x) % 3)) % 2 == 0);
+                    break;
             }
             set(x, y, value);
         }

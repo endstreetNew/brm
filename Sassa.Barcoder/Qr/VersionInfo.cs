@@ -1,6 +1,6 @@
+using Barcoder.Qr.InternalEncoders;
 using System;
 using System.Linq;
-using Barcoder.Qr.InternalEncoders;
 
 namespace Barcoder.Qr
 {
@@ -40,34 +40,34 @@ namespace Barcoder.Qr
         {
             switch (encodingMode)
             {
-            case EncodingMode.Numeric:
-                if (Version < 10)
-                    return 10;
-                if (Version < 27)
+                case EncodingMode.Numeric:
+                    if (Version < 10)
+                        return 10;
+                    if (Version < 27)
+                        return 12;
+                    return 14;
+
+                case EncodingMode.AlphaNumeric:
+                    if (Version < 10)
+                        return 9;
+                    if (Version < 27)
+                        return 11;
+                    return 13;
+
+                case EncodingMode.Byte:
+                    if (Version < 10)
+                        return 8;
+                    return 16;
+
+                case EncodingMode.Kanji:
+                    if (Version < 10)
+                        return 8;
+                    if (Version < 27)
+                        return 10;
                     return 12;
-                return 14;
 
-            case EncodingMode.AlphaNumeric:
-                if (Version < 10)
-                    return 9;
-                if (Version < 27)
-                    return 11;
-                return 13;
-
-            case EncodingMode.Byte:
-                if (Version < 10)
-                    return 8;
-                return 16;
-
-            case EncodingMode.Kanji:
-                if (Version < 10)
-                    return 8;
-                if (Version < 27)
-                    return 10;
-                return 12;
-
-            default:
-                return 0;
+                default:
+                    return 0;
             }
         }
 
@@ -99,7 +99,7 @@ namespace Barcoder.Qr
                         step++;
                 }
 
-                for (var i = 1; i <= count-2; i++)
+                for (var i = 1; i <= count - 2; i++)
                     result[i] = last - (step * (count - 1 - i));
             }
 

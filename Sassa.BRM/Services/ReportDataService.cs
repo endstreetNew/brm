@@ -1,11 +1,10 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using razor.Components.Models;
+using Sassa.Brm.Common.Helpers;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Data.ViewModels;
-using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 //using Sassa.eDocs.Data.Migrations;
@@ -29,7 +28,7 @@ namespace Sassa.BRM.Services
         BRMDbService db;
         StaticService sservice;
 
-        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db,StaticService Sservice)
+        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db, StaticService Sservice)
         {
             connectionString = config.GetConnectionString("BrmConnection");
             sservice = Sservice;
@@ -289,7 +288,7 @@ namespace Sassa.BRM.Services
                         con.Open();
                         using (OracleDataReader reader = (OracleDataReader)await cmd.ExecuteReaderAsync())
                         {
-                            reader.ToCsv(filename,header, reportFolder);
+                            reader.ToCsv(filename, header, reportFolder);
                         }
                     }
                     con.Close();
@@ -314,7 +313,7 @@ namespace Sassa.BRM.Services
             {
                 case "8"://Missing Summary
                     List<MissingFile> result = await _ogs.MissingProgress(from, to, regionId);
-                    result.ToCsv<MissingFile>(fileName,header,reportFolder);
+                    result.ToCsv<MissingFile>(fileName, header, reportFolder);
                     break;
                 default:
                     break;

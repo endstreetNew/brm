@@ -1,16 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System;
-using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.InkML;
-using System.Runtime.Intrinsics.X86;
-using XlxsImport.Services;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using DocumentFormat.OpenXml.Office2016.Excel;
 
 namespace XlsxImport.Services
 {
@@ -26,7 +17,7 @@ namespace XlsxImport.Services
         /// <summary>
         ///  This is a demo to read the previously created basix.xlsx file
         /// </summary>
-        public async Task ReadAuditList(string fileName,string targetColumnName= "C")
+        public async Task ReadAuditList(string fileName, string targetColumnName = "C")
         {
 
             // Open the Excel file
@@ -40,9 +31,9 @@ namespace XlsxImport.Services
                 string targetColumn = "C"; // Change this to the desired column letter
                 using (OracleConnection connection = new OracleConnection(brmcs))
                 {
-                    OracleCommand command = new OracleCommand("",connection);
+                    OracleCommand command = new OracleCommand("", connection);
                     command.Connection.Open();
-                    foreach (var sheet in workbookPart.Workbook.Descendants<Sheet>().Where( s=> "EC|WC|NC|FS|NW|LIM|MPU|GAU".Contains(s.Name)))
+                    foreach (var sheet in workbookPart.Workbook.Descendants<Sheet>().Where(s => "EC|WC|NC|FS|NW|LIM|MPU|GAU".Contains(s.Name)))
                     {
                         var worksheetPart1 = (WorksheetPart)workbookPart.GetPartById(sheet.Id);
                         var sheetData1 = worksheetPart1.Worksheet.Elements<SheetData>().First();
@@ -67,7 +58,7 @@ namespace XlsxImport.Services
                 }
             }
         }
-        public void WriteAuditList(string fileName, string targetRegions,string targetColumn)
+        public void WriteAuditList(string fileName, string targetRegions, string targetColumn)
         {
             int rowCounter;
             // Open the Excel file
@@ -110,8 +101,8 @@ namespace XlsxImport.Services
                                     }
                                 }
                             }
-                            if(rowCounter > 999)
-                            { 
+                            if (rowCounter > 999)
+                            {
                                 connection.Open();
                                 OracleBulkCopy objbulk = new OracleBulkCopy(connection);
                                 //assign Destination table name

@@ -5,7 +5,7 @@ namespace Barcoder.Code128
         public static readonly bool[][] EncodingTable = new bool[107][]
         {
             new[] {true, true, false, true, true, false, false, true, true, false, false},
-	        new[] {true, true, false, false, true, true, false, true, true, false, false},
+            new[] {true, true, false, false, true, true, false, true, true, false, false},
             new[] {true, true, false, false, true, true, false, false, true, true, false},
             new[] {true, false, false, true, false, false, true, true, false, false, false},
             new[] {true, false, false, true, false, false, false, true, true, false, false},

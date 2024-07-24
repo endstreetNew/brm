@@ -14,7 +14,7 @@ public class LoginModel
 }
 
 
-public class UserRegisterInput: LoginModel
+public class UserRegisterInput : LoginModel
 {
     public string Mobile { get; set; }
 

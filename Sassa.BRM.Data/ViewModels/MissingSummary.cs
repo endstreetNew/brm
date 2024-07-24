@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Sassa.BRM.ViewModels
+﻿namespace Sassa.BRM.ViewModels
 {
     public class MissingFile
     {
@@ -37,7 +31,7 @@ namespace Sassa.BRM.ViewModels
         {
             get
             {
-                if (NewGrants> 0)
+                if (NewGrants > 0)
                 {
                     return 100 - (int)((Captured) * 100 / NewGrants);
                 }
@@ -101,9 +95,9 @@ namespace Sassa.BRM.ViewModels
                 }
             }
         }
-        public int PeriodRemaining 
+        public int PeriodRemaining
         {
-            get { return NewGrants - PeriodCaptured - OnlineGrants; } 
+            get { return NewGrants - PeriodCaptured - OnlineGrants; }
         }
         public int TotalCaptured
         {

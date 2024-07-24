@@ -1,7 +1,7 @@
+using Barcoder.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Barcoder.Utils;
 
 namespace Barcoder.DataMatrix
 {

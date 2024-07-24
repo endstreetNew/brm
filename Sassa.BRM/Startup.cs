@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 //using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IISIntegration;
@@ -9,9 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 //using Microsoft.Extensions.Options;
 using razor.Components;
+using Sassa.Brm.Common.Models;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
-using Sassa.eDocs;
 using Sassa.Socpen.Data;
 using System;
 
@@ -36,7 +36,7 @@ namespace Sassa.BRM
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
             services.AddSingleton<StaticD>();
             //Factory pattern
-            services.AddDbContextFactory<ModelContext>(options => 
+            services.AddDbContextFactory<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             //Services 
             services.AddScoped<SessionService>().AddDbContext<ModelContext>(options =>
@@ -50,9 +50,9 @@ namespace Sassa.BRM
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString)); 
+            options.UseOracle(BrmConnectionString));
             services.AddScoped<TdwBatchService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString)); 
+            options.UseOracle(BrmConnectionString));
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
             services.AddSingleton<MailMessages>();
@@ -94,31 +94,13 @@ namespace Sassa.BRM
             //        });
             //});
 
-            services.AddControllers();
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen();
+            //services.AddControllers();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                //#if DEBUG
-                // For Debug in Kestrel
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "BRM API V1");
-                //#else
-                //               // To deploy on IIS
-                //               c.SwaggerEndpoint("/eServicesApi/swagger/v1/swagger.json", "Web API V1");
-                //#endif
-                //string swaggerJsonBasePath = string.IsNullOrWhiteSpace(c.RoutePrefix) ? "." : "";
-                //c.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "Sassa Services API V1");
-                c.RoutePrefix = "api";
-            });
 
             if (env.IsDevelopment())
             {

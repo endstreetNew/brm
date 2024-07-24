@@ -34,11 +34,11 @@
         public string SelectedType { get; set; }
 
         public bool IsLCSelected
-        { 
-            get 
+        {
+            get
             {
                 return SelectedType == "18" || SelectedType == "13";
-            } 
+            }
         }
     }
 }

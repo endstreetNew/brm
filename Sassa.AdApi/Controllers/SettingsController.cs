@@ -1,10 +1,5 @@
-﻿using Sassa.Brm.Common;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
+using Sassa.Brm.Common;
 
 namespace BlazorExample.Api.Controllers
 {

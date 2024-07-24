@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -24,7 +22,7 @@ namespace Sassa.BRM.Services
         }
         public void SendMail(string from, string to, string subject, string body, List<string> attachments)
         {
-            
+
             NetworkCredential basicCredential1 = _credential;
             client.EnableSsl = false;
             client.UseDefaultCredentials = true;// false;

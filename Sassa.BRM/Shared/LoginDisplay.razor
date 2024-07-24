@@ -41,6 +41,7 @@
             gsession = sessionservice.session;
             GetServicePoint();
         }
+        await Task.CompletedTask;
     }
 
     private void OnSessionChanged(object sender, EventArgs args)

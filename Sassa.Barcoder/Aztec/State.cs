@@ -1,6 +1,6 @@
+using Barcoder.Utils;
 using System.Collections.Generic;
 using System.Linq;
-using Barcoder.Utils;
 
 namespace Barcoder.Aztec
 {

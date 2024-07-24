@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using static Sassa.BRM.Services.TimedService;
 
 namespace Sassa.BRM.Services
@@ -17,7 +17,7 @@ namespace Sassa.BRM.Services
         {
             var jsonString = JsonSerializer.Serialize(obj, _options);
             mutStatus.WaitOne();
-            if (!Directory.Exists(fileName.Substring(0,fileName.LastIndexOf("\\"))))
+            if (!Directory.Exists(fileName.Substring(0, fileName.LastIndexOf("\\"))))
             {
                 Directory.CreateDirectory(fileName.Substring(0, fileName.LastIndexOf("\\")));
             }

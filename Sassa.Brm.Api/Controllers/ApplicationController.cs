@@ -1,17 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Sassa.Brm.Api.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Principal;
 //using System.ServiceModel.Channels;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 
 namespace Sassa.BRM.Controller
 {
@@ -24,7 +16,7 @@ namespace Sassa.BRM.Controller
         private readonly BRMDbService _brmService;
         IConfiguration _config;
 
-        public ApplicationController(BRMDbService context,IConfiguration config)
+        public ApplicationController(BRMDbService context, IConfiguration config)
         {
             _brmService = context;
             _config = config;
@@ -51,7 +43,7 @@ namespace Sassa.BRM.Controller
         {
             DcFile result;
 
-            if(string.IsNullOrEmpty(app.BrmUserName))
+            if (string.IsNullOrEmpty(app.BrmUserName))
             {
                 app.BrmUserName = _config.GetValue<string>("BrmUser")!;
             }
@@ -90,7 +82,7 @@ namespace Sassa.BRM.Controller
             //}
             //var xx = CreatedAtAction("GetUser", new { id = user.Id }, user);
             //return xx;
-           
+
         }
         //[HttpGet]
         //public ActionResult<string> GetLastError()

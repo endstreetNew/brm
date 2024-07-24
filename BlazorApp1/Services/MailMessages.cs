@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 
 namespace Sassa.BRM.Services
 {
@@ -84,7 +82,7 @@ namespace Sassa.BRM.Services
         }
 
         //Returned box detail
-        public void SendTDWIncoming(UserSession session,  string Boxno, List<string> files, string file = null)
+        public void SendTDWIncoming(UserSession session, string Boxno, List<string> files, string file = null)
         {
             if (file != null)
             {

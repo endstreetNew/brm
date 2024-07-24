@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QRCoder.Framework4._0Methods
+﻿namespace QRCoder.Framework4._0Methods
 {
     class Stream4Methods
     {

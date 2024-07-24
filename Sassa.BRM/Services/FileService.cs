@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
 {

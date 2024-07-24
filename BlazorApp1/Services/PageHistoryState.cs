@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using System;
-using System.Collections.Generic;
 
 namespace Sassa.BRM.Services
 {

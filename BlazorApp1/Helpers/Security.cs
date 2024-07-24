@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.DirectoryServices;
-using System.Linq;
+﻿using System.DirectoryServices;
 using System.Security.Claims;
 using System.Security.Principal;
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace Barcoder.Pdf417
@@ -191,126 +190,126 @@ namespace Barcoder.Pdf417
             bool IsAlphaUpper(char ch) => ch == ' ' || (ch >= 'A' && ch <= 'Z');
             bool IsAlphaLower(char ch) => ch == ' ' || (ch >= 'a' && ch <= 'z');
             bool IsMixed(char ch) => MixedMap.ContainsKey(ch);
-	        bool IsPunctuation(char ch) => PunctuationMap.ContainsKey(ch);
+            bool IsPunctuation(char ch) => PunctuationMap.ContainsKey(ch);
 
             int idx = 0;
             var result = new List<int>();
-	        while (idx < text.Length)
+            while (idx < text.Length)
             {
                 char ch = text[idx];
-		        switch (subMode)
+                switch (subMode)
                 {
-		        case SubMode.Upper:
-			        if (IsAlphaUpper(ch))
-                    {
-                        if (ch == ' ')
-                            result.Add(26); // space
+                    case SubMode.Upper:
+                        if (IsAlphaUpper(ch))
+                        {
+                            if (ch == ' ')
+                                result.Add(26); // space
+                            else
+                                result.Add(ch - 'A');
+                        }
                         else
-                            result.Add(ch - 'A');
-                    }
-                    else
-                    {
-				        if (IsAlphaLower(ch))
                         {
-                            subMode = SubMode.Lower;
-                            result.Add(27); // lower latch
-                            continue;
-                        }
-
-                        if (IsMixed(ch))
-                        {
-                            subMode = SubMode.Mixed;
-                            result.Add(28); // mixed latch
-                            continue;
-                        }
-
-                        result.Add(29); // punctuation switch
-                        result.Add(PunctuationMap[ch]);
-                    }
-                    break;
-
-                case SubMode.Lower:
-			        if (IsAlphaLower(ch))
-                    {
-                        if (ch == ' ')
-                            result.Add(26); // space
-                        else
-                            result.Add(ch - 'a');
-                    }
-                    else
-                    {
-				        if (IsAlphaUpper(ch))
-                        {
-                            result.Add(27); // upper switch
-                            result.Add(ch - 'A');
-                            break;
-                        }
-
-                        if (IsMixed(ch))
-                        {
-                            subMode = SubMode.Mixed;
-                            result.Add(28); // mixed latch
-                            continue;
-                        }
-
-                        result.Add(29); // punctuation switch
-                        result.Add(PunctuationMap[ch]);
-                    }
-                    break;
-
-		        case SubMode.Mixed:
-			        if (IsMixed(ch))
-                    {
-                        result.Add(MixedMap[ch]);
-                    }
-                    else
-                    {
-				        if (IsAlphaUpper(ch))
-                        {
-                            subMode = SubMode.Upper;
-                            result.Add(28); // upper latch
-                            continue;
-                        }
-
-                        if (IsAlphaLower(ch))
-                        {
-                            subMode = SubMode.Lower;
-                            result.Add(27); // lower latch
-                            continue;
-                        }
-
-					    if (idx + 1 < text.Length)
-                        {
-                            char next = text[idx + 1];
-						    if (IsPunctuation(next))
+                            if (IsAlphaLower(ch))
                             {
-                                subMode = SubMode.Punctuation;
-                                result.Add(25); // punctuation latch
+                                subMode = SubMode.Lower;
+                                result.Add(27); // lower latch
                                 continue;
                             }
-					    }
 
-                        result.Add(29); // punctuation switch
-                        result.Add(PunctuationMap[ch]);
-                    }
-                    break;
+                            if (IsMixed(ch))
+                            {
+                                subMode = SubMode.Mixed;
+                                result.Add(28); // mixed latch
+                                continue;
+                            }
 
-                case SubMode.Punctuation:
-			        if (IsPunctuation(ch))
-                    {
-                        result.Add(PunctuationMap[ch]);
-                    }
-                    else
-                    {
-                        subMode = SubMode.Upper;
-                        result.Add(29); // upper latch
-                        continue;
-                    }
-                    break;
+                            result.Add(29); // punctuation switch
+                            result.Add(PunctuationMap[ch]);
+                        }
+                        break;
 
-                default:
-                    throw new InvalidOperationException($"Unknown submode {subMode}");
-		        }
+                    case SubMode.Lower:
+                        if (IsAlphaLower(ch))
+                        {
+                            if (ch == ' ')
+                                result.Add(26); // space
+                            else
+                                result.Add(ch - 'a');
+                        }
+                        else
+                        {
+                            if (IsAlphaUpper(ch))
+                            {
+                                result.Add(27); // upper switch
+                                result.Add(ch - 'A');
+                                break;
+                            }
+
+                            if (IsMixed(ch))
+                            {
+                                subMode = SubMode.Mixed;
+                                result.Add(28); // mixed latch
+                                continue;
+                            }
+
+                            result.Add(29); // punctuation switch
+                            result.Add(PunctuationMap[ch]);
+                        }
+                        break;
+
+                    case SubMode.Mixed:
+                        if (IsMixed(ch))
+                        {
+                            result.Add(MixedMap[ch]);
+                        }
+                        else
+                        {
+                            if (IsAlphaUpper(ch))
+                            {
+                                subMode = SubMode.Upper;
+                                result.Add(28); // upper latch
+                                continue;
+                            }
+
+                            if (IsAlphaLower(ch))
+                            {
+                                subMode = SubMode.Lower;
+                                result.Add(27); // lower latch
+                                continue;
+                            }
+
+                            if (idx + 1 < text.Length)
+                            {
+                                char next = text[idx + 1];
+                                if (IsPunctuation(next))
+                                {
+                                    subMode = SubMode.Punctuation;
+                                    result.Add(25); // punctuation latch
+                                    continue;
+                                }
+                            }
+
+                            result.Add(29); // punctuation switch
+                            result.Add(PunctuationMap[ch]);
+                        }
+                        break;
+
+                    case SubMode.Punctuation:
+                        if (IsPunctuation(ch))
+                        {
+                            result.Add(PunctuationMap[ch]);
+                        }
+                        else
+                        {
+                            subMode = SubMode.Upper;
+                            result.Add(29); // upper latch
+                            continue;
+                        }
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Unknown submode {subMode}");
+                }
 
                 idx++;
             }
@@ -324,7 +323,7 @@ namespace Barcoder.Pdf417
             for (int i = 0; i < preprocessData.Count; i++)
             {
                 int val = preprocessData[i];
-		        if (i % 2 != 0)
+                if (i % 2 != 0)
                 {
                     h = (h * 30) + val;
                     yield return h;
@@ -333,7 +332,7 @@ namespace Barcoder.Pdf417
                 {
                     h = val;
                 }
-	        }
+            }
 
             if (preprocessData.Count % 2 != 0)
                 yield return (h * 30) + 29;

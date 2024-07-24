@@ -4,16 +4,10 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Oracle.ManagedDataAccess.Client;
 using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Models;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 //using System.Data.Entity.Core.Objects;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -176,7 +170,7 @@ namespace Sassa.BRM.Helpers
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {
                     writer.WriteLine(string.Join(",", Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList()));
-                    
+
                     int count = 0;
                     while (reader.Read())
                     {

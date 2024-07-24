@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
+using Sassa.Brm.Common.Models;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
-//using Sassa.eDocs;
-//using Sassa.eDocs.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,8 +78,8 @@ namespace Sassa.BRM.Services
         {
             PagedResult<DcSocpen> result = new PagedResult<DcSocpen>();
             //&& s.GrantType != "S" && s.MisFiles == null
-            result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE"  && s.MisFile == null).AsNoTracking().CountAsync();
-            result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE"  && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
+            result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().CountAsync();
+            result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             //result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().CountAsync();
             //result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             return result;

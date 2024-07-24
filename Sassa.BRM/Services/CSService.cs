@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.eDocs.CS;
 using Sassa.eDocs.CSDocuments;
@@ -63,7 +64,7 @@ namespace Sassa.BRM.Services
                 await authClient.CloseAsync();
             }
         }
-         
+
         public async Task GetCSDocuments(string _idNumber)
         {
             idNumber = _idNumber;
@@ -107,7 +108,7 @@ namespace Sassa.BRM.Services
                     await AddRecursive(node, NodeId);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 StaticD.WriteEvent(ex.Message);
                 ota = null;
@@ -206,7 +207,7 @@ namespace Sassa.BRM.Services
             foreach (DcDocumentImage doc in DocumentList)
             {
                 if (!(bool)doc.Type)
-                { 
+                {
                     folders.Add(doc.Csnode.ToString(), doc.Filename);
                 }
             }

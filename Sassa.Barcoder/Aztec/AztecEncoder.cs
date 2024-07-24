@@ -1,6 +1,6 @@
+using Barcoder.Utils;
 using System;
 using System.Linq;
-using Barcoder.Utils;
 
 namespace Barcoder.Aztec
 {
@@ -92,30 +92,30 @@ namespace Barcoder.Aztec
             var alignmentMap = new int[baseMatrixSize];
             int matrixSize;
 
-	        if (compact)
+            if (compact)
             {
-		        // no alignment marks in compact mode, alignmentMap is a no-op
+                // no alignment marks in compact mode, alignmentMap is a no-op
                 matrixSize = baseMatrixSize;
-		        for (int i = 0; i < alignmentMap.Length; i++)
+                for (int i = 0; i < alignmentMap.Length; i++)
                     alignmentMap[i] = i;
-	        }
+            }
             else
             {
                 matrixSize = baseMatrixSize + 1 + 2 * ((baseMatrixSize / 2 - 1) / 15);
-		        int origCenter = baseMatrixSize / 2;
-		        int center = matrixSize / 2;
-		        for (int i = 0; i < origCenter; i++)
+                int origCenter = baseMatrixSize / 2;
+                int center = matrixSize / 2;
+                for (int i = 0; i < origCenter; i++)
                 {
                     int newOffset = i + i / 15;
                     alignmentMap[origCenter - i - 1] = center - newOffset - 1;
                     alignmentMap[origCenter + i] = center + newOffset + 1;
                 }
-	        }
+            }
             var code = new AztecCode(matrixSize);
             code.Content = content;
 
-	        // draw data bits
-	        for (int i = 0, rowOffset = 0; i < layers; i++)
+            // draw data bits
+            for (int i = 0, rowOffset = 0; i < layers; i++)
             {
                 int rowSize = (layers - i) * 4;
                 if (compact)
@@ -123,50 +123,50 @@ namespace Barcoder.Aztec
                 else
                     rowSize += 12;
 
-		        for (int j = 0; j < rowSize; j++)
+                for (int j = 0; j < rowSize; j++)
                 {
                     int columnOffset = j * 2;
-			        for (int k = 0; k < 2; k++)
+                    for (int k = 0; k < 2; k++)
                     {
-				        if (messageBits.GetBit(rowOffset + columnOffset + k))
+                        if (messageBits.GetBit(rowOffset + columnOffset + k))
                             code.Set(alignmentMap[i * 2 + k], alignmentMap[i * 2 + j]);
 
-                        if (messageBits.GetBit(rowOffset + rowSize*2 + columnOffset + k))
+                        if (messageBits.GetBit(rowOffset + rowSize * 2 + columnOffset + k))
                             code.Set(alignmentMap[i * 2 + j], alignmentMap[baseMatrixSize - 1 - i * 2 - k]);
 
-                        if (messageBits.GetBit(rowOffset + rowSize*4 + columnOffset + k))
-					        code.Set(alignmentMap[baseMatrixSize-1-i*2-k], alignmentMap[baseMatrixSize-1-i*2-j]);
+                        if (messageBits.GetBit(rowOffset + rowSize * 4 + columnOffset + k))
+                            code.Set(alignmentMap[baseMatrixSize - 1 - i * 2 - k], alignmentMap[baseMatrixSize - 1 - i * 2 - j]);
 
                         if (messageBits.GetBit(rowOffset + rowSize * 6 + columnOffset + k))
                             code.Set(alignmentMap[baseMatrixSize - 1 - i * 2 - j], alignmentMap[i * 2 + k]);
                     }
-		        }
+                }
 
                 rowOffset += rowSize * 8;
             }
 
-	        // draw mode message
+            // draw mode message
             DrawModeMessage(code, compact, matrixSize, modeMessage);
 
-	        // draw alignment marks
-	        if (compact)
+            // draw alignment marks
+            if (compact)
             {
                 DrawBullsEye(code, matrixSize / 2, 5);
             }
             else
             {
                 DrawBullsEye(code, matrixSize / 2, 7);
-		        for (int i = 0, j = 0; i < baseMatrixSize / 2 - 1; i += 15, j += 16)
+                for (int i = 0, j = 0; i < baseMatrixSize / 2 - 1; i += 15, j += 16)
                 {
-			        for (int k = (matrixSize / 2) & 1; k < matrixSize; k += 2)
+                    for (int k = (matrixSize / 2) & 1; k < matrixSize; k += 2)
                     {
                         code.Set(matrixSize / 2 - j, k);
                         code.Set(matrixSize / 2 + j, k);
                         code.Set(k, matrixSize / 2 - j);
                         code.Set(k, matrixSize / 2 + j);
                     }
-		        }
-	        }
+                }
+            }
 
             return code;
         }
@@ -272,7 +272,7 @@ namespace Barcoder.Aztec
         {
             for (int i = 0; i < size; i += 2)
             {
-                for (int j = center - i; j <= center+i; j++)
+                for (int j = center - i; j <= center + i; j++)
                 {
                     matrix.Set(j, center - i);
                     matrix.Set(j, center + i);

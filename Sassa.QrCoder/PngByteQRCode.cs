@@ -61,7 +61,7 @@ namespace QRCoder
 
             for (var y = 0; y < matrixSize; y++)
             {
-                var modules = moduleMatrix[y+quietZoneOffset];
+                var modules = moduleMatrix[y + quietZoneOffset];
                 var scanlineOffset = y * pixelsPerModule * bytesPerScanline;
 
                 // Draw a scanline with the modules from the QR code.
@@ -327,7 +327,7 @@ namespace QRCoder
             using (var qrCode = new PngByteQRCode(qrCodeData))
                 return qrCode.GetGraphic(pixelsPerModule, darkColorRgba, lightColorRgba, drawQuietZones);
         }
-    
+
 
 
         public static byte[] GetQRCode(string txt, QRCodeGenerator.ECCLevel eccLevel, int size, bool drawQuietZones = true)
@@ -337,5 +337,5 @@ namespace QRCoder
             using (var qrPng = new PngByteQRCode(qrCode))
                 return qrPng.GetGraphic(size, drawQuietZones);
         }
-    }    
+    }
 }

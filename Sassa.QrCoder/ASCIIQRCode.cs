@@ -14,7 +14,7 @@ namespace QRCoder
 
         public AsciiQRCode(QRCodeData data) : base(data) { }
 
-       
+
         /// <summary>
         /// Returns a strings that contains the resulting QR code as ASCII chars.
         /// </summary>
@@ -27,7 +27,7 @@ namespace QRCoder
         {
             return string.Join(endOfLine, GetLineByLineGraphic(repeatPerModule, darkColorString, whiteSpaceString, drawQuietZones));
         }
-        
+
 
         /// <summary>
         /// Returns an array of strings that contains each line of the resulting QR code as ASCII chars.
@@ -52,7 +52,7 @@ namespace QRCoder
                 var lineBuilder = new StringBuilder();
                 for (var x = 0; x < QrCodeData.ModuleMatrix.Count - quietZonesModifier; x++)
                 {
-                    var module = QrCodeData.ModuleMatrix[x + quietZonesOffset][((y + verticalNumberOfRepeats) / verticalNumberOfRepeats - 1)+quietZonesOffset];
+                    var module = QrCodeData.ModuleMatrix[x + quietZonesOffset][((y + verticalNumberOfRepeats) / verticalNumberOfRepeats - 1) + quietZonesOffset];
                     for (var i = 0; i < repeatPerModule; i++)
                     {
                         lineBuilder.Append(module ? darkColorString : whiteSpaceString);

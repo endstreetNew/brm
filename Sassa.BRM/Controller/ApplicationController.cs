@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Sassa.BRM.Models;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Services;
-using System;
-using System.Security.Principal;
-using System.ServiceModel.Channels;
-using System.Threading.Tasks;
+
+
 
 namespace Sassa.BRM.Controller
 {
@@ -19,7 +16,7 @@ namespace Sassa.BRM.Controller
         //private readonly StaticService sservice;
         //private readonly SessionService sessionservice;
 
-        public ApplicationController(BRMDbService context, IHttpContextAccessor ctx,StaticService staticService)
+        public ApplicationController(BRMDbService context, IHttpContextAccessor ctx, StaticService staticService)
         {
             _brmService = context;
             //try

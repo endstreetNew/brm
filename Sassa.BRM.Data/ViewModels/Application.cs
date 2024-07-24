@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Sassa.BRM.Models
+﻿namespace Sassa.BRM.Models
 {
     public class Application
     {
@@ -11,10 +9,10 @@ namespace Sassa.BRM.Models
         private string child_id;
         //private string aRCHIVE_YEAR;
 
-        public string ChildId 
+        public string ChildId
         {
             get { return child_id; }
-            set { child_id  = value == null ? null : value.Trim().PadLeft(13, ' '); }
+            set { child_id = value == null ? null : value.Trim().PadLeft(13, ' '); }
         }//-----------------------------------------------
         public string Name { get; set; }
         public string SurName { get; set; }

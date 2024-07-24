@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.ViewModels
 {
@@ -59,7 +56,7 @@ namespace Sassa.BRM.ViewModels
         public ReportPeriod Quarter { get; set; }
         public int Year { get; set; }
         public int Month { get; set; }
-        public PagedResult<DayDetail> DayDetail{ get; set; }
+        public PagedResult<DayDetail> DayDetail { get; set; }
         public string RegionId { get; set; }
         public string OfficeId { get; set; }
         public int Total { get; set; }

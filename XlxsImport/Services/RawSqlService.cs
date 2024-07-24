@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Oracle.ManagedDataAccess.Client;
-using System;
+﻿using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace XlxsImport.Services
 {

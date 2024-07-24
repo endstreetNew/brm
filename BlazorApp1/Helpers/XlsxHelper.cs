@@ -1,12 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System;
-using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.InkML;
-using System.Runtime.Intrinsics.X86;
 
 namespace Sassa.BRM.Helpers
 {
@@ -16,7 +9,7 @@ namespace Sassa.BRM.Helpers
         /// <summary>
         ///  This is a demo to read the previously created basix.xlsx file
         /// </summary>
-        public static List<string> ReadDestroyList(string fileName,string targetColumnName= "A")
+        public static List<string> ReadDestroyList(string fileName, string targetColumnName = "A")
         {
             var DestroyList = new List<string>();
 

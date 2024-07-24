@@ -1,5 +1,5 @@
-using System;
 using Barcoder.Utils;
+using System;
 
 namespace Barcoder.Qr.InternalEncoders
 {
@@ -11,12 +11,12 @@ namespace Barcoder.Qr.InternalEncoders
             var contentBitCount = (content.Length / 3) * 10;
             switch (content.Length % 3)
             {
-            case 1:
-                contentBitCount += 4;
-                break;
-            case 2:
-                contentBitCount += 7;
-                break;
+                case 1:
+                    contentBitCount += 4;
+                    break;
+                case 2:
+                    contentBitCount += 7;
+                    break;
             }
 
             EncodingMode encodingMode = EncodingMode.Numeric;
@@ -36,17 +36,17 @@ namespace Barcoder.Qr.InternalEncoders
                 byte bitCount;
                 switch (currentContentPart.Length % 3)
                 {
-                case 0:
-                    bitCount = 10;
-                    break;
-                case 1:
-                    bitCount = 4;
-                    break;
-                case 2:
-                    bitCount = 7;
-                    break;
-                default:
-                    throw new InvalidOperationException();
+                    case 0:
+                        bitCount = 10;
+                        break;
+                    case 1:
+                        bitCount = 4;
+                        break;
+                    case 2:
+                        bitCount = 7;
+                        break;
+                    default:
+                        throw new InvalidOperationException();
                 }
 
                 bits.AddBits(currentNumericalValue, bitCount);

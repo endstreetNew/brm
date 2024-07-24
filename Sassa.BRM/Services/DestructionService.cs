@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Sassa.Brm.Common.Helpers;
 using Sassa.BRM.Models;
-using Sassa.BRM.Helpers;
 using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
@@ -17,9 +16,9 @@ namespace Sassa.BRM.Services
             _raw = raw;
         }
 
-        public async Task DestroyXlsxFile(string fileName,string columnName = "ID")
+        public async Task DestroyXlsxFile(string fileName, string columnName = "ID")
         {
-            var DestroyList = XlsxHelper.ReadDestroyList(fileName,columnName);
+            var DestroyList = XlsxHelper.ReadDestroyList(fileName, columnName);
             foreach (var item in DestroyList)
             {
                 //await _raw.ExecuteNonQuery($"Update DC_File set Application_Status = 'DESTROY' where Applicant_no = '{item}'");

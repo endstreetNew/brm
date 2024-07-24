@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
-using System.Security.Principal;
 using System.DirectoryServices;
+using System.Security.Principal;
 
 namespace Sassa.BRM.Services
 {
@@ -15,7 +15,7 @@ namespace Sassa.BRM.Services
             {
                 return _session;
             }
-            set 
+            set
             { _session = value; }
         }
         public event EventHandler SessionInitialized;

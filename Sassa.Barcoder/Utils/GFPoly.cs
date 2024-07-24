@@ -7,7 +7,7 @@ namespace Barcoder.Utils
     {
         public GaloisField GaloisField;
         public int[] Coefficients;
-        
+
         public GFPoly(GaloisField galoisField, int[] coefficients)
         {
             GaloisField = galoisField;

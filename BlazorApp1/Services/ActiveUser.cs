@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
-
-namespace Sassa.BRM.Services
+﻿namespace Sassa.BRM.Services
 {
     public class ActiveUser
     {

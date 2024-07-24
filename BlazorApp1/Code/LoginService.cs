@@ -1,10 +1,10 @@
-using System.Security.Claims;
-using System.Security.Cryptography;
 using BlazorApp1.HttpClients;
 using BlazorApp1.Models;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace BlazorApp1.Code;
 
@@ -29,9 +29,9 @@ public class LoginService
     public async Task<bool> LoginAsync(LoginModel model)
     {
         var response = await _backendApiHttpClient.LoginUserAsync(model);
-        if (string.IsNullOrEmpty(response?.Result?.JwtToken)) 
+        if (string.IsNullOrEmpty(response?.Result?.JwtToken))
             return false;
-        
+
         await _localStorage.SetItemAsync(AccessToken, response.Result.JwtToken);
         await _localStorage.SetItemAsync(RefreshToken, response.Result.RefreshToken);
 
@@ -55,14 +55,14 @@ public class LoginService
             return emptyResult;
         }
 
-        if (accessToken.Success is false || accessToken.Value == default) 
+        if (accessToken.Success is false || accessToken.Value == default)
             return emptyResult;
-        
+
         var claims = JwtTokenHelper.ValidateDecodeToken(accessToken.Value, _configuration);
-            
-        if (claims.Count != 0) 
+
+        if (claims.Count != 0)
             return claims;
-            
+
         if (refreshToken.Value != default)
         {
             var response = await _backendApiHttpClient.RefreshTokenAsync(refreshToken.Value);

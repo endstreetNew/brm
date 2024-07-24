@@ -1,26 +1,18 @@
-﻿using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.VariantTypes;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
-using Sassa.BRM.Data.ViewModels;
-using Sassa.BRM.Helpers;
+using Sassa.Brm.Common.Helpers;
+using Sassa.Brm.Common.Models;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
-using Sassa.BRM.Pages.Components;
 using Sassa.BRM.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics;
-
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace Sassa.BRM.Services
 {
@@ -67,7 +59,7 @@ namespace Sassa.BRM.Services
 
 
 
-        
+
 
         #region BRM Records
 
@@ -378,7 +370,7 @@ namespace Sassa.BRM.Services
         /// <param name="boxNo"></param>
         /// <param name="IsOpen"></param>
         /// <returns></returns>
-        public async Task<bool> OpenCloseBox(string boxNo,bool IsOpen)
+        public async Task<bool> OpenCloseBox(string boxNo, bool IsOpen)
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
@@ -413,7 +405,7 @@ namespace Sassa.BRM.Services
             }
         }
 
-        
+
         public async Task<List<ReboxListItem>> GetAllFilesByBoxNo(string boxNo, bool notScanned = false)
         {
 
@@ -559,10 +551,10 @@ namespace Sassa.BRM.Services
                 {
                     //nullaltboxfiles
                     var nullaltboxfiles = _context.DcFiles.Where(b => string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo).ToList();
-                    if (nullaltboxfiles.Any())
+                    if (nullaltboxfiles.ToList().Any())
                     {
                         var altboxes = _context.DcFiles.Where(b => !string.IsNullOrEmpty(b.AltBoxNo) && b.TdwBoxno == boxNo);
-                        if (altboxes.Any())
+                        if (altboxes.ToList().Any())
                         {
                             AltBoxNo = altboxes.First().AltBoxNo;
                         }
@@ -580,7 +572,7 @@ namespace Sassa.BRM.Services
                     }
                     //Repair RegionMisMatch values
                     var regionmismatchfiles = _context.DcFiles.Where(b => !b.AltBoxNo.Contains(session.Office.RegionCode) && b.TdwBoxno == boxNo).ToList();
-                    if (regionmismatchfiles.Any())
+                    if (regionmismatchfiles.ToList().Any())
                     {
 
 
@@ -594,7 +586,7 @@ namespace Sassa.BRM.Services
                         return true;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                 }
@@ -698,6 +690,8 @@ namespace Sassa.BRM.Services
             {
                 try
                 {
+                    var boxedFile = _context.DcFiles.Where(f => f.BrmBarcode == rebox.BrmBarcode).First();
+
                     file.MisReboxDate = DateTime.Now;
                     file.MisReboxStatus = "Completed";
                     file.TdwBoxno = rebox.BoxNo;
@@ -713,10 +707,11 @@ namespace Sassa.BRM.Services
                     {
                         file.TdwBoxArchiveYear = null;
                     }
-
                     file.AltBoxNo = rebox.AltBoxNo;
                     file.UpdatedDate = DateTime.Now;
                     file.UpdatedByAd = session.SamName;
+
+                    boxedFile.FromDcFile(file);
 
                     await _context.SaveChangesAsync();
                     CreateActivity("Reboxing" + GetFileArea(file.SrdNo, file.Lctype), "Rebox file", file.UnqFileNo);
@@ -1020,7 +1015,7 @@ namespace Sassa.BRM.Services
                 result.result = await query.Where(r => r.RegionId == session.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
                 return result;
             }
-         }
+        }
 
         public async Task ChangePickListStatus(DcPicklist pi)
         {
@@ -1345,7 +1340,7 @@ namespace Sassa.BRM.Services
         }
         #endregion
 
-        public async Task SaveChanges(string unqFileNo,string docsPresent)
+        public async Task SaveChanges(string unqFileNo, string docsPresent)
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
@@ -2019,7 +2014,7 @@ namespace Sassa.BRM.Services
             }
         }
 
-        public async Task<PagedResult<DcBatch>> GetMyBatches( bool myBatches, int page = 1)
+        public async Task<PagedResult<DcBatch>> GetMyBatches(bool myBatches, int page = 1)
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
@@ -2087,7 +2082,7 @@ namespace Sassa.BRM.Services
 
                 }
             }
-                CreateActivity("Batching", $"Status {newStatus}");
+            CreateActivity("Batching", $"Status {newStatus}");
         }
         public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
         {
@@ -2147,7 +2142,7 @@ namespace Sassa.BRM.Services
                 using (var _context = _contextFactory.CreateDbContext())
                 {
                     file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
-                    
+
                     if (file.BatchNo != 0)
                     {
                         if (_context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").Any())
@@ -2243,7 +2238,7 @@ namespace Sassa.BRM.Services
             try
             {
                 List<Waybill> result = new List<Waybill>();
-            List<DcBatch> batches;
+                List<DcBatch> batches;
                 using (var _context = _contextFactory.CreateDbContext())
                 {
                     if (session.Office.OfficeType == "RMC")
@@ -2808,7 +2803,7 @@ namespace Sassa.BRM.Services
                 _context.DcExclusions.Add(exclusion);
                 await _context.SaveChangesAsync();
             }
-         }
+        }
 
         public async Task RemoveExclusion(decimal id)
         {

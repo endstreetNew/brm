@@ -1,7 +1,7 @@
-﻿using Sassa.AdApi.Interfaces;
-using Sassa.AdApi.Settings;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Novell.Directory.Ldap;
+using Sassa.AdApi.Interfaces;
+using Sassa.AdApi.Settings;
 
 namespace Sassa.AdApi.Services;
 

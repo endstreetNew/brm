@@ -2,8 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
 
-using Microsoft.Extensions.Configuration;
-
 
 var cbuilder = new ConfigurationBuilder();
 cbuilder.AddJsonFile("appsettings.json");
@@ -24,8 +22,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 //}
 
 app.UseHttpsRedirection();

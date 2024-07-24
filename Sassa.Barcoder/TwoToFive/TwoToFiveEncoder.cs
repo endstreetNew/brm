@@ -1,6 +1,6 @@
+using Barcoder.Utils;
 using System;
 using System.Text.RegularExpressions;
-using Barcoder.Utils;
 
 namespace Barcoder.TwoToFive
 {

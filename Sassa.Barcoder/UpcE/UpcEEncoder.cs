@@ -1,7 +1,7 @@
+using Barcoder.Utils;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Barcoder.Utils;
 
 namespace Barcoder.UpcE
 {
@@ -33,12 +33,12 @@ namespace Barcoder.UpcE
             var upcA = GetUpcAFromUpcE(content, numberSystem);
             var upcACheckDigit = upcA.Last();
             Constants.ParityPatterns parityPatternTable = Constants.ParityPatternTable[upcACheckDigit];
-            Constants.Parity[] parityPattern = numberSystem == UpcENumberSystem.Zero ? 
+            Constants.Parity[] parityPattern = numberSystem == UpcENumberSystem.Zero ?
                 parityPatternTable.NumberSystemZero : parityPatternTable.NumberSystemOne;
 
             // Start bars
             result.AddBit(true, false, true);
-            
+
             // Data bars
             for (int i = 0; i < content.Length; i++)
             {
@@ -65,24 +65,24 @@ namespace Barcoder.UpcE
 
             switch (content.Last())
             {
-            case '0':
-            case '1':
-            case '2':
-                upcA += $"{content.Substring(0, 2)}{content.Last()}0000{content.Substring(2, 3)}";
-                break;
-            case '3':
-                upcA += $"{content.Substring(0, 3)}00000{content.Substring(3, 2)}";
-                break;
-            case '4':
-                upcA += $"{content.Substring(0, 4)}00000{content.Substring(4, 1)}";
-                break;
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                upcA += $"{content.Substring(0, 5)}0000{content.Last()}";
-                break;
+                case '0':
+                case '1':
+                case '2':
+                    upcA += $"{content.Substring(0, 2)}{content.Last()}0000{content.Substring(2, 3)}";
+                    break;
+                case '3':
+                    upcA += $"{content.Substring(0, 3)}00000{content.Substring(3, 2)}";
+                    break;
+                case '4':
+                    upcA += $"{content.Substring(0, 4)}00000{content.Substring(4, 1)}";
+                    break;
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    upcA += $"{content.Substring(0, 5)}0000{content.Last()}";
+                    break;
             }
 
             upcA += CalculatedUpcAChecksum(upcA);

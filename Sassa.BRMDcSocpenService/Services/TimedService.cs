@@ -26,7 +26,7 @@
         //private Timer _timerLO = null!;
         //private Timer _timerProgress = null!;
 
-        public TimedService(IWebHostEnvironment env,JsonFileUtils fu,RawSqlService raw)
+        public TimedService(IWebHostEnvironment env, JsonFileUtils fu, RawSqlService raw)
         {
             fileName = Path.Combine(env.ContentRootPath, "bookmarks") + "\\bookMarks.json";
             sqlPath = Path.Combine(env.ContentRootPath, "sql");
@@ -94,7 +94,7 @@
             _fu.WriteJson(Globals, fileName);
             bookmark = _raw.GetBookMark("Select max(Capture_date) from dc_socpen");
             bookmark = bookmark.AddDays(-14); //Start two weeks ago.
-            try 
+            try
             {
                 //New SRD's
                 sql = File.ReadAllText(sqlPath + "\\AddSrds.sql");
@@ -159,7 +159,7 @@
 
         private async Task SyncBRM(object? state)
         {
-            try 
+            try
             {
                 string sql = $@"update DC_SOCPEN f set CAPTURE_REFERENCE =
                 (
@@ -180,7 +180,7 @@
                 await _raw.ExecuteNonQuery(sql);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Globals.Progress = $"{Globals.Progress} : {ex.Message}";
             }
@@ -218,7 +218,7 @@
                             $" where f.BRM_BARCODE is null and Application_date >= to_date('{new DateTime(year, month, day).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
                             await _raw.ExecuteNonQuery(sql);
 
-                            sql = $"UPDATE dc_SOCPEN dc SET dc.TDW_REC = Application_date  where dc.BRM_BARCODE is not null and dc.Capture_reference is null AND Application_date >= to_date('{new DateTime(year, month,1).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
+                            sql = $"UPDATE dc_SOCPEN dc SET dc.TDW_REC = Application_date  where dc.BRM_BARCODE is not null and dc.Capture_reference is null AND Application_date >= to_date('{new DateTime(year, month, 1).ToString("dd/MMM/yyyy")}') and Application_date <= to_date('{new DateTime(year, month, DateTime.DaysInMonth(year, month)).ToString("dd/MMM/yyyy")}')";
                             await _raw.ExecuteNonQuery(sql);
 
                         }
@@ -229,7 +229,7 @@
                 }
                 Globals.Progress = "Done";
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Globals.Progress = $"{Globals.Progress} : {ex.Message}";
             }
@@ -237,78 +237,78 @@
         }
         private void NewCodeForPersonal()
         {
-//            INSERT INTO DC_SOCPENPG(ADABAS_ISN_ARCHIVE, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME, GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID, PAYPOINT)
-//SELECT
-//    A.ADABAS_ISN AS ADABAS_ISN_ARCHIVE,
-//    LPAD(A.PENSION_NO, 13, 0) AS BENEFICIARY_ID,
-//    C.ID_NO AS CHILD_ID,
-//    B.NAME_EXT,
-//    B.SURNAME_EXT,
-//    A.GRANT_TYPE,
-//    D.REGION_CODE AS REGION_ID,
-//    NVL(A.APPLICATION_DATE, C.APPLICATION_DATE) AS APPLICATION_DATE,
-//    C.APPROVAL_DATE,
-//    C.STATUS_DATE,
-//    CASE
-//        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
-//        ELSE 'INACTIVE'
-//    END AS STATUS_CODE,
-//    NULL AS UNIQUE_ID,
-//    B.secondary_paypoint as paypoint
-//FROM sassa_archive.socpen_personal_grants_archive A
-//JOIN sassa_archive.SOCPEN_PERSONAL_ARCHIVE B ON A.PENSION_NO = B.PENSION_NO
-//LEFT JOIN sassa_archive.SOCPEN_P12_CHILDREN_ARCHIVE C ON A.PENSION_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE
-//LEFT JOIN sassa.cust_rescodes D ON b.secondary_paypoint = d.res_code;
+            //            INSERT INTO DC_SOCPENPG(ADABAS_ISN_ARCHIVE, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME, GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID, PAYPOINT)
+            //SELECT
+            //    A.ADABAS_ISN AS ADABAS_ISN_ARCHIVE,
+            //    LPAD(A.PENSION_NO, 13, 0) AS BENEFICIARY_ID,
+            //    C.ID_NO AS CHILD_ID,
+            //    B.NAME_EXT,
+            //    B.SURNAME_EXT,
+            //    A.GRANT_TYPE,
+            //    D.REGION_CODE AS REGION_ID,
+            //    NVL(A.APPLICATION_DATE, C.APPLICATION_DATE) AS APPLICATION_DATE,
+            //    C.APPROVAL_DATE,
+            //    C.STATUS_DATE,
+            //    CASE
+            //        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
+            //        ELSE 'INACTIVE'
+            //    END AS STATUS_CODE,
+            //    NULL AS UNIQUE_ID,
+            //    B.secondary_paypoint as paypoint
+            //FROM sassa_archive.socpen_personal_grants_archive A
+            //JOIN sassa_archive.SOCPEN_PERSONAL_ARCHIVE B ON A.PENSION_NO = B.PENSION_NO
+            //LEFT JOIN sassa_archive.SOCPEN_P12_CHILDREN_ARCHIVE C ON A.PENSION_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE
+            //LEFT JOIN sassa.cust_rescodes D ON b.secondary_paypoint = d.res_code;
 
-//            commit;
+            //            commit;
 
-//            INSERT INTO DC_SOCPENPG(ADABAS_ISN_MAIN, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME, GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID, PAYPOINT)
-//SELECT
-//    A.ADABAS_ISN AS ADABAS_ISN_MAIN,
-//    LPAD(A.PENSION_NO, 13, 0) AS BENEFICIARY_ID,
-//    C.ID_NO AS CHILD_ID,
-//    B.NAME_EXT,
-//    B.SURNAME_EXT,
-//    A.GRANT_TYPE,
-//    D.REGION_CODE AS REGION_ID,
-//    NVL(A.APPLICATION_DATE, C.APPLICATION_DATE) AS APPLICATION_DATE,
-//    C.APPROVAL_DATE,
-//    C.STATUS_DATE,
-//    CASE
-//        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
-//        ELSE 'INACTIVE'
-//    END AS STATUS_CODE,
-//    NULL AS UNIQUE_ID,
-//    B.secondary_paypoint as paypoint
-//FROM sassa.socpen_personal_grants A
-//JOIN SOCPEN_PERSONAL B ON  A.PENSION_NO = B.PENSION_NO
-//LEFT JOIN SOCPEN_P12_CHILDREN C ON A.PENSION_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE
-//LEFT JOIN sassa.cust_rescodes D ON b.secondary_paypoint = d.res_code;
+            //            INSERT INTO DC_SOCPENPG(ADABAS_ISN_MAIN, BENEFICIARY_ID, CHILD_ID, NAME, SURNAME, GRANT_TYPE, REGION_ID, APPLICATION_DATE, APPROVAL_DATE, STATUS_DATE, STATUS_CODE, UNIQUE_ID, PAYPOINT)
+            //SELECT
+            //    A.ADABAS_ISN AS ADABAS_ISN_MAIN,
+            //    LPAD(A.PENSION_NO, 13, 0) AS BENEFICIARY_ID,
+            //    C.ID_NO AS CHILD_ID,
+            //    B.NAME_EXT,
+            //    B.SURNAME_EXT,
+            //    A.GRANT_TYPE,
+            //    D.REGION_CODE AS REGION_ID,
+            //    NVL(A.APPLICATION_DATE, C.APPLICATION_DATE) AS APPLICATION_DATE,
+            //    C.APPROVAL_DATE,
+            //    C.STATUS_DATE,
+            //    CASE
+            //        WHEN C.STATUS_CODE = '1' OR(A.PRIM_STATUS IN('B', 'A', '9') AND A.SEC_STATUS IN('2')) THEN 'ACTIVE'
+            //        ELSE 'INACTIVE'
+            //    END AS STATUS_CODE,
+            //    NULL AS UNIQUE_ID,
+            //    B.secondary_paypoint as paypoint
+            //FROM sassa.socpen_personal_grants A
+            //JOIN SOCPEN_PERSONAL B ON  A.PENSION_NO = B.PENSION_NO
+            //LEFT JOIN SOCPEN_P12_CHILDREN C ON A.PENSION_NO = c.pension_no AND A.GRANT_TYPE = C.GRANT_TYPE
+            //LEFT JOIN sassa.cust_rescodes D ON b.secondary_paypoint = d.res_code;
 
-//            commit;
+            //            commit;
         }
         /// <summary>
         /// This SQL needs to run if we receive updates for MIS or ss_application
         /// </summary>
         private void MISSQL()
         {
-//            update DC_SOCPEN f set MIS_FILES =
-//(select File_number from mis_livelink_file b
-//where b.ID_NUMBER = f.Beneficiary_id
-//and rownum = 1
-//AND(b.GRANT_TYPE = f.GRANT_TYPE OR b.GRANT_TYPE = '3' AND f.GRANT_TYPE = '0')
-//and f.CAPTURE_REFERENCE is null)
-//where f.MIS_FILES is null and f.BRM_BARCODE is null and Application_date >= to_date('30/Mar/2016')  and Application_date<to_date('01/Jan/2019');
-//            commit;
+            //            update DC_SOCPEN f set MIS_FILES =
+            //(select File_number from mis_livelink_file b
+            //where b.ID_NUMBER = f.Beneficiary_id
+            //and rownum = 1
+            //AND(b.GRANT_TYPE = f.GRANT_TYPE OR b.GRANT_TYPE = '3' AND f.GRANT_TYPE = '0')
+            //and f.CAPTURE_REFERENCE is null)
+            //where f.MIS_FILES is null and f.BRM_BARCODE is null and Application_date >= to_date('30/Mar/2016')  and Application_date<to_date('01/Jan/2019');
+            //            commit;
 
-//            update DC_SOCPEN f set MIS_FILES =
-//            (select 'SSARecord' from SS_APPLICATION b
-//            where b.ID_NUMBER = f.Beneficiary_id
-//            and rownum = 1
-//AND(b.GRANT_TYPE = f.GRANT_TYPE OR b.GRANT_TYPE = '3' AND f.GRANT_TYPE = '0')
-//and f.CAPTURE_REFERENCE is null)
-//where f.MIS_FILES is null and f.BRM_BARCODE is null;
-//            commit;
+            //            update DC_SOCPEN f set MIS_FILES =
+            //            (select 'SSARecord' from SS_APPLICATION b
+            //            where b.ID_NUMBER = f.Beneficiary_id
+            //            and rownum = 1
+            //AND(b.GRANT_TYPE = f.GRANT_TYPE OR b.GRANT_TYPE = '3' AND f.GRANT_TYPE = '0')
+            //and f.CAPTURE_REFERENCE is null)
+            //where f.MIS_FILES is null and f.BRM_BARCODE is null;
+            //            commit;
         }
 
         public Task StopAsync(CancellationToken stoppingToken)
@@ -321,7 +321,7 @@
 
             return Task.CompletedTask;
         }
-        
+
         public void Dispose()
         {
             schedule?.Dispose();
@@ -337,28 +337,29 @@
             public bool Status { get; set; }
             public string? Progress { get; set; }
             public DateTime NextRefreshDate { get; set; } = System.DateTime.Now;
-            public string TimeString { 
+            public string TimeString
+            {
                 get
                 {
                     return NextRefreshTime.ToString("HH:mm");
                 }
-                set 
+                set
                 {
                     var hhmm = value.Split(":");
 
                     NextRefreshTime = new TimeOnly(int.Parse(hhmm[0]), int.Parse(hhmm[1]));
-                } 
+                }
             }
-            public TimeOnly NextRefreshTime  = TimeOnly.FromDateTime(DateTime.Now);
+            public TimeOnly NextRefreshTime = TimeOnly.FromDateTime(DateTime.Now);
 
             public DateTime AHRefreshDate()
-            { 
-                if(NextRefreshDate.Hour > 8 && NextRefreshDate.Hour < 17) //Cant run in business hours.
+            {
+                if (NextRefreshDate.Hour > 8 && NextRefreshDate.Hour < 17) //Cant run in business hours.
                 {
                     NextRefreshDate = NextRefreshDate.AddHours(19 - NextRefreshDate.Hour);
                 }
-                return NextRefreshDate; 
-            } 
+                return NextRefreshDate;
+            }
 
         }
     }

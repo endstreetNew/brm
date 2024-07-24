@@ -402,6 +402,7 @@
     {
         try
         {
+            rebox.NewBarcode = rebox.NewBarcode.ToUpper().Trim();
             if (string.IsNullOrEmpty(rebox.MisFileNo.Trim()) || rebox.MisFileNo.Trim().Length > 11 || rebox.MisFileNo.Trim().Length < 9) throw new Exception("Invalid MIS File Number");
             if (string.IsNullOrEmpty(rebox.NewBarcode.Trim()) || rebox.NewBarcode.Trim().Length != 8) throw new Exception("Invalid Barcode");
             if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
@@ -409,11 +410,12 @@
             rebox.BrmBarcode = string.Empty;
             DcFile file = await AddFile();
             db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"File Created from MIS {rebox.MisFileNo.Trim()}", file.UnqFileNo);
+            //await btnAddFile_Click();
         }
         catch (Exception ex)
         {
             toast.Error(ex.Message);
-            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"Error from MIS {rebox.MisFileNo.Trim()} :" + ex.Message.Substring(0,200), "");
+            //db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"Error from MIS {rebox.MisFileNo.Trim()} :" + ex.Message.Substring(0,200), "");
         }
     }
 
@@ -555,11 +557,10 @@
         {
             rebox.AltBoxNo = await db.GetNexRegionAltBoxSequence();
         }
-
-
-
         file.PrintOrder = boxfiles.count;
+
         await db.Rebox(rebox, file);
+
         if (string.IsNullOrEmpty(rebox.BatchNo))
         {
             string scanState = file.ScanDatetime == null ? "Not Scanned" : "Scanned";

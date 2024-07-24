@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace BlazorApp1.Pages;
 
-public partial class Login: ComponentBase
+public partial class Login : ComponentBase
 {
     private readonly LoginModel _model = new();
     private bool _loginFailed;
-    
+
     protected override void OnInitialized()
     {
         Console.WriteLine("Hello");

@@ -1,7 +1,7 @@
+using Barcoder.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Barcoder.Utils;
 
 namespace Barcoder.Code39
 {

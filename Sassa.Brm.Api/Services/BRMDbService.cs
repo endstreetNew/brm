@@ -1,24 +1,12 @@
 ﻿//using DocumentFormat.OpenXml.VariantTypes;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using razor.Components.Models;
-using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
 //using Sassa.BRM.Pages.Components;
 using Sassa.BRM.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.DirectoryServices;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+using Sassa.Brm.Common.Models;
 
 namespace Sassa.BRM.Services
 {
@@ -37,7 +25,7 @@ namespace Sassa.BRM.Services
                 return _session;
             }
         }
-        public BRMDbService(ModelContext context,IConfiguration config)
+        public BRMDbService(ModelContext context, IConfiguration config)
         {
             //if (StaticD.Users == null) StaticD.Users = new List<string>();
             _context = context;
@@ -73,7 +61,7 @@ namespace Sassa.BRM.Services
         }
         public async Task GetLocalOffice()
         {
-            if(_session == null)
+            if (_session == null)
             {
                 throw new Exception("Session not initialized");
             }
@@ -267,7 +255,7 @@ namespace Sassa.BRM.Services
         {
             //DC_FIle
             var oldOfficerecs = await _context.DcFiles.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
-            foreach(var file in oldOfficerecs)
+            foreach (var file in oldOfficerecs)
             {
                 file.OfficeId = toOfficeId.ToString();
             }
@@ -608,7 +596,7 @@ namespace Sassa.BRM.Services
             }
             //Removes all duplicates in case LO retries after DC_Activity failure
             //await RemoveBRM(application.Brm_BarCode, "Api retry");
-            if(_context.DcFiles.Where(f => f.BrmBarcode == application.Brm_BarCode).ToList().Any())
+            if (_context.DcFiles.Where(f => f.BrmBarcode == application.Brm_BarCode).ToList().Any())
             {
                 throw new Exception("Duplicate BRM");
             }
@@ -651,7 +639,7 @@ namespace Sassa.BRM.Services
             }
             catch (Exception ex)
             {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0,200), file.UnqFileNo);
+                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
                 throw;
             }
 
@@ -685,7 +673,7 @@ namespace Sassa.BRM.Services
             try
             {
                 if (application.Srd_No.IsNumeric())
-                { 
+                {
                     srd = long.Parse(application.Srd_No);
                 }
             }
@@ -698,7 +686,7 @@ namespace Sassa.BRM.Services
             await _context.SaveChangesAsync();
 
             var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd && s.ChildId == application.ChildId).ToListAsync();
-            if(result.Any())
+            if (result.Any())
             {
                 dc_socpen = result.First();
                 dc_socpen.CaptureReference = file.UnqFileNo;
@@ -715,7 +703,7 @@ namespace Sassa.BRM.Services
                 dc_socpen = new DcSocpen();
                 dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
                 dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE":"INACTIVE";
+                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
                 dc_socpen.BeneficiaryId = application.Id;
                 dc_socpen.SrdNo = srd;
                 dc_socpen.GrantType = application.GrantType;
@@ -736,7 +724,7 @@ namespace Sassa.BRM.Services
             {
                 await _context.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
                 throw;
@@ -850,7 +838,7 @@ namespace Sassa.BRM.Services
         }
 
 
-        private async Task<decimal?> CreateBatchForUser(string sRegType,string OfficeId,string SamName)
+        private async Task<decimal?> CreateBatchForUser(string sRegType, string OfficeId, string SamName)
         {
             DcBatch batch;
             List<DcBatch> batches = new List<DcBatch>();

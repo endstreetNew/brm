@@ -10,25 +10,35 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Helpers\**" />
 	  <Compile Remove="wwwroot\brmFiles\**" />
 	  <Compile Remove="wwwroot\CSImages\NewFolder\**" />
 	  <Compile Remove="wwwroot\Documents\**" />
+	  <Content Remove="Helpers\**" />
 	  <Content Remove="wwwroot\brmFiles\**" />
 	  <Content Remove="wwwroot\CSImages\NewFolder\**" />
 	  <Content Remove="wwwroot\Documents\**" />
+	  <EmbeddedResource Remove="Helpers\**" />
 	  <EmbeddedResource Remove="wwwroot\brmFiles\**" />
 	  <EmbeddedResource Remove="wwwroot\CSImages\NewFolder\**" />
 	  <EmbeddedResource Remove="wwwroot\Documents\**" />
+	  <None Remove="Helpers\**" />
 	  <None Remove="wwwroot\brmFiles\**" />
 	  <None Remove="wwwroot\CSImages\NewFolder\**" />
 	  <None Remove="wwwroot\Documents\**" />
+	  <Watch Remove="Helpers\**" />
 	  <Watch Remove="wwwroot\brmFiles\**" />
 	  <Watch Remove="wwwroot\CSImages\NewFolder\**" />
 	  <Watch Remove="wwwroot\Documents\**" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controller\ApplicationController.cs" />
 	  <Compile Remove="Services\AssetService.cs" />
+	  <Compile Remove="Services\BarCodeService.cs" />
+	  <Compile Remove="Services\SessionService.cs" />
+	  <Compile Remove="Services\StaticDataService.cs" />
+	  <Compile Remove="Services\StaticService.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -75,16 +85,8 @@
 
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
-    <PackageReference Include="SvgLib" Version="1.0.0.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.ServiceModel.Http" Version="8.0.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="8.0.0" />
   </ItemGroup>
@@ -92,6 +94,7 @@
   <ItemGroup>
     <ProjectReference Include="..\razor.Components\razor.Components.csproj" />
     <ProjectReference Include="..\Sassa.Barcoder\Sassa.Barcoder.csproj" />
+    <ProjectReference Include="..\Sassa.Brm.Common\Sassa.Brm.Common.csproj" />
     <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
     <ProjectReference Include="..\Sassa.QrCoder\Sassa.QrCoder.csproj" />
     <ProjectReference Include="..\Sassa.Socpen.Data\Sassa.Socpen.Data.csproj" />
