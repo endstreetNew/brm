@@ -79,7 +79,7 @@ namespace Sassa.Brm.Common.Services
                          }).FirstOrDefault();
 
             UserOffice Office = new UserOffice();
-            Office.OfficeName = value.OfficeName;
+            Office.OfficeName = value!.OfficeName;
             Office.OfficeId = value.OfficeId;
             Office.OfficeType = value.OfficeType;
             Office.RegionId = value.RegionId;
@@ -97,7 +97,7 @@ namespace Sassa.Brm.Common.Services
             {
                 StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            return StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
+            return StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault()!;
         }
 
         public UserSession SetUserOffice(string officeId)
@@ -108,7 +108,7 @@ namespace Sassa.Brm.Common.Services
             }
             var office = StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
             UserSession _session = new UserSession();
-            _session.Office.OfficeName = office.OfficeName;
+            _session.Office.OfficeName = office!.OfficeName;
             _session.Office.OfficeId = office.OfficeId;
             _session.Office.OfficeType = office.OfficeType;
             _session.Office.RegionId = office.RegionId;
@@ -124,7 +124,7 @@ namespace Sassa.Brm.Common.Services
             {
                 StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
+            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices!.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
         }
         public List<DcFixedServicePoint> GetOfficeServicePoints(string officeID)
         {

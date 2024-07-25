@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 //using Microsoft.Extensions.Options;
 using razor.Components;
+using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
 using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
@@ -19,20 +20,24 @@ namespace Sassa.BRM
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration,IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment _env { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             string BrmConnectionString = Configuration.GetConnectionString("BrmConnection");
+            var ActivityApi = new Uri(Configuration["Urls:ActivityApi"]);
 
             services.AddHttpContextAccessor();
+            services.AddScoped<ActivityService, ActivityService>();
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
             services.AddSingleton<StaticD>();
             //Factory pattern
@@ -55,6 +60,39 @@ namespace Sassa.BRM
             options.UseOracle(BrmConnectionString));
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
+            services.AddSingleton<IEmailSettings, EmailSettings>(c =>
+            {
+                EmailSettings emailSettings = new EmailSettings();
+                emailSettings.ContentRootPath = _env.ContentRootPath;
+                emailSettings.WebRootPath = _env.WebRootPath;
+                emailSettings.ReportFolder = Configuration.GetValue<string>("Folders:Reports")!;
+                emailSettings.DocumentFolder = Configuration.GetValue<string>("Folders:Documents")!;
+                emailSettings.SmtpServer = Configuration.GetValue<string>("Email:SMTPServer")!;
+                emailSettings.SmtpPort = Configuration.GetValue<int>("Email:SMTPPort");
+                emailSettings.SmtpUser = Configuration.GetValue<string>("Email:SMTPUser")!;
+                emailSettings.SmtpPassword = Configuration.GetValue<string>("Email:SMTPPassword")!;
+                emailSettings.TdwReturnedBox = Configuration.GetValue<string>("TDWReturnedBox");
+                emailSettings.RegionEmails.Add("GAUTENG", Configuration.GetValue<string>("TDWEmail:GAUTENG")!);
+                emailSettings.RegionEmails.Add("FREE STATE", Configuration.GetValue<string>("TDWEmail:FREE STATE")!);
+                emailSettings.RegionEmails.Add("KWA-ZULU NATAL", Configuration.GetValue<string>("TDWEmail:KWA-ZULU NATAL")!);
+                emailSettings.RegionEmails.Add("KWAZULU NATAL", Configuration.GetValue<string>("TDWEmail:KWA-ZULU NATAL")!);
+                emailSettings.RegionEmails.Add("NORTH WEST", Configuration.GetValue<string>("TDWEmail:NORTH WEST")!);
+                emailSettings.RegionEmails.Add("MPUMALANGA", Configuration.GetValue<string>("TDWEmail:MPUMALANGA")!);
+                emailSettings.RegionEmails.Add("EASTERN CAPE", Configuration.GetValue<string>("TDWEmail:EASTERN CAPE")!);
+                emailSettings.RegionEmails.Add("WESTERN CAPE", Configuration.GetValue<string>("TDWEmail:WESTERN CAPE")!);
+                emailSettings.RegionEmails.Add("LIMPOPO", Configuration.GetValue<string>("TDWEmail:LIMPOPO")!);
+                emailSettings.RegionEmails.Add("NORTHERN CAPE", Configuration.GetValue<string>("TDWEmail:NORTHERN CAPE")!);
+                emailSettings.RegionIDEmails.Add("7", Configuration.GetValue<string>("TDWEmail:GAUTENG")!);
+                emailSettings.RegionIDEmails.Add("4", Configuration.GetValue<string>("TDWEmail:FREE STATE")!);
+                emailSettings.RegionIDEmails.Add("5", Configuration.GetValue<string>("TDWEmail:KWA-ZULU NATAL")!);
+                emailSettings.RegionIDEmails.Add("6", Configuration.GetValue<string>("TDWEmail:NORTH WEST")!);
+                emailSettings.RegionIDEmails.Add("8", Configuration.GetValue<string>("TDWEmail:MPUMALANGA")!);
+                emailSettings.RegionIDEmails.Add("2", Configuration.GetValue<string>("TDWEmail:EASTERN CAPE")!);
+                emailSettings.RegionIDEmails.Add("1", Configuration.GetValue<string>("TDWEmail:WESTERN CAPE")!);
+                emailSettings.RegionIDEmails.Add("9", Configuration.GetValue<string>("TDWEmail:LIMPOPO")!);
+                emailSettings.RegionIDEmails.Add("3", Configuration.GetValue<string>("TDWEmail:NORTHERN CAPE")!);
+                return emailSettings;
+            });
             services.AddSingleton<MailMessages>();
             services.AddSingleton<FileService>();
 
@@ -63,9 +101,12 @@ namespace Sassa.BRM
             services.AddScoped<CSService>();
             services.AddScoped<ReportDataService>();
             services.AddScoped<ProgressService>();
+            services.AddScoped<Helper>();
 
             services.AddScoped<ActiveUser>();
             services.AddSingleton<ActiveUserList>();
+
+            services.AddHttpClient();
 
             services.ConfigureApplicationCookie(options =>
             {

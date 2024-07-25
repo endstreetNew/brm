@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
 using Sassa.Brm.Common;
-using Sassa.BRM.Helpers;
+using Sassa.Brm.Common.Models;
+using Sassa.Brm.Common.Services;
+using Sassa.Brm.Common.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 using System;
@@ -12,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Sassa.Brm.Reports.Services
 {
@@ -21,8 +24,9 @@ namespace Sassa.Brm.Reports.Services
         //ModelContext _context;
         StaticService sservice;
         RawSqlService _raw;
-        UserSession session;
+        SessionService _sessionService;
         MailMessages _mail;
+        UserSession session;
 
 
         private readonly IDbContextFactory<ModelContext> _contextFactory;
@@ -33,7 +37,8 @@ namespace Sassa.Brm.Reports.Services
             sservice = staticService;
             _raw = raw;
             _mail = mail;
-            session = sessionService.session;
+            _sessionService = sessionService;
+            session = _sessionService.session!;
         }
         //public BRMDbService(ModelContext context, StaticService staticService,RawSqlService raw,  MailMessages mail,SessionService sessionService)
         //{

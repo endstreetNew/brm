@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using razor.Components.Models;
+using Sassa.Brm.Common.Helpers;
+using Sassa.Brm.Common.Services;
 using Sassa.BRM.Data.ViewModels;
-using Sassa.BRM.Helpers;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 //using Sassa.eDocs.Data.Migrations;
@@ -14,7 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sassa.Brm.Reports.Services
+namespace Sassa.Brm.Common.Services
 {
     public class ReportDataService
     {
@@ -24,10 +25,10 @@ namespace Sassa.Brm.Reports.Services
         public Dictionary<string, string> reportList;
 
         ProgressService _ogs;
-        BRMDbService db;
+        //BRMDbService db;
         StaticService sservice;
 
-        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db, StaticService Sservice)
+        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs,  StaticService Sservice)
         {
             connectionString = config.GetConnectionString("BrmConnection");
             sservice = Sservice;
@@ -65,7 +66,7 @@ namespace Sassa.Brm.Reports.Services
             reportList.Add("11", "Manual Capture Report");
             reportList.Add("12", "Missing Files Report");
 
-            db = _db;
+            //db = _db;
 
             _ogs = ogs;
         }

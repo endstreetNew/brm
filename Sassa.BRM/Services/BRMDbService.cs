@@ -19,47 +19,24 @@ namespace Sassa.BRM.Services
     public class BRMDbService
     {
 
-        //ModelContext _context;
         StaticService sservice;
         RawSqlService _raw;
         UserSession session;
         MailMessages _mail;
+        ActivityService _activity;
 
 
         private readonly IDbContextFactory<ModelContext> _contextFactory;
 
-        public BRMDbService(IDbContextFactory<ModelContext> contextFactory, StaticService staticService, RawSqlService raw, MailMessages mail, SessionService sessionService)
+        public BRMDbService(IDbContextFactory<ModelContext> contextFactory, StaticService staticService, RawSqlService raw, MailMessages mail, SessionService sessionService, ActivityService activity)
         {
             _contextFactory = contextFactory;
             sservice = staticService;
             _raw = raw;
             _mail = mail;
             session = sessionService.session;
+            _activity = activity;
         }
-        //public BRMDbService(ModelContext context, StaticService staticService,RawSqlService raw,  MailMessages mail,SessionService sessionService)
-        //{
-        //    //if (StaticD.Users == null) StaticD.Users = new List<string>();
-        //    _context = context;
-        //    sservice = staticService;
-        //    _raw = raw;
-        //    _mail = mail;
-        //    session = sessionService.session;
-
-        //    //try
-        //    //{
-        //    //    GetUserSession((WindowsIdentity)ctx.HttpContext.User.Identity);
-        //    //    //if (!StaticD.Users.Contains(session.SamName)) StaticD.Users.Add(session.SamName);
-        //    //}
-        //    //catch //(Exception ex)
-        //    //{
-        //    //    session = null;
-        //    //    //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
-        //    //}
-        //}
-
-
-
-
 
         #region BRM Records
 
@@ -90,7 +67,7 @@ namespace Sassa.BRM.Services
             using (var _context = _contextFactory.CreateDbContext())
             {
                 //Removes all duplicates
-                await RemoveBRM(application.Brm_BarCode, reason);
+                //await RemoveBRM(application.Brm_BarCode, reason);
                 decimal? batch = null;
                 var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
                 if (office.ManualBatch == "A")
@@ -388,7 +365,8 @@ namespace Sassa.BRM.Services
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
-                return await _context.DcFiles.Where(b => b.TdwBoxno == boxNo && b.BoxLocked == 1).AnyAsync();
+                var interim = await _context.DcFiles.Where(b => b.TdwBoxno == boxNo && b.BoxLocked == 1).ToListAsync();
+                return interim.Any();
             }
         }
 
@@ -698,7 +676,7 @@ namespace Sassa.BRM.Services
                     file.MiniBoxno = rebox.MiniBox;
                     file.TdwBoxTypeId = decimal.Parse(rebox.SelectedType);
                     file.TdwBatch = 0;
-                    //file.FileNumber = rebox.MisFileNo;
+
                     if ("14|15|16|17|18".Contains(rebox.SelectedType))
                     {
                         file.TdwBoxArchiveYear = rebox.ArchiveYear;
@@ -718,7 +696,7 @@ namespace Sassa.BRM.Services
                 }
                 catch //(Exception ex)
                 {
-                    throw;
+                    throw new Exception($"Error reboxing file - {file.BrmBarcode}");
                 }
             }
         }
@@ -1351,30 +1329,26 @@ namespace Sassa.BRM.Services
         }
 
         /// <summary>
-        /// Create standard report file name
-        /// </summary>
-        /// <param name="reportName"></param>
-        /// <returns></returns>
-        public string GetFileName(string reportName)
-        {
-            return $"{session.Office.RegionCode}-{session.SamName.ToUpper()}-{reportName}-{DateTime.Now.ToShortDateString().Replace("/", "-")}-{DateTime.Now.ToString("HH-mm")}";
-        }
-        /// <summary>
         /// Create Activity Record
         /// </summary>
         /// <param name="Area"></param>
         /// <param name="Activity"></param>
         /// <returns></returns>
-        public void CreateActivity(string Area, string Activity, string UniqueFileNo = "")
+        public async Task CreateActivity(string Area, string Activity, string UniqueFileNo = "")
+        {
+            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
+            await CreateActivity(activity);
+        }
+
+        public async Task CreateActivity(DcActivity activity)
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
-                DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
                 try
                 {
-
-                    _context.DcActivities.Add(activity);
-                    _context.SaveChanges();
+                    _activity.PostActivity(activity);
+                    //_context.DcActivities.Add(activity);
+                    //await _context.SaveChangesAsync();
 
                 }
                 catch
@@ -1894,7 +1868,6 @@ namespace Sassa.BRM.Services
                         _context.DcFileDeleteds.Add(removed);
                         await _context.SaveChangesAsync();
                     }
-
                 }
                 catch
                 {

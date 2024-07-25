@@ -25,10 +25,10 @@ namespace Sassa.BRM.Services
         public Dictionary<string, string> reportList;
 
         ProgressService _ogs;
-        BRMDbService db;
+        //BRMDbService db;
         StaticService sservice;
 
-        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, BRMDbService _db, StaticService Sservice)
+        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs,  StaticService Sservice)
         {
             connectionString = config.GetConnectionString("BrmConnection");
             sservice = Sservice;
@@ -66,7 +66,7 @@ namespace Sassa.BRM.Services
             reportList.Add("11", "Manual Capture Report");
             reportList.Add("12", "Missing Files Report");
 
-            db = _db;
+            //db = _db;
 
             _ogs = ogs;
         }

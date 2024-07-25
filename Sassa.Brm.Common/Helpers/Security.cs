@@ -21,16 +21,16 @@ namespace Sassa.Brm.Common.Helpers
             }
             return result;
         }
-        public static string GetADEmail(this string username)
+        public static string? GetADEmail(this string username)
         {
             try
             {
                 var di = new DirectoryEntry($"LDAP://DC=SASSA,DC=local");
                 string[] loadProps = new string[] { "name", "mail" };
-                DirectorySearcher ds = new DirectorySearcher(di, $"sAMAccountName={username}", loadProps);
-                SearchResult sr = ds.FindOne();
+                DirectorySearcher ds = new DirectorySearcher(di, $"SamAccountName={username}", loadProps);
+                SearchResult sr = ds.FindOne()!;
                 DirectoryEntry entry = sr.GetDirectoryEntry();
-                return (string)entry.Properties["mail"].Value;
+                return (string)entry.Properties["mail"].Value!;
             }
             catch
             {

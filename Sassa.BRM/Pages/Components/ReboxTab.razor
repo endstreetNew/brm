@@ -1,5 +1,6 @@
 ﻿@inject Navigation Navigate
 @inject NavigationManager NavigationM
+@inject Helper helper
 @inject SessionService sessionservice
 @inject BRMDbService db
 @inject StaticService sservice
@@ -410,7 +411,6 @@
             rebox.BrmBarcode = string.Empty;
             DcFile file = await AddFile();
             db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"File Created from MIS {rebox.MisFileNo.Trim()}", file.UnqFileNo);
-            //await btnAddFile_Click();
         }
         catch (Exception ex)
         {
@@ -521,7 +521,7 @@
             sb.Append(BulkPrint.Footer());
             toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
 
-            await rd.SaveHtmlReport(sb.ToString(), db.GetFileName($"Box_{rebox.BoxNo}"));
+            await rd.SaveHtmlReport(sb.ToString(), helper.GetFileName($"Box_{rebox.BoxNo}",sessionservice.session));
 
         }
         catch (Exception ex)

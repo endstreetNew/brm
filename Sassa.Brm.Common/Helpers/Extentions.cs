@@ -51,7 +51,6 @@ namespace Sassa.Brm.Common.Helpers
         {
             return "59C".Contains(grant.Trim().ToUpper());
         }
-
         public static bool IsNumeric(this string text)
         {
             double result;

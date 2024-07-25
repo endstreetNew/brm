@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Sassa.Brm.Common.Helpers;
+﻿using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
 using Sassa.BRM.Models;
 using System;
 using System.DirectoryServices;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Sassa.Brm.Common.Services
 {
     public class SessionService
     {
-        private UserSession _session;
-        public UserSession session
+        private UserSession? _session;
+        public UserSession? session
         {
             get
             {
@@ -20,19 +22,20 @@ namespace Sassa.Brm.Common.Services
             set
             { _session = value; }
         }
-        public event EventHandler SessionInitialized;
+        public event EventHandler? SessionInitialized;
         ModelContext _context;
-        public SessionService(ModelContext context, IHttpContextAccessor ctx)
+
+        private readonly WindowsIdentity _windowsIdentity;
+
+        public SessionService(ModelContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
-
             try
             {
-                _session = GetUserSession((WindowsIdentity)ctx.HttpContext.User.Identity);
-
-                //if (!StaticD.Users.Contains(_session.SamName)) StaticD.Users.Add(_session.SamName);
+                _windowsIdentity = (WindowsIdentity)httpContextAccessor.HttpContext.User.Identity;
+                _session = GetUserSession(_windowsIdentity);
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
                 _session = null;
                 //WriteEvent($"{ctx.HttpContext.User.Identity.Name} : {ex.Message}");
