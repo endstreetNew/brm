@@ -11,7 +11,7 @@ namespace Sassa.Brm.Portal
 
             // Add services to the container.
             builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-            builder.Services.AddSingleton<EndPoints>();
+            builder.Services.AddSingleton<MenuItems>();
 
             var app = builder.Build();
 
