@@ -48,22 +48,14 @@ namespace Sassa.BRM.Controller
                 app.BrmUserName = _config.GetValue<string>("BrmUser")!;
             }
 
-            //try
-            //{
-
-            //result = await _brmService.CreateBRM(app, "Inserted via API.");
-            //if (result == null)
-            //{
-            //    return BadRequest();
-            //}
             ApiResponse<string> response = new ApiResponse<string>();
             try
             {
                 if (_brmService.session == null)
                 {
                     _brmService.SetUserSession(app.BrmUserName);
-                    _brmService.SetUserOffice(app.OfficeId);
                 }
+                _brmService.SetUserOffice(app.OfficeId);
                 result = await _brmService.CreateBRM(app, "Inserted via API.");
                 return result;
             }
@@ -75,20 +67,9 @@ namespace Sassa.BRM.Controller
             }
 
             return Ok(response);
-            //} 
-            //catch (Exception ex)
-            //{
-            //    return GetLastError();
-            //}
-            //var xx = CreatedAtAction("GetUser", new { id = user.Id }, user);
-            //return xx;
 
         }
-        //[HttpGet]
-        //public ActionResult<string> GetLastError()
-        //{
-        //    return lastError;
-        //}   
+
 
     }
 }

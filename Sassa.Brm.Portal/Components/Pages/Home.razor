@@ -1,18 +1,22 @@
 ﻿@page "/"
+@inject EndPoints endPoints
 
 <div class="text-center">
-    <h6 class="display-4">Welcome to SASSA BRM Portal</h6>
+    <h6 class="display-5">SASSA BRM Portal</h6>
     <hr class="my-4">
     <div class="row">
-        <div class="nav flex-column" style="width:50%;">
-            <a class="btn btn-lg btn-outline-secondary" href="http://ssvsprbrphc02.sassa.local" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>Local Office</a>
-            <a class="btn btn-lg btn-outline-secondary" href="http://ssvsprbrphc01.sassa.local" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>RMC Office</a>
-            <a class="btn btn-lg btn-outline-secondary" href="http://ssvsprbrphc01.sassa.local:81" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>BRM Reports</a>
+        <div class="nav flex-column" style="width:33%;">
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["ProdTwoBrm"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>Local Office</a>
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["ProdOneBrm"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>RMC Office</a>
+            
         </div>
-        <div class="nav flex-column" style="width:50%;">
-            <a class="btn btn-lg btn-outline-secondary" href="http://ssvsqabrshc02.sassa.local" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>BRM Training/QA</a>
-            <a class="btn btn-lg btn-outline-secondary" href="http://10.124.154.88/sassaongoing/ValidationLogin.aspx" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>Scan</a>
-            <a class="btn btn-lg btn-outline-secondary" href="https://rsweb.tdw.co.za/oneilOrder/" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style = "width:50px;"/></span>RSWeb</a>
+        <div class="nav flex-column" style="width:33%;">
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["QaBrm"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>BRM Training/QA</a>
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["Reports"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>BRM Reports</a>
+       </div>
+        <div class="nav flex-column" style="width:33%;">
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["Kofax"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>Scan</a>
+            <a class="btn btn-lg btn-outline-secondary" href="@endPoints["TheDocumentWarehouse"]" target="_blank"><span style="float:left;"><img src="images/sassaicon.png" style="width:50px;" /></span>RSWeb</a>
         </div>
     </div>
 </div>
