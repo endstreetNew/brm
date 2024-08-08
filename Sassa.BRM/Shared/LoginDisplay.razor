@@ -1,7 +1,5 @@
 ﻿@inject SessionService sessionservice
-@* @inject BRMDbService db *@
 @inject StaticService sservice
-@* @inject NavigationManager navigation *@
 <AuthorizeView>
     @if (gsession != null)
     {
@@ -9,6 +7,7 @@
             <div style="float:right; width: 100%; margin-top:4px;">
                 <label class="divUserDetail" style="margin-left: 10px">@gsession.Name</label>
                 <label class="divUserDetail" style="margin-left: 10px">@(gsession.Office.OfficeName + $" :{ServicePoint} :"+ gsession.Office.RegionName)</label>
+                <label class="divUserDetail" style="margin-left: 10px">@("(Users " + UserCount + ")")</label>
             </div>
         </div>
     }
@@ -16,6 +15,8 @@
 
 @code
 {
+    [Parameter]
+    public int UserCount { get; set; }
 
     UserSession gsession;
     string ServicePoint;
@@ -23,20 +24,7 @@
     protected override async Task OnInitializedAsync()
     {
         sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
-        if (sessionservice.session == null)
-        {
-            // try
-            // {
-            //     sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
-            //     GetServicePoint();
-            // }
-            // catch
-            // {
-            //     //Initializing error
-            // }
-
-        }
-        else
+        if (sessionservice.session != null)
         {
             gsession = sessionservice.session;
             GetServicePoint();

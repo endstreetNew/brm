@@ -37,14 +37,15 @@ namespace Sassa.BRM
             var ActivityApi = new Uri(Configuration["Urls:ActivityApi"]);
 
             services.AddHttpContextAccessor();
-            services.AddScoped<ActivityService, ActivityService>();
             services.AddAuthentication(IISDefaults.AuthenticationScheme);
-            services.AddSingleton<StaticD>();
             //Factory pattern
             services.AddDbContextFactory<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             //Services 
+            services.AddScoped<ActivityService, ActivityService>();
             services.AddScoped<SessionService>().AddDbContext<ModelContext>(options =>
+            options.UseOracle(BrmConnectionString));
+            services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
@@ -53,8 +54,6 @@ namespace Sassa.BRM
             services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
-            options.UseOracle(BrmConnectionString));
-            services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<TdwBatchService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));

@@ -76,12 +76,12 @@ namespace Sassa.Brm.Common.Services
                 client.SendMail($"no-reply@sassa.gov.za", tdwOfficemail, @"SASSA File request.", body, files);
                 //send mail to Originator
                 body = $"Please find attached file request(s) sent to TDW for processing (PickList#{PickListNo}).<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
-                client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA File request confirmation", body, files);
+                client.SendMail($"no-reply@sassa.gov.za", session.Email!, "SASSA File request confirmation", body, files);
             }
         }
 
         //Returned box detail
-        public void SendTDWIncoming(UserSession session, string Boxno, List<string> files, string file = null)
+        public void SendTDWIncoming(UserSession session, string Boxno, List<string> files, string? file = null)
         {
             if (file != null)
             {
@@ -95,7 +95,7 @@ namespace Sassa.Brm.Common.Services
                 client.SendMail($"no-reply@sassa.gov.za", _config.TdwReturnedBox!, @"SASSA Incoming files.", body, files);
                 //send mail to Originator
                 body = $"Please find attached box detail sent to TDW for processing (BoxNo#{Boxno}).<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
-                client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA Files returned to TDW", body, files);
+                client.SendMail($"no-reply@sassa.gov.za", session.Email!, "SASSA Files returned to TDW", body, files);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Sassa.Brm.Common.Services
                 client.SendMail($"no-reply@sassa.gov.za", _config.TdwReturnedBox!, @"SASSA Incoming files.", body, files);
                 //send mail to Originator
                 body = $"Please find attached box detail sent to TDW for processing (BatchNo#{tdwBatchNo}).<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
-                client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA Files returned to TDW", body, files);
+                client.SendMail($"no-reply@sassa.gov.za", session.Email!, "SASSA Files returned to TDW", body, files);
             }
         }
 
