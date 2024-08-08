@@ -10,7 +10,7 @@
 @using System.Text
 
 <h3>Batches for @sessionservice.session.Office.OfficeName</h3>
-<div id="BrmnGrid">
+<div id="BrmGrid">
     @if (showConfirmation)
     {
         <Modal Heading="Confirmation" Cancel="OnConfirmationClose" Ok="OnConfirmationOk">
@@ -75,8 +75,13 @@
         }
         else
         {
+@*             @if (!sessionservice.session.IsRmc())
+            {
             <div class="row input-group">
                 <div class="col">
+
+                        <button class="btn btn-primary btn-sm active" @onclick="@(() => btnClose_Click())">Close Selected</button>
+                    
                     <div class="input-group mb-1">
 
                         <span class="input-group-text">Status Filter</span>
@@ -92,7 +97,8 @@
                 <div class="col">
                 </div>
             </div>
-            <div class="row">
+            } *@
+@*             <div class="row">
                 <div class="col">
 @*                    @if (filterStatus == "Open")
                     {
@@ -103,12 +109,12 @@
                             <label class="form-control" enabled="false">Select All Batches</label>
                             <button class="btn btn-primary btn-sm active" disabled="@(DTBatch.result.Where(b => b.isSelected).Count() == 0)" @onclick="@(() => btnClose_Click())">Close Selected</button>
                         </div>
-                    }*@
+                    }
                 </div>
                 <div class="col">
 
                 </div>
-            </div>
+    </div>*@
             <table class="table table-sm" style="font-size:small;">
                 <thead>
                     <tr>
@@ -223,20 +229,20 @@
 
     }
 
-    protected async Task FilterStatus(ChangeEventArgs args)
-    {
-        filterStatus = args.Value.ToString();
-        page = 1;
-        try
-        {
-            DTBatch = await db.GetBatches(filterStatus, page);
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            toast.Error(ex.Message);
-        }
-    }
+    // protected async Task FilterStatus(ChangeEventArgs args)
+    // {
+    //     filterStatus = args.Value.ToString();
+    //     page = 1;
+    //     try
+    //     {
+    //         DTBatch = await db.GetBatches(filterStatus, page);
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         toast.Error(ex.Message);
+    //     }
+    // }
 
     protected void btnCloseBatch(DcBatch batch)
     {
@@ -462,7 +468,7 @@
     {
         try
         {
-            _ = sservice.GetGrantTypes();
+            sservice.GetGrantTypes();
 
             List<DcFile> files = await db.GetAllFilesByBatchNo((decimal)batch.BatchNo);
             StringBuilder sb = new StringBuilder();

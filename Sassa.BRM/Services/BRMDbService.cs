@@ -1322,13 +1322,13 @@ namespace Sassa.BRM.Services
         /// <param name="Area"></param>
         /// <param name="Activity"></param>
         /// <returns></returns>
-        public async Task CreateActivity(string Area, string Activity, string UniqueFileNo = "")
+        public void CreateActivity(string Area, string Activity, string UniqueFileNo = "")
         {
             DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = session.Office.RegionId, OfficeId = decimal.Parse(session.Office.OfficeId), Userid = 0, Username = session.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
-            await CreateActivity(activity);
+            CreateActivity(activity);
         }
 
-        public async Task CreateActivity(DcActivity activity)
+        public void CreateActivity(DcActivity activity)
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
