@@ -9,7 +9,7 @@ namespace Sassa.BRM.Services
         public ActivityService(IHttpClientFactory httpClientFactory, IConfiguration config)
         {
             _httpClientFactory = httpClientFactory;
-            _activityApiUrl = config["Urls:ActivityApi"];
+            _activityApiUrl = config["Urls:ActivityApi"]!;
         }
 
         public void PostActivity(DcActivity activity)

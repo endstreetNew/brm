@@ -31,7 +31,9 @@
             <ToastAlert />
             @if (@Status == "")
             {
+                <AuthorizeView>
                 @Body
+                </AuthorizeView>
             }
             else
             {

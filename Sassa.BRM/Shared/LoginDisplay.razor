@@ -1,15 +1,25 @@
 ﻿@inject SessionService sessionservice
-@inject StaticService sservice
+@inject StaticService staticservice
+
 <AuthorizeView>
-    @if (gsession != null)
+    @if (sessionservice.session != null)
     {
         <div style="width: 100%;">
             <div style="float:right; width: 100%; margin-top:4px;">
-                <label class="divUserDetail" style="margin-left: 10px">@gsession.Name</label>
-                <label class="divUserDetail" style="margin-left: 10px">@(gsession.Office.OfficeName + $" :{ServicePoint} :"+ gsession.Office.RegionName)</label>
+                <label class="divUserDetail" style="margin-left: 10px">@sessionservice.session.Name</label>
+                <label class="divUserDetail" style="margin-left: 10px">@(sessionservice.session.Office.OfficeName + ": " + sessionservice.session.Office.RegionName + $" :{ServicePoint}")</label>
                 <label class="divUserDetail" style="margin-left: 10px">@("(Users " + UserCount + ")")</label>
             </div>
         </div>
+    }
+    else
+    {
+        <div style="width: 100%;">
+            <div style="float:right; width: 100%; margin-top:4px;">
+                <label class="divUserDetail" style="margin-left: 10px">Initializing user session</label>
+            </div>
+        </div>
+    
     }
 </AuthorizeView>
 
@@ -18,34 +28,31 @@
     [Parameter]
     public int UserCount { get; set; }
 
-    UserSession gsession;
     string ServicePoint;
 
     protected override async Task OnInitializedAsync()
     {
         sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
-        if (sessionservice.session != null)
-        {
-            gsession = sessionservice.session;
-            GetServicePoint();
-        }
-        await Task.CompletedTask;
+        // if (sessionservice.session != null)
+        // {
+        //     GetServicePoint();
+        // }
+        // await Task.CompletedTask;
     }
 
     private void OnSessionChanged(object sender, EventArgs args)
     {
-        gsession = sessionservice.session;
-        GetServicePoint();
+        ServicePoint = staticservice.GetServicePointName(sessionservice.session.Office.FspId);
         StateHasChanged();
     }
 
-    private void GetServicePoint()
-    {
-        try
-        {
-            ServicePoint = sservice.GetServicePointName(sessionservice.session.Office.FspId);
-        }
-        catch { }
-    }
+    // private void GetServicePoint()
+    // {
+    //     try
+    //     {
+            
+    //     }
+    //     catch { }
+    // }
 }
 

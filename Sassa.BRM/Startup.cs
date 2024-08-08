@@ -42,13 +42,12 @@ namespace Sassa.BRM
             services.AddDbContextFactory<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             //Services 
-            services.AddScoped<ActivityService, ActivityService>();
-            services.AddScoped<SessionService>().AddDbContext<ModelContext>(options =>
+            services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
-            services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString));
+            services.AddScoped<SessionService>();
+            services.AddScoped<ActivityService, ActivityService>();
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
