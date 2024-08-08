@@ -122,16 +122,6 @@ namespace Sassa.BRM.Services
                     throw;
                 }
 
-                //if (_context.DcBrmGrants.Where(g => g.ApplicantNo == file.ApplicantNo && g.GrantType == file.GrantType).Any())
-                //{
-
-                //    DcBrmGrant progress = new DcBrmGrant { ApplicantNo = file.ApplicantNo, GrantType = file.GrantType, BrmBarcode = file.BrmBarcode, CaptureDate = DateTime.Now };
-                //    _context.DcBrmGrants.Add(progress);
-                //    await _context.SaveChangesAsync();
-                //    string sql = $"UPDATE SASSA.SOCPEN_PERSONAL_GRANTS S SET BRM_Reference = '{file.BrmBarcode}', File_DATE = TO_DATE('{DateTime.Now.ToString("yyyy-MM-dd")}','YYYY-MM-DD') where S.PENSION_NO = '{file.ApplicantNo}' AND S.GRANT_TYPE = '{file.GrantType}' ";
-                //    _raw.ExecuteNonQuery(sql);
-                //}
-
                 file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
                 //await SetBatchCount((decimal)file.BatchNo);
                 CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
@@ -587,10 +577,7 @@ namespace Sassa.BRM.Services
                 else
                 {
                     //Try the newBarcode in DCFiles
-                    //candidates = await _context.DcFiles.Where(f => f.BrmBarcode == rebox.NewBarcode).ToListAsync();
                     if (await checkBRMExists(rebox.NewBarcode)) throw new Exception("The new barcode already exists!");
-                    //if (!candidates.Any())
-                    //{
                     //Try the MisFile in BRM
                     candidates = await _context.DcFiles.Where(k => k.FileNumber == rebox.MisFileNo).ToListAsync();
                     if (!candidates.Any())
@@ -1085,7 +1072,8 @@ namespace Sassa.BRM.Services
         {
             using (var _context = _contextFactory.CreateDbContext())
             {
-                if (_context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).Any()) return;
+                var interim = await _context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).ToListAsync();
+                if (interim.Any()) return;
                 var picklist = _context.DcPicklists.Find(unqPicklist);
                 picklist.Status = status;
                 await _context.SaveChangesAsync();
@@ -2118,7 +2106,8 @@ namespace Sassa.BRM.Services
 
                     if (file.BatchNo != 0)
                     {
-                        if (_context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").Any())
+                        var interim = await _context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").ToListAsync();
+                        if (interim.Any())
                         {
                             throw new Exception($"This file is in closed batch: {file.BatchNo} and cant be added.");
                         }
@@ -2750,7 +2739,8 @@ namespace Sassa.BRM.Services
                     throw new System.Exception("Invalid Exclusion type");
                 }
                 //Check if duplicate
-                if (_context.DcExclusions.Where(d => d.IdNo == pension_no).Any())
+                var interim = await  _context.DcExclusions.Where(d => d.IdNo == pension_no).ToListAsync();
+                if (interim.Any())
                 {
 
                     ErrorCount++;
@@ -2768,7 +2758,8 @@ namespace Sassa.BRM.Services
                     ExclDate = DateTime.Now
                 };
                 //Check if Destruction record exists
-                if (_context.DcDestructions.Where(d => d.PensionNo == pension_no).Any())
+                var result = await _context.DcDestructions.Where(d => d.PensionNo == pension_no).ToListAsync();
+                if (result.Any())
                 {
                     await UpdateDestructionStatus(pension_no, "Excluded");
                 }
