@@ -662,8 +662,16 @@ namespace Sassa.BRM.Services
             //Remove existing Barcode for this id/grant from dc_socpen
             _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
             await _context.SaveChangesAsync();
+            var result = new List<DcSocpen>();
+            if(("C95".Contains(application.GrantType) && application.ChildId.Trim() == application.ChildId.Trim()))//child Grant
+            {
+                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
+            }
+            else
+            {
+                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd).ToListAsync();
+            }
 
-            var result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd || ("C95".Contains(s.GrantType) && s.ChildId.Trim() == application.ChildId.Trim())).ToListAsync();
             if (result.ToList().Any())
             {
                 dc_socpen = result.First();
