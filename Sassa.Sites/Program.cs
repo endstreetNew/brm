@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Sassa.Sites.Components;
+using Sassa.Sites.Services;
 
 namespace Sassa.Sites
 {
@@ -7,10 +9,12 @@ namespace Sassa.Sites
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            //builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
+            //builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddSingleton<ServerList>();
+            builder.Services.AddSingleton<ServerService>();
             // Add services to the container.
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+            builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
             var app = builder.Build();
 
