@@ -19,7 +19,7 @@
                     <span class="input-group-text">From Month</span>
                     <select class="form-select" @bind="fromMonth">
                         <option selected>select...</option>
-                        @foreach (var val in StaticD.MonthList())
+                        @foreach (var val in StaticDataService.MonthList())
                         {
                             <option value="@val.Key">@val.Value</option>
                         }
@@ -31,7 +31,7 @@
                     <span class="input-group-text">To Month</span>
                     <select class="form-select" @bind="toMonth">
                         <option selected>select...</option>
-                        @foreach (var val in StaticD.MonthList())
+                        @foreach (var val in StaticDataService.MonthList())
                         {
                             <option value="@val.Key">@val.Value</option>
                         }
@@ -75,7 +75,7 @@
                     <span><strong>Progress for Office : @office.OfficeName</strong></span>
                 </div>
                  <div class="row">
-                    <span><strong>Period : @StaticD.MonthList()[fromMonth] to @StaticD.MonthList()[toMonth]</strong></span>
+                    <span><strong>Period : @StaticDataService.MonthList()[fromMonth] to @StaticDataService.MonthList()[toMonth]</strong></span>
                 </div>
                 <div class="row">
                 <div class="col-12">

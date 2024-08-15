@@ -1,0 +1,258 @@
+﻿@page "/filecapture"
+
+
+@implements IDisposable;
+@inject SessionService sessionservice
+@inject BRMDbService db
+@inject StaticService sservice
+@inject IAlertService toast
+
+
+@if(showManualCapture && SelectedApplication != null)
+{
+    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
+}
+
+
+<div class="row">
+    <div class="col">
+    <div id="divSearchID" style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+        <input class="form-control" placeholder="Enter ApplicantId here..." @bind="txtSearchId" />
+    </div>
+    <div id="divSearchSRD" style="vertical-align: bottom; display: table-cell; padding: 0 5px 0 5px;">
+        <input class="form-control" placeholder="Enter SRD here..." @bind="txtSearchSRD" />
+    </div>
+    <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+        <button type="button" class="btn btn-primary btn-sm form-control" @onclick="@(async () => await Search())"><span class="oi oi-magnifying-glass" aria-hidden="true"></span></button>
+    </div>
+    </div>
+    <div class="col">
+        <div class="input-group mb-1" >
+            <span class="input-group-text" style="width:120px;">Grant Type</span>
+            <select class="form-select" @bind="@manualGrantType" style="max-width:220px;">
+                <option value="" selected>All...</option>
+                @foreach (var val in sservice.GetGrantTypes())
+                {
+
+                    <option value="@val.Key">@val.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col">
+        @if (showManualCapture && !string.IsNullOrEmpty(manualGrantType))//a search has been done and a grantype selected
+        {
+            <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+            <button class="btn btn-primary btn-sm active" data-bs-toggle="modal" data-bs-target="#myModal" @onclick="@(() => btnManualCapture_Click())">Manual Capture</button>
+            </div>
+        }
+    </div>
+    @if (sessionservice.session.IsRmc())
+    {
+        <div class="col-4 float-right">
+        <BoxStatus rebox="@rebox"></BoxStatus>
+        </div>
+    }
+</div>
+<div style="display: table-row;">
+    <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
+        <input type="checkbox" @bind="@chkSearchFull" /><label class="chkboxLabel"> Search Id History.</label>
+    </div>
+</div>
+<br />
+<!-- Tabs navs -->
+<TabControl>
+    <TabPage Text="Socpen Results" Id="1" Enabled="true">
+        @if (showSocpen)
+        {
+            <FileCaptureSocpen SocpenChanged="OnSocpenChanged" txtManualGrantType="@manualGrantType" txtSearchId="@txtSearchId" txtSearchSRD="@srdNo" chkSearchFull="@chkSearchFull" searchById="@searchById" rebox="@rebox"></FileCaptureSocpen>
+        }
+    </TabPage>
+    <TabPage Text="BRM Results" Id="2" Enabled="true">
+        <FileCaptureBrm txtSearchId="@txtSearchId"></FileCaptureBrm>
+    </TabPage>
+    <TabPage Text="Record History" Id="3" Enabled="true">
+        <FileCaptureHistory txtSearchId="@txtSearchId"></FileCaptureHistory>
+    </TabPage>
+</TabControl>
+
+
+
+@code {
+
+    string txtSearchId;
+    string txtSearchSRD;
+    bool chkSearchFull;
+
+    //Parameters for socpen
+    protected bool showSocpen = false;
+    protected bool searchById = true;
+
+    //For manual capture
+    Application SelectedApplication;
+
+    // string regionChangeMessage = "";
+    string manualGrantType = "";
+
+    // bool showConfirmRegion = false;
+    bool showBrmModal = false;
+    bool showManualCapture = false;
+
+    long srdNo;
+
+    protected Reboxing rebox = new Reboxing();
+
+    private async Task Search()
+    {
+        srdNo = 0;
+        bool srdWithNoId = false;
+        try
+        {
+            if (string.IsNullOrEmpty(txtSearchSRD) && string.IsNullOrEmpty(txtSearchId))
+            {
+                throw new Exception("Invalid search criteria provided.");
+            }
+            if(!string.IsNullOrEmpty(txtSearchId) && txtSearchId.Length != 13)
+            {
+                throw new Exception("Id must be 13 characters.");
+            }
+            //Searching on SRD
+            if (!string.IsNullOrEmpty(txtSearchSRD))
+            {
+                srdNo = long.Parse(txtSearchSRD);
+                try
+                {
+                    txtSearchId = await db.GetSocpenSearchId(txtSearchSRD);
+                }
+                catch
+                {
+                    toast.Info("No Socpen results");
+                }
+                //Provide temp Id if there is none
+                if (string.IsNullOrEmpty(txtSearchId))
+                {
+                    txtSearchId = $"S{txtSearchSRD.PadLeft(12, '0')}";
+                    srdWithNoId = true;
+                }
+            }
+            //Searching on ID
+            if (!string.IsNullOrEmpty(txtSearchId))
+            {
+                txtSearchId = txtSearchId.Trim();
+                if (srdWithNoId || txtSearchId.StartsWith("S"))
+                {
+                    searchById = false;
+                }
+                else
+                {
+                    searchById = true;
+                }
+                showSocpen = true;
+                // if (!DTSocPen.Any()) toast.Info("No Socpen results");
+
+                // if (!DTBrm.Any()) toast.Info("No Brm results");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+
+        }
+        await Task.CompletedTask;
+    }
+
+    protected async Task OnSocpenChanged(bool hasRecords)
+    {
+        showManualCapture = !hasRecords;
+        await Task.CompletedTask;
+    }
+
+    private async Task btnManualCapture_Click()
+    {
+
+        rebox.BoxNo = rebox.BoxNo.ToUpper();
+        if (string.IsNullOrEmpty(rebox.BoxNo))
+        {
+            if (sessionservice.session.IsRmc())
+            {
+                toast.Error("a TDW BoxNo is required to capture at the RMC.");
+                return;
+            }
+        }
+        else
+        {
+            rebox = await db.GetBoxCounts(rebox);
+            if (rebox.MiniBox > 5)
+            {
+                toast.Error("Only 5 Miniboxes allowed.");
+                return;
+            }
+        }
+        if (manualGrantType == "S" && string.IsNullOrEmpty(txtSearchSRD))
+        {
+            toast.Error("a Srd record requires an SRD no.");
+            return;
+        }
+        SelectedApplication = new Application();
+        SelectedApplication.TRANS_TYPE = 0;
+        SelectedApplication.TDW_BOXNO = rebox.BoxNo;
+        SelectedApplication.MiniBox = rebox.MiniBox;
+        SelectedApplication.GrantType = manualGrantType;
+        SelectedApplication.RegionId = sessionservice.session.Office.RegionId;
+        SelectedApplication.Id = txtSearchId;
+        SelectedApplication.Srd_No = txtSearchSRD;
+        SelectedApplication.LcType = "0";
+        SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
+        SelectedApplication.AppStatus = "MAIN";
+
+        showManualCapture = true;
+    }
+
+    private void ConfirmedRegion()
+    {
+        // showConfirmRegion = false;
+        showBrmModal = true;
+        StateHasChanged();
+    }
+
+    private void CancelRegion()
+    {
+        // showConfirmRegion = false;
+        showBrmModal = false;
+        StateHasChanged();
+    }
+
+    private async Task OnBrmSaved(bool merge)
+    {
+        // showBrmModal = false;
+        // showManualCapture = false;
+        // await OnBrmChanged();
+        // if (merge)
+        // {
+        //     var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BATCH_NO == SelectedApplication.BATCH_NO || s.BATCH_NO ==null)).ToList();
+        //     await db.AutoMerge(SelectedApplication, parents);
+        //     //Running Syncronously on purpose
+        //     await db.SetParentBatchCount(SelectedApplication.BATCH_NO);
+        //     await OnBrmChanged();
+        // }
+        // rebox = await db.GetBoxCounts(rebox);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnModalClosed()
+    {
+
+        SelectedApplication = null;
+        showBrmModal = false;
+        showManualCapture = false;
+        await Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        // GC.Collect();
+        // GC.WaitForPendingFinalizers();
+        // GC.Collect();
+    }
+} 

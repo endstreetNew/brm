@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationM
 @inject IJSRuntime Js
 
+@implements IDisposable
+
 @inject ReportDataService rd
 
 @using System.Text
@@ -303,11 +305,11 @@
     {
         try
         {
-        selectedBatch = batch;
-        items = await db.GetAllFilesByBatchNo(batch.BatchNo, editPage);
-        editBatch = true;
-        DTBatch = await db.GetBatches(filterStatus, page);
-        StateHasChanged();
+            selectedBatch = batch;
+            items = await db.GetAllFilesByBatchNo(batch.BatchNo, editPage);
+            editBatch = true;
+            DTBatch = await db.GetBatches(filterStatus, page);
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -436,6 +438,13 @@
         }
         await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
         //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
+    }
+
+    public void Dispose()
+    {
+        // GC.Collect();
+        // GC.WaitForPendingFinalizers();
+        // GC.Collect();
     }
 
 }

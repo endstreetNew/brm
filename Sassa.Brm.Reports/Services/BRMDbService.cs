@@ -300,7 +300,7 @@ namespace Sassa.Brm.Reports.Services
                 bool repaired = await RepairAltBoxSequence(boxNo);
 
                 PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
-                if (StaticD.GrantTypes == null)
+                if (StaticDataService.GrantTypes == null)
                 {
                     _ = sservice.GetGrantTypes();
                 }
@@ -314,7 +314,7 @@ namespace Sassa.Brm.Reports.Services
                                 BrmNo = f.BrmBarcode,
                                 IdNo = f.ApplicantNo,
                                 FullName = f.FullName,
-                                GrantType = StaticD.GrantTypes[f.GrantType],
+                                GrantType = StaticDataService.GrantTypes[f.GrantType],
                                 BoxNo = boxNo,
                                 AltBoxNo = f.AltBoxNo,
                                 Scanned = f.ScanDatetime != null,
@@ -334,7 +334,7 @@ namespace Sassa.Brm.Reports.Services
             {
                 PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
                 searchText = searchText.ToUpper();
-                if (StaticD.GrantTypes == null)
+                if (StaticDataService.GrantTypes == null)
                 {
                     _ = sservice.GetGrantTypes();
                 }
@@ -347,7 +347,7 @@ namespace Sassa.Brm.Reports.Services
                                 BrmNo = f.BrmBarcode,
                                 IdNo = f.ApplicantNo,
                                 FullName = f.FullName,
-                                GrantType = StaticD.GrantTypes[f.GrantType],
+                                GrantType = StaticDataService.GrantTypes[f.GrantType],
                                 BoxNo = boxNo,
                                 AltBoxNo = f.AltBoxNo,
                                 Scanned = f.ScanDatetime != null,
@@ -425,7 +425,7 @@ namespace Sassa.Brm.Reports.Services
                         BrmNo = f.BrmBarcode,
                         IdNo = f.ApplicantNo,
                         FullName = f.FullName,
-                        GrantType = StaticD.GrantTypes[f.GrantType],
+                        GrantType = StaticDataService.GrantTypes[f.GrantType],
                         BoxNo = boxNo,
                         AltBoxNo = f.AltBoxNo,
                         Scanned = f.ScanDatetime != null
@@ -438,7 +438,7 @@ namespace Sassa.Brm.Reports.Services
                     BrmNo = f.BrmBarcode,
                     IdNo = f.ApplicantNo,
                     FullName = f.FullName,
-                    GrantType = StaticD.GrantTypes[f.GrantType],
+                    GrantType = StaticDataService.GrantTypes[f.GrantType],
                     BoxNo = boxNo,
                     AltBoxNo = f.AltBoxNo,
                     Scanned = f.ScanDatetime != null
@@ -521,8 +521,8 @@ namespace Sassa.Brm.Reports.Services
                 //attachment list
                 List<string> files = new List<string>();
                 //write attachments for manual download/add to mail
-                File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
-                files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+                File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+                files.Add(StaticDataService.ReportFolder + $@"{FileName}.csv");
                 //send mail to TDW
                 try
                 {
@@ -737,7 +737,7 @@ namespace Sassa.Brm.Reports.Services
 
                     if (string.IsNullOrEmpty(fr.GrantType))
                     {
-                        foreach (string granttype in StaticD.GrantTypes.Keys) //All Grant types
+                        foreach (string granttype in StaticDataService.GrantTypes.Keys) //All Grant types
                         {
                             fr.GrantType = granttype;
                             await AddValidRequest(fr);
@@ -867,9 +867,9 @@ namespace Sassa.Brm.Reports.Services
             using (var _context = _contextFactory.CreateDbContext())
             {
                 Dictionary<string, string> result = new Dictionary<string, string>();
-                if (StaticD.GrantTypes == null)
+                if (StaticDataService.GrantTypes == null)
                 {
-                    StaticD.GrantTypes = await _context.DcGrantTypes.AsNoTracking().ToDictionaryAsync(key => key.TypeId, value => value.TypeName);
+                    StaticDataService.GrantTypes = await _context.DcGrantTypes.AsNoTracking().ToDictionaryAsync(key => key.TypeId, value => value.TypeName);
                 }
 
                 List<TdwFileLocation> results = await _context.TdwFileLocations.Where(t => t.Description == IdNo).AsNoTracking().ToListAsync();
@@ -879,7 +879,7 @@ namespace Sassa.Brm.Reports.Services
                     foreach (var gt in results.ToList())
                     {
                         if (result.ContainsKey(gt.GrantType)) continue;
-                        result.Add(gt.GrantType, StaticD.GrantTypes[gt.GrantType]);
+                        result.Add(gt.GrantType, StaticDataService.GrantTypes[gt.GrantType]);
                     }
 
                 }
@@ -927,7 +927,7 @@ namespace Sassa.Brm.Reports.Services
                     sservice.GetRequestCategoryTypes();
                     try
                     {
-                        req.Reason = StaticD.RequestCategoryTypes.Where(r => r.TypeId == req.ReqCategoryType).First().TypeDescr;
+                        req.Reason = StaticDataService.RequestCategoryTypes.Where(r => r.TypeId == req.ReqCategoryType).First().TypeDescr;
                     }
                     catch (Exception ex)
                     {
@@ -1053,7 +1053,7 @@ namespace Sassa.Brm.Reports.Services
                 var picklist = _context.DcPicklists.Find(unq_picklist);
                 picklist.Status = "Received";
                 await _context.SaveChangesAsync();
-                _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
+                _mail.SendTDWReceipt(session, StaticDataService.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
             }
         }
 
@@ -1114,7 +1114,7 @@ namespace Sassa.Brm.Reports.Services
                 await _context.SaveChangesAsync();
                 if (status == "Received")
                 {
-                    _mail.SendTDWReceipt(session, StaticD.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
+                    _mail.SendTDWReceipt(session, StaticDataService.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
                 }
             }
 
@@ -1151,12 +1151,12 @@ namespace Sassa.Brm.Reports.Services
                 //attachment list
                 List<string> files = new List<string>();
                 //write attachments for manual download/add to mail
-                File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.result.CreateCSV());
-                files.Add(StaticD.ReportFolder + $@"{FileName}.csv");
+                File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", tpl.result.CreateCSV());
+                files.Add(StaticDataService.ReportFolder + $@"{FileName}.csv");
                 //send mail to TDW
                 try
                 {
-                    _mail.SendTDWRequest(session, StaticD.RegionEmails[session.Office.RegionName.ToUpper()], tpl.UnqPickList, files);
+                    _mail.SendTDWRequest(session, StaticDataService.RegionEmails[session.Office.RegionName.ToUpper()], tpl.UnqPickList, files);
                 }
                 catch
                 {
@@ -1434,14 +1434,14 @@ namespace Sassa.Brm.Reports.Services
                     Name = d.Name,
                     SurName = d.Surname,
                     GrantType = d.GrantType,
-                    GrantName = StaticD.GrantTypes[d.GrantType],
+                    GrantName = StaticDataService.GrantTypes[d.GrantType],
                     AppDate = d.ApplicationDate.ToStandardDateString(),
                     OfficeId = session.Office.OfficeId,
                     RegionId = d.RegionId,
-                    RegionCode = StaticD.RegionCode(d.RegionId),
-                    RegionName = StaticD.RegionName(d.RegionId),
+                    RegionCode = StaticDataService.RegionCode(d.RegionId),
+                    RegionName = StaticDataService.RegionName(d.RegionId),
                     AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                    ARCHIVE_YEAR = StaticD.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
+                    ARCHIVE_YEAR = StaticDataService.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
                     ChildId = d.ChildId,
                     LcType = "0",
                     IsRMC = session.Office.OfficeType == "RMC" ? "Y" : "N",
@@ -1460,12 +1460,12 @@ namespace Sassa.Brm.Reports.Services
                         Name = d.Name,
                         SurName = d.Surname,
                         GrantType = d.GrantType,
-                        GrantName = StaticD.GrantTypes[d.GrantType],
+                        GrantName = StaticDataService.GrantTypes[d.GrantType],
                         AppDate = d.ApplicationDate.ToStandardDateString(),
                         OfficeId = session.Office.OfficeId,
                         RegionId = d.RegionId,
-                        RegionCode = StaticD.RegionCode(d.RegionId),
-                        RegionName = StaticD.RegionName(d.RegionId),
+                        RegionCode = StaticDataService.RegionCode(d.RegionId),
+                        RegionName = StaticDataService.RegionName(d.RegionId),
                         AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
                         ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
                         ChildId = d.ChildId,
@@ -1614,12 +1614,12 @@ namespace Sassa.Brm.Reports.Services
                     Name = d.Name,
                     SurName = d.Surname,
                     GrantType = d.GrantType,
-                    GrantName = StaticD.GrantTypes[d.GrantType],
+                    GrantName = StaticDataService.GrantTypes[d.GrantType],
                     AppDate = d.ApplicationDate.ToStandardDateString(),
                     OfficeId = session.Office.OfficeId,
                     RegionId = d.RegionId,
-                    RegionCode = StaticD.RegionCode(d.RegionId),
-                    RegionName = StaticD.RegionName(d.RegionId),
+                    RegionCode = StaticDataService.RegionCode(d.RegionId),
+                    RegionName = StaticDataService.RegionName(d.RegionId),
                     AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
                     ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
                     ChildId = d.ChildId,
@@ -2655,7 +2655,7 @@ namespace Sassa.Brm.Reports.Services
                     PieSegment ps = new PieSegment();
                     ps.Name = rs.Name;
                     ps.Percent = rs.Count / (total / 100);
-                    ps.Color = StaticD.PastelColors[colorindex++];
+                    ps.Color = StaticDataService.PastelColors[colorindex++];
                     pd.Segments.Add(ps);
                 }
 
@@ -2686,7 +2686,7 @@ namespace Sassa.Brm.Reports.Services
                     PieSegment ps = new PieSegment();
                     ps.Name = rs.Name;
                     ps.Percent = rs.Count / (total / 100);
-                    ps.Color = StaticD.PastelColors[colorindex++];
+                    ps.Color = StaticDataService.PastelColors[colorindex++];
                     pd.Segments.Add(ps);
                 }
 
@@ -2729,7 +2729,7 @@ namespace Sassa.Brm.Reports.Services
             using (var _context = _contextFactory.CreateDbContext())
             {
                 var existingyears = _context.DcExclusionBatches.Where(ex => ex.RegionId == int.Parse(session.Office.RegionId)).Select(ex => ex.ExclusionYear).ToList();
-                return StaticD.DestructionYears.Except(existingyears).ToList();
+                return StaticDataService.DestructionYears.Except(existingyears).ToList();
             }
         }
 
@@ -2772,7 +2772,7 @@ namespace Sassa.Brm.Reports.Services
                 string PensionNo = pension_no.GetDigitId();
                 if (string.IsNullOrEmpty(exclusionType)) throw new System.Exception("Invalid Exclusion type");
                 //check for valid exclusionType
-                if (!StaticD.ExclusionTypes.Contains(exclusionType))
+                if (!StaticDataService.ExclusionTypes.Contains(exclusionType))
                 {
                     ErrorCount++;
                     throw new System.Exception("Invalid Exclusion type");
@@ -2955,7 +2955,7 @@ namespace Sassa.Brm.Reports.Services
 
         public async Task SaveDestructionList()
         {
-            foreach (var region in StaticD.TdwRegions.Keys)
+            foreach (var region in StaticDataService.TdwRegions.Keys)
             {
                 await SaveDestructionList(region);
             }
@@ -2964,13 +2964,13 @@ namespace Sassa.Brm.Reports.Services
         public async Task SaveDestructionList(string regionId)
         {
 
-            string region = StaticD.TdwRegions[regionId];
+            string region = StaticDataService.TdwRegions[regionId];
             if (string.IsNullOrEmpty(regionId)) throw new Exception("Invalid Region");
             string sql = $"SELECT d.PENSION_NO,f.REGION,f.CONTAINER_CODE,CONTAINER_ALTCODE,FILEFOLDER_CODE,FILEFOLDER_ALTCODE,d.DESTRUCTIO_DATE,f.NAME from TDW_FILE_LOCATION f JOIN DC_DESTRUCTION d ON d.PENSION_NO = f.DESCRIPTION WHERE f.REGION ='{region}' AND d.PENSION_NO NOT IN (SELECT ID_NO from Dc_Exclusions)";
             DataTable dt = await _raw.GetTable(sql);
             string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + "-Destruction-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");
             //File.WriteAllText(FileName, dt.ToCSV());
-            File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", dt.ToCSV());
+            File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", dt.ToCSV());
         }
 
         public async Task RefreshFromSocPenData(string year)

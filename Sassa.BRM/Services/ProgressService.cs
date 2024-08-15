@@ -28,7 +28,7 @@ namespace Sassa.BRM.Services
             int missingStart = await _context.DcSocpen.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null).AsNoTracking().CountAsync();
             var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null && s.EcmisFile == null).AsNoTracking().ToListAsync();
             List<MissingFile> result = new List<MissingFile>();
-            foreach (ReportPeriod period in StaticD.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
+            foreach (ReportPeriod period in StaticDataService.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
             {
                 List<DcSocpen> periodRecords = records.Where(s => s.ApplicationDate >= period.FromDate && s.ApplicationDate <= period.ToDate).ToList();
                 MissingFile entry = new MissingFile
@@ -158,7 +158,7 @@ namespace Sassa.BRM.Services
                 List<DcSocpen> records = await _context.DcSocpen.FromSqlRaw(sql).AsNoTracking().ToListAsync();
 
                 List<QuarterDetail> result = new List<QuarterDetail>();
-                foreach (ReportPeriod period in StaticD.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
+                foreach (ReportPeriod period in StaticDataService.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
                 {
                     List<DcSocpen> periodRecords = records.Where(s => s.ApplicationDate >= period.FromDate && s.ApplicationDate <= period.ToDate).ToList();
                     result.Add(new QuarterDetail

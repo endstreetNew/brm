@@ -173,19 +173,27 @@
 </div>
 
 @code {
-        [Parameter]
-        public List<Application> DTBrm { get; set; }
-        [Parameter]
-        public List<Application> DTMerges { get; set; }
-        [Parameter]
-        public EventCallback<int> Changed { get; set; }
+
+    [Parameter]
+    public string txtSearchId { get; set; }
+
+    [Parameter]
+    public EventCallback<int> BrmChanged { get; set; }
 
     protected string deleteReason;
     protected bool showConfirmation;
     protected bool showEditBarcodeConfirmation;
     protected Application selectedApp;
 
+    protected List<Application> DTBrm { get; set; }
+    protected List<Application> DTMerges { get; set; } = new List<Application>();
+
     protected string NewBarCode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DTBrm = await db.SearchBRMID(txtSearchId);
+    }
 
 
     protected async Task btnBatch_Click(Application app)
@@ -200,7 +208,7 @@
             string batchType = app.Id.StartsWith("S") ? "SrdNoId" : app.AppStatus;
             decimal batchNo = (decimal)(await db.CreateBatchForUser(batchType));
             await db.AddFileToBatch(app.BATCH_NO, batchNo);
-            await Changed.InvokeAsync();
+            await BrmChanged.InvokeAsync();
         }
         catch (Exception ex)
         {
@@ -264,7 +272,8 @@
                 throw new Exception("Please provide a reason for this deletion.");
             }
             await db.RemoveBRM(selectedApp.Brm_BarCode, deleteReason);
-            await Changed.InvokeAsync();
+            // await BrmChanged.InvokeAsync();
+            DTBrm = await db.SearchBRMID(txtSearchId);
             showConfirmation = false;
         }
         catch (Exception ex)
@@ -283,7 +292,8 @@
                 throw new Exception("BarCode Exist!");
             }
             await db.EditBarCode(selectedApp, NewBarCode);
-            await Changed.InvokeAsync();
+            //await BrmChanged.InvokeAsync();
+            DTBrm = await db.SearchBRMID(txtSearchId);
             showEditBarcodeConfirmation = false;
         }
         catch (Exception ex)
@@ -294,7 +304,6 @@
 
     public void Dispose()
     {
-
         DTBrm = null;
         DTMerges = null;
     }

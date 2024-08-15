@@ -226,7 +226,7 @@
                             }
                         </tbody>
                     </table>
-                    <Pager Paged="OnPaged" TotalSize="@files.count" PageSize="20"></Pager>
+                    <Pager Paged="OnDispatchHistoryPaged" TotalSize="@files.count" PageSize="20"></Pager>
                 </div>
             </div>
         }
@@ -248,11 +248,11 @@
     int sendpage = 1;
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         period = new ReportPeriod(){FromDate = DateTime.Now.AddDays(-180) , ToDate = DateTime.Now};
         sessionservice.session.BookMark.BoxingTab = 4;
-        OnSendHistoryPaged(sendpage);
+        await OnDispatchHistoryPaged(sendpage);
     }
     //Loader boxes for batching tab
     protected async Task btnLoadBoxes_Click()
@@ -277,11 +277,13 @@
     protected async Task btnPrint_Click()
     {
         int tdwBatch = await db.CreateTdwBatch(boxfiles.result.Where(b => b.IsSelected).ToList());
+        //Todo: send tdwBatch data to TDW
         btnPrint_Click(tdwBatch);
     }
 
     protected void btnPrint_Click(int tdwBatch)
     {
+        //Display and print the cover
         Navigate.NavigateTo($"tdwbatchcover/{tdwBatch}");
     }
     protected async Task btnUnlock_Click(string boxNo)
@@ -298,9 +300,9 @@
         try
         {
 
-                historypage = _page;
-                //todo:fix
-                batchedfiles = await db.GetTdwBatches(historypage,period);
+            historypage = _page;
+            //todo:fix
+            batchedfiles = await db.GetTdwBatches(historypage,period);
 
         }
         catch
@@ -321,9 +323,26 @@
         {
 
 
-                page = _page;
-                //todo:fix
-                boxfiles = await db.GetAllBoxes(page,period);
+            page = _page;
+            //todo:fix
+            boxfiles = await db.GetAllBoxes(page,period);
+
+        }
+        catch
+        {
+
+        }
+
+    }
+
+    protected async Task OnDispatchHistoryPaged(int _page)
+    {
+        try
+        {
+
+            sendpage = _page;
+            files = rs.GetTdwFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, sendpage);
+            await Task.CompletedTask;
 
         }
         catch
@@ -337,10 +356,10 @@
         db.ResendFile(fileName);
     }
 
-    protected void OnSendHistoryPaged(int _page)
-    {
-        sendpage = _page;
-        files = rs.GetTdwFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
-    }
+    // protected void OnSendHistoryPaged(int _page)
+    // {
+    //     sendpage = _page;
+    //     files = rs.GetTdwFiles(sessionservice.session.Office.RegionCode, sessionservice.session.SamName, page);
+    // }
 
 }

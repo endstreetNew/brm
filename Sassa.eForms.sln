@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Brm.Reports", "Sassa.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Brm.Portal", "Sassa.Brm.Portal\Sassa.Brm.Portal.csproj", "{0F2A4BD8-E7AD-43DD-93A1-F55C18946F50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sassa.Brm.Components", "Sassa.Brm.Components\Sassa.Brm.Components.csproj", "{E889B7BC-67F5-4454-9513-B41CBA99097D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sassa.Brm.Components", "Sassa.Brm.Components\Sassa.Brm.Components.csproj", "{E889B7BC-67F5-4454-9513-B41CBA99097D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

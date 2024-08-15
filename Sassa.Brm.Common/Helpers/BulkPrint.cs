@@ -9,7 +9,6 @@ namespace Sassa.Brm.Common.Helpers
 {
     public static class BulkPrint
     {
-        static BarCodeService bcService;
         public static string Header()
         {
             StringBuilder sb = new StringBuilder();
@@ -30,7 +29,6 @@ namespace Sassa.Brm.Common.Helpers
 
             return sb.ToString();
         }
-
         public static string Footer()
         {
             StringBuilder sb = new StringBuilder();
@@ -171,10 +169,9 @@ namespace Sassa.Brm.Common.Helpers
             var ss = sb.ToString();
             return ss;
         }
-
         public static string CreateBatchCover(List<DcFile> items, string officeName, string batchId)
         {
-            if (bcService == null) bcService = new BarCodeService();
+            BarCodeService bcService = new BarCodeService();
             string batchBarCode = bcService.GetBarCode(batchId);
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class=\"printme pdf\" >");
@@ -238,10 +235,10 @@ namespace Sassa.Brm.Common.Helpers
             sb.Append("</div>");
             return sb.ToString();
         }
-
         private static string CreateBatchItem(DcFile u)
         {
-            string qrCode = bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, StaticD.GrantTypes[u.GrantType]);
+            BarCodeService bcService = new BarCodeService();
+            string qrCode = bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, StaticDataService.GrantTypes[u.GrantType]);
             StringBuilder sb = new StringBuilder();
             sb.Append("<tr>");
             sb.Append($"<td>{u.UnqFileNo}</td>");

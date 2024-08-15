@@ -19,7 +19,7 @@
                             <span class="input-group-text">From Quarter</span>
                             <select class="form-select" @bind="fromQuarter">
                                 <option selected>select...</option>
-                                @foreach (var val in StaticD.QuarterList())
+                                @foreach (var val in StaticDataService.QuarterList())
                                 {
                                     <option value="@val.Key">@val.Key</option>
                                 }
@@ -31,7 +31,7 @@
                             <span class="input-group-text">To Quarter</span>
                             <select class="form-select" @bind="toQuarter">
                                 <option selected>select...</option>
-                                @foreach (var val in StaticD.QuarterList())
+                                @foreach (var val in StaticDataService.QuarterList())
                                 {
                                     <option value="@val.Key">@val.Key</option>
                                 }
@@ -221,7 +221,7 @@
             }
             await Task.Delay(100);
             toast.Info($"Progress Dashboard loading...");
-            quarters = await og.GetCaptureProgress(StaticD.QuarterList()[fromQuarter],StaticD.QuarterList()[toQuarter], office);
+            quarters = await og.GetCaptureProgress(StaticDataService.QuarterList()[fromQuarter],StaticDataService.QuarterList()[toQuarter], office);
             IsDashboardLoaded = true;
         }
         catch

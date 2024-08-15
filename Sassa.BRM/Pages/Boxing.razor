@@ -2,6 +2,7 @@
 @page "/boxing/{tabNo:int}"
 @page "/boxing/{tabNo:int}/{boxNo}"
 
+@implements IDisposable
 
 @inject SessionService sessionservice
 @inject BRMDbService db
@@ -55,5 +56,12 @@
     private void OnPageActivate(int e)
     {
         tabNo = e;
+    }
+
+    public void Dispose()
+    {
+        // GC.Collect();
+        // GC.WaitForPendingFinalizers();
+        // GC.Collect();
     }
 }

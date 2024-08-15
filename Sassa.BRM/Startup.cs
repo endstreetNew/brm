@@ -44,6 +44,7 @@ namespace Sassa.BRM
             //Services 
             services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
+            services.AddSingleton<StaticDataService>();
             services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<SessionService>();
@@ -108,13 +109,19 @@ namespace Sassa.BRM
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
                 options.SlidingExpiration = true;
             });
-            //Hosted services on timer
-            //services.AddHostedService<TimedService>();
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            //.AddCircuitOptions(options =>
+            // {
+            //     options.DetailedErrors = true;
+            //     options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(10);
+            //     options.DisconnectedCircuitMaxRetained = 0;
+            // });
+
+
             //services.AddSignalR(hubOptions =>
             //{
             //    hubOptions.EnableDetailedErrors = true;
@@ -155,7 +162,7 @@ namespace Sassa.BRM
             app.UseRouting();
             var wsOptions = new WebSocketOptions()
             {
-                KeepAliveInterval = TimeSpan.FromSeconds(120)
+                KeepAliveInterval = TimeSpan.FromSeconds(10)
             };
             app.UseWebSockets(wsOptions);
             app.UseHttpsRedirection();

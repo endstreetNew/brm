@@ -11,7 +11,7 @@
                 <span class="input-group-text">Exclusion Type</span>
                 <select class="form-select" @bind="@exclusionType">
                     <option selected>select...</option>
-                    @foreach (var val in StaticD.ExclusionTypes)
+                    @foreach (var val in StaticDataService.ExclusionTypes)
                     {
                         <option value="@val">@val</option>
                     }
@@ -25,7 +25,7 @@
                 <span class="input-group-text">Destruction Year</span>
                 <select class="form-select" @bind="@destructionYear">
                     <option selected>@destructionYear</option>
-                    @foreach (var val in StaticD.DestructionYears)
+                    @foreach (var val in StaticDataService.DestructionYears)
                     {
                         <option value="@val">@val</option>
                     }
@@ -96,7 +96,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        destructionYear = StaticD.DestructionYears.First();
+        destructionYear = StaticDataService.DestructionYears.First();
         await OnExclusionsPaged(exclusionpage);
     }
 

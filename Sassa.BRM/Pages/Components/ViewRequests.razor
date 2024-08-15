@@ -26,7 +26,7 @@
             <span class="input-group-text">Status filter</span>
             <select class="form-select" @onchange="@(e => StatusFilterChange(e))">
                 <option value="" selected>select...</option>
-                @foreach (var item in StaticD.RequestStatus)
+                @foreach (var item in StaticDataService.RequestStatus)
                 {
                     <option value=@item.Key>@item.Value</option>
                 }

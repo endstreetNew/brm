@@ -1,6 +1,8 @@
 ﻿@page "/searchapplicant"
 @page "/searchapplicant/{Id}"
 
+@implements IDisposable;
+
 @inject SessionService sessionservice
 @inject BRMDbService db
 @inject StaticService sservice
@@ -147,7 +149,7 @@
     string txtSearchSRD;
     bool chkSearchFull;
     //bool chkSearchMv = false;
-    bool showConfirmRegion = false;
+
     string regionChangeMessage = "";
     string manualGrantType = "";
 
@@ -159,6 +161,7 @@
 
     protected Application SelectedApplication;
 
+    bool showConfirmRegion = false;
     bool showBrmModal = false;
     bool showManualCapture = false;
 
@@ -402,15 +405,12 @@
         StateHasChanged();
     }
 
-    //private string TryRepairFromSocPen(Application app)
-    //{
-    //    if (!DTSocPen.Where(s => s.GrantType == app.GrantType && s.ChildId == app.ChildId && s.Srd_No == app.Srd_No).Any()) return null;
-    //    if (DTSocPen.Where(s => s.GrantType == app.GrantType && s.ChildId == app.ChildId && s.Srd_No == app.Srd_No).Count() > 1) return null;
-    //    var spapp = DTSocPen.Where(s => s.GrantType == app.GrantType && s.ChildId == app.ChildId && s.Srd_No == app.Srd_No).FirstOrDefault();
-    //    if (spapp.AppDate == null)
-    //    {
-    //        return DateTime.Now.ToString("dd/MMM/yy");
-    //    }
-    //    return spapp.AppDate;
-    //}
+    public void Dispose()
+    {
+        DTSocPen = null;
+        DTBrm = null;
+        DTBrmParents = null;
+        DTMerged = null;
+        Unmerged = null;
+    }
 }

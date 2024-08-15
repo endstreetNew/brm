@@ -78,7 +78,7 @@ namespace Sassa.BRM.Services
             header.ToDate = dateTo;
             int usernameIndex = filename.IndexOf('-') + 1;
             header.Username = filename.Substring(usernameIndex, filename.Substring(usernameIndex).IndexOf("-"));//{_session.Office.RegionCode}-{_session.SamName.ToUpper()}-
-            header.Region = StaticD.RegionName(region_id);
+            header.Region = StaticDataService.RegionName(region_id);
 
             System.Data.DataTable dt = new System.Data.DataTable();
 
@@ -307,7 +307,7 @@ namespace Sassa.BRM.Services
             header.ToDate = to.ToDate.ToShortDateString();
             int usernameIndex = fileName.IndexOf('-') + 1;
             header.Username = fileName.Substring(usernameIndex, fileName.Substring(usernameIndex).IndexOf("-"));//{_session.Office.RegionCode}-{_session.SamName.ToUpper()}-
-            header.Region = StaticD.RegionName(regionId);
+            header.Region = StaticDataService.RegionName(regionId);
 
             switch (rIndex)
             {

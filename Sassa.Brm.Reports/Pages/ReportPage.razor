@@ -94,7 +94,7 @@
                             <span class="input-group-text">For Month</span>
                             <select class="form-select" @bind="forMonth">
                                 <option selected>select...</option>
-                                @foreach (var val in StaticD.MonthList())
+                                @foreach (var val in StaticDataService.MonthList())
                                 {
                                     <option value="@val.Key">@val.Value</option>
                                 }
@@ -279,17 +279,17 @@
         switch (e)
         {
             case 1:
-                quarterList = StaticD.QuarterList();
+                quarterList = StaticDataService.QuarterList();
                 reportList = rs.reportList;
                 break;
             case 2:
-                quarterList = StaticD.QuarterList();
+                quarterList = StaticDataService.QuarterList();
                 break;
             case 3:
 
                 break;
             case 4:
-                period = StaticD.AfterLastQuarter;
+                period = StaticDataService.AfterLastQuarter;
                 await Task.Delay(100);
                 await OnMissingPaged(missingpage);
                 break;

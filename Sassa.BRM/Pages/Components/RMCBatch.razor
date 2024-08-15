@@ -5,6 +5,8 @@
 @inject NavigationManager NavigationM
 @inject IJSRuntime Js
 
+@implements IDisposable
+
 @inject ReportDataService rd
 
 @using System.Text
@@ -349,7 +351,7 @@
             // }
             //rebox.RegType = "";
             rebox.BoxNo = boxNo;
-            
+
             // if (boxfiles.count > 0)
             // {
             //     rebox.AltBoxNo = boxfiles.result.First().AltBoxNo;
@@ -478,17 +480,34 @@
             sb.Append(BulkPrint.Footer());
 
             string FileName = sessionservice.session.Office.RegionCode + "-" + sessionservice.session.SamName.ToUpper() + "-" + "Batch_" + batch.BatchNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");//.Replace(":", "-");
-
-            await rd.SaveHtmlReport(sb.ToString(), FileName);
-
             toast.Success($"Batch cover :{batch.BatchNo} queued.");
+            await rd.SaveHtmlReport(sb.ToString(), FileName);
+            //files.Dispose();
+            //toast.Success($"Batch cover :{batch.BatchNo} queued.");
+            files = null;
+            sb = null;
+            await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
+
         }
         catch //(Exception ex)
         {
             toast.Error($"Batch cover :{batch.BatchNo} error.");
 
         }
-        await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
+
+        
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            // items.Dispose();
+        }
+        catch (Exception ex)
+        {
+            toast.Error(ex.Message);
+        }
     }
 
 }

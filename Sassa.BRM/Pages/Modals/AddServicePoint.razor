@@ -53,7 +53,7 @@
 
     protected override void OnInitialized()
     {
-        regionOffices = StaticD.LocalOffices.Where(lo => lo.RegionId == RegionId).OrderBy(o => o.OfficeName).ToList();
+        regionOffices = StaticDataService.LocalOffices.Where(lo => lo.RegionId == RegionId).OrderBy(o => o.OfficeName).ToList();
         servicePoint = new DcFixedServicePoint();
     }
 

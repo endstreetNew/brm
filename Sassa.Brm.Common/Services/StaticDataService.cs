@@ -1,4 +1,5 @@
-﻿using Sassa.BRM.Models;
+﻿using Microsoft.Extensions.Configuration;
+using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,15 @@ using System.Linq;
 
 namespace Sassa.Brm.Common.Services
 {
-    public class StaticD
+    public class StaticDataService
     {
-        public StaticD()
+        public StaticDataService(IConfiguration config)
         {
+            ReportFolder = config.GetValue<string>("Folders:Reports");
+            DocumentFolder = config.GetValue<string>("Folders:CS");
+            //"Reports": "BRMfiles",
+            //"TDW": "TDWAttachments",
+            //"CS": "CSImages"
         }
 
         public static string? RsWeb { get; set; }
@@ -121,12 +127,12 @@ namespace Sassa.Brm.Common.Services
                 _picklistStatus.Add("Received", "Received");
                 //_picklistStatus.Add("Scanned", "Scanned.");
                 _picklistStatus.Add("Returned", "Returned.");
-                return StaticD._picklistStatus;
+                return StaticDataService._picklistStatus;
             }
 
         }
 
-        private static Dictionary<string, string> _tdwregions;
+        private static Dictionary<string, string>? _tdwregions;
         public static Dictionary<string, string> TdwRegions
         {
             get
@@ -228,7 +234,7 @@ namespace Sassa.Brm.Common.Services
             return _months;
         }
 
-        public static List<String> _exclusionTypes;
+        public static List<String>? _exclusionTypes;
         public static List<String> ExclusionTypes
         {
             get
@@ -252,7 +258,7 @@ namespace Sassa.Brm.Common.Services
             }
         }
 
-        private static string _version;
+        private static string? _version;
         public static string Version()
         {
             if (string.IsNullOrEmpty(_version))

@@ -13,7 +13,7 @@ namespace Sassa.Brm.Common.Services
     {
 
         ModelContext _context;
-        public StaticService(ModelContext context)
+        public StaticService(ModelContext context,StaticDataService StaticData)
         {
             _context = context;
         }
@@ -22,29 +22,29 @@ namespace Sassa.Brm.Common.Services
 
         public string GetTransactionType(int key)
         {
-            if (StaticD.TransactionTypes == null)
+            if (StaticDataService.TransactionTypes == null)
             {
-                StaticD.TransactionTypes = new Dictionary<int, string>();
-                StaticD.TransactionTypes.Add(0, "Application");
-                StaticD.TransactionTypes.Add(1, "Loose Correspondence");
-                StaticD.TransactionTypes.Add(2, "Review");
+                StaticDataService.TransactionTypes = new Dictionary<int, string>();
+                StaticDataService.TransactionTypes.Add(0, "Application");
+                StaticDataService.TransactionTypes.Add(1, "Loose Correspondence");
+                StaticDataService.TransactionTypes.Add(2, "Review");
             }
-            return StaticD.TransactionTypes[key];
+            return StaticDataService.TransactionTypes[key];
         }
         public async Task<UserOffice> GetUserLocalOffice(string samName, string supervisor)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            if (StaticD.DcOfficeKuafLinks == null)
+            if (StaticDataService.DcOfficeKuafLinks == null)
             {
-                StaticD.DcOfficeKuafLinks = _context.DcOfficeKuafLinks.AsNoTracking().ToList();
+                StaticDataService.DcOfficeKuafLinks = _context.DcOfficeKuafLinks.AsNoTracking().ToList();
             }
 
             //Try local office from static.
-            if (!(from lo in StaticD.LocalOffices
-                  join lou in StaticD.DcOfficeKuafLinks
+            if (!(from lo in StaticDataService.LocalOffices
+                  join lou in StaticDataService.DcOfficeKuafLinks
                       on lo.OfficeId equals lou.OfficeId
                   where lou.Username == samName
                   select new
@@ -64,8 +64,8 @@ namespace Sassa.Brm.Common.Services
                 await GetUserLocalOffice(samName, supervisor);
             }
 
-            var value = (from lo in StaticD.LocalOffices
-                         join lou in StaticD.DcOfficeKuafLinks
+            var value = (from lo in StaticDataService.LocalOffices
+                         join lou in StaticDataService.DcOfficeKuafLinks
                          on lo.OfficeId equals lou.OfficeId
                          where lou.Username == samName
                          select new
@@ -90,23 +90,21 @@ namespace Sassa.Brm.Common.Services
             return Office;
             //if (_sessionservice.SessionInitialized != null) _sessionservice.SessionInitialized(this, null);
         }
-
         public DcLocalOffice GetLocalOffice(string officeId)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            return StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault()!;
+            return StaticDataService.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault()!;
         }
-
         public UserSession SetUserOffice(string officeId)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            var office = StaticD.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
+            var office = StaticDataService.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
             UserSession _session = new UserSession();
             _session.Office.OfficeName = office!.OfficeName;
             _session.Office.OfficeId = office.OfficeId;
@@ -120,27 +118,27 @@ namespace Sassa.Brm.Common.Services
         }
         public List<DcFixedServicePoint> GetServicePoints(string regionID)
         {
-            if (StaticD.ServicePoints == null)
+            if (StaticDataService.ServicePoints == null)
             {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+                StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            return StaticD.ServicePoints.Where(sp => StaticD.LocalOffices!.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
+            return StaticDataService.ServicePoints.Where(sp => StaticDataService.LocalOffices!.Where(lo => lo.RegionId == regionID).Select(l => l.OfficeId).ToList().Contains(sp.OfficeId.ToString())).ToList();
         }
         public List<DcFixedServicePoint> GetOfficeServicePoints(string officeID)
         {
-            if (StaticD.ServicePoints == null)
+            if (StaticDataService.ServicePoints == null)
             {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+                StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            return StaticD.ServicePoints.Where(sp => sp.OfficeId == officeID).ToList();
+            return StaticDataService.ServicePoints.Where(sp => sp.OfficeId == officeID).ToList();
         }
         public string GetServicePointName(decimal? fspID)
         {
-            if (StaticD.ServicePoints == null)
+            if (StaticDataService.ServicePoints == null)
             {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+                StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
-            var result = StaticD.ServicePoints.Where(sp => sp.Id == fspID);
+            var result = StaticDataService.ServicePoints.Where(sp => sp.Id == fspID);
             if (result.Any())
             {
                 return result.First().ServicePointName;
@@ -175,7 +173,7 @@ namespace Sassa.Brm.Common.Services
             try
             {
                 await _context.SaveChangesAsync();
-                StaticD.DcOfficeKuafLinks = await _context.DcOfficeKuafLinks.ToListAsync();
+                StaticDataService.DcOfficeKuafLinks = await _context.DcOfficeKuafLinks.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -186,44 +184,43 @@ namespace Sassa.Brm.Common.Services
         public string GetRegion(string regionId)
         {
             if (regionId == null) return "Unknown";
-            if (StaticD.Regions == null)
+            if (StaticDataService.Regions == null)
             {
-                StaticD.Regions = _context.DcRegions.AsNoTracking().ToList();
+                StaticDataService.Regions = _context.DcRegions.AsNoTracking().ToList();
             }
-            return StaticD.Regions.Where(r => r.RegionId == regionId).First().RegionName;
+            return StaticDataService.Regions.Where(r => r.RegionId == regionId).First().RegionName;
         }
 
         public string GetRegionCode(string regionId)
         {
-            if (StaticD.Regions == null)
+            if (StaticDataService.Regions == null)
             {
-                StaticD.Regions = _context.DcRegions.AsNoTracking().ToList();
+                StaticDataService.Regions = _context.DcRegions.AsNoTracking().ToList();
             }
-            return StaticD.Regions.Where(r => r.RegionId == regionId).First().RegionCode;
+            return StaticDataService.Regions.Where(r => r.RegionId == regionId).First().RegionCode;
         }
         public Dictionary<string, string> GetRegions()
         {
-            if (StaticD.Regions == null)
+            if (StaticDataService.Regions == null)
             {
-                StaticD.Regions = _context.DcRegions.AsNoTracking().ToList();
+                StaticDataService.Regions = _context.DcRegions.AsNoTracking().ToList();
             }
-            return StaticD.Regions.ToDictionary(key => key.RegionId, value => value.RegionName); ;
+            return StaticDataService.Regions.ToDictionary(key => key.RegionId, value => value.RegionName); ;
         }
         public List<DcLocalOffice> GetOffices(string regionId)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            return StaticD.LocalOffices.Where(o => o.RegionId == regionId).ToList();
+            return StaticDataService.LocalOffices.Where(o => o.RegionId == regionId).ToList();
         }
-
         public async Task ChangeOfficeStatus(string officeId, string status)
         {
             DcLocalOffice lo = await _context.DcLocalOffices.Where(o => o.OfficeId == officeId).FirstAsync();
             lo.ActiveStatus = status;
             await _context.SaveChangesAsync();
-            StaticD.LocalOffices = null;
+            StaticDataService.LocalOffices = null;
             GetOffices(lo.RegionId);
         }
         public async Task ChangeOfficeName(string officeId, string name)
@@ -231,7 +228,7 @@ namespace Sassa.Brm.Common.Services
             DcLocalOffice lo = await _context.DcLocalOffices.Where(o => o.OfficeId == officeId).FirstAsync();
             lo.OfficeName = name;
             await _context.SaveChangesAsync();
-            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+            StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
         public async Task MoveOffice(string fromOfficeId, int toOfficeId)
         {
@@ -267,13 +264,12 @@ namespace Sassa.Brm.Common.Services
 
             await DeleteLocalOffice(fromOfficeId);
         }
-
         public async Task SaveManualBatch(string officeId, string manualBatch)
         {
             DcLocalOffice lo = await _context.DcLocalOffices.Where(o => o.OfficeId == officeId).FirstAsync();
             lo.ManualBatch = manualBatch;
             await _context.SaveChangesAsync();
-            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+            StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
         public async Task DeleteLocalOffice(string officeId)
         {
@@ -281,7 +277,7 @@ namespace Sassa.Brm.Common.Services
             if (lo == null) return;
             _context.DcLocalOffices.Remove(lo);
             await _context.SaveChangesAsync();
-            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+            StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
         public async Task UpdateServicePoint(DcFixedServicePoint s)
         {
@@ -289,29 +285,27 @@ namespace Sassa.Brm.Common.Services
             sp.ServicePointName = s.ServicePointName;
             sp.OfficeId = s.OfficeId;
             await _context.SaveChangesAsync();
-            StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
         }
         public async Task CreateOffice(RegionOffice office)
         {
             DcLocalOffice lo = new DcLocalOffice();
             lo.OfficeName = office.OfficeName;
-            lo.OfficeId = (int.Parse(_context.DcLocalOffices.Max(o => o.OfficeId)) + 1).ToString();
+            lo.OfficeId = (int.Parse(_context.DcLocalOffices.Max(o => o.OfficeId)!) + 1).ToString();
             lo.RegionId = office.RegionId;
             lo.ActiveStatus = "A";
             lo.OfficeType = "LO";
             _context.DcLocalOffices.Add(lo);
             await _context.SaveChangesAsync();
-            StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+            StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
         }
-
         public async Task CreateServicePoint(DcFixedServicePoint s)
         {
             _context.DcFixedServicePoints.Add(s);
             await _context.SaveChangesAsync();
 
-            StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+            StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
         }
-
         public List<string> GetOfficeIds(string regionId)
         {
             List<DcLocalOffice> offices = GetOffices(regionId);
@@ -319,79 +313,79 @@ namespace Sassa.Brm.Common.Services
         }
         public string GetOfficeName(string officeId)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            return StaticD.LocalOffices.Where(o => o.OfficeId == officeId).First().OfficeName;
+            return StaticDataService.LocalOffices.Where(o => o.OfficeId == officeId).First().OfficeName;
         }
 
         public string GetFspName(decimal? fspId)
         {
-            if (StaticD.ServicePoints == null)
+            if (StaticDataService.ServicePoints == null)
             {
-                StaticD.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
+                StaticDataService.ServicePoints = _context.DcFixedServicePoints.AsNoTracking().ToList();
             }
             if (fspId == null) return "";
-            if (StaticD.ServicePoints.Where(o => o.Id == fspId).Any())
+            if (StaticDataService.ServicePoints.Where(o => o.Id == fspId).Any())
             {
-                return StaticD.ServicePoints.Where(o => o.Id == fspId).First().ServicePointName;
+                return StaticDataService.ServicePoints.Where(o => o.Id == fspId).First().ServicePointName;
             }
             return "";
         }
         public string GetOfficeType(string officeId)
         {
-            if (StaticD.LocalOffices == null)
+            if (StaticDataService.LocalOffices == null)
             {
-                StaticD.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
+                StaticDataService.LocalOffices = _context.DcLocalOffices.AsNoTracking().ToList();
             }
-            return StaticD.LocalOffices.Where(o => o.OfficeId == officeId).First().OfficeType;
+            return StaticDataService.LocalOffices.Where(o => o.OfficeId == officeId).First().OfficeType;
         }
         public string GetGrantType(string grantId)
         {
-            if (StaticD.GrantTypes == null)
+            if (StaticDataService.GrantTypes == null)
             {
-                StaticD.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
+                StaticDataService.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
             }
-            return StaticD.GrantTypes[grantId];
+            return StaticDataService.GrantTypes[grantId];
         }
         public string GetGrantId(string grantType)
         {
-            if (StaticD.GrantTypes == null)
+            if (StaticDataService.GrantTypes == null)
             {
-                StaticD.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
+                StaticDataService.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
             }
-            return StaticD.GrantTypes.Where(g => g.Value == grantType).First().Key;
+            return StaticDataService.GrantTypes.Where(g => g.Value == grantType).First().Key;
         }
         public Dictionary<string, string> GetGrantTypes()
         {
-            if (StaticD.GrantTypes == null)
+            if (StaticDataService.GrantTypes == null)
             {
-                StaticD.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
+                StaticDataService.GrantTypes = _context.DcGrantTypes.AsNoTracking().ToDictionary(key => key.TypeId, value => value.TypeName);
             }
-            return StaticD.GrantTypes;
+            return StaticDataService.GrantTypes;
         }
         public string GetLcType(decimal lcId)
         {
-            if (StaticD.LcTypes == null)
+            if (StaticDataService.LcTypes == null)
             {
-                StaticD.LcTypes = _context.DcLcTypes.AsNoTracking().ToDictionary(key => key.Pk, value => value.Description);
+                StaticDataService.LcTypes = _context.DcLcTypes.AsNoTracking().ToDictionary(key => key.Pk, value => value.Description);
             }
-            return StaticD.LcTypes[lcId];
+            return StaticDataService.LcTypes[lcId];
         }
         public Dictionary<decimal, string> GetLcTypes()
         {
-            if (StaticD.LcTypes == null)
+            if (StaticDataService.LcTypes == null)
             {
-                StaticD.LcTypes = _context.DcLcTypes.ToDictionary(key => key.Pk, value => value.Description);
+                StaticDataService.LcTypes = _context.DcLcTypes.ToDictionary(key => key.Pk, value => value.Description);
             }
-            return StaticD.LcTypes;
+            return StaticDataService.LcTypes;
         }
         public List<RequiredDocsView> GetGrantDocuments(string grantType)
         {
-            if (StaticD.RequiredDocs == null)
+            if (StaticDataService.RequiredDocs == null)
             {
-                StaticD.RequiredDocs = (from reqDocGrant in _context.DcGrantDocLinks
+                StaticDataService.RequiredDocs = (from reqDocGrant in _context.DcGrantDocLinks
                                         join reqDoc in _context.DcDocumentTypes on reqDocGrant.DocumentId equals reqDoc.TypeId
                                         where reqDocGrant.CriticalFlag == "Y"
                                         orderby reqDocGrant.Section, reqDoc.TypeId ascending
@@ -404,7 +398,7 @@ namespace Sassa.Brm.Common.Services
                                             DOC_CRITICAL = reqDocGrant.CriticalFlag
                                         }).Distinct().AsNoTracking().ToList();
             }
-            return StaticD.RequiredDocs.Where(r => r.GrantType == grantType).OrderBy(g => g.DOC_SECTION).ThenBy(g => g.DOC_ID).ToList();
+            return StaticDataService.RequiredDocs.Where(r => r.GrantType == grantType).OrderBy(g => g.DOC_SECTION).ThenBy(g => g.DOC_ID).ToList();
         }
         /// <summary>
         /// Transport Y or N
@@ -414,21 +408,21 @@ namespace Sassa.Brm.Common.Services
         public Dictionary<string, string> GetBoxTypes(string transport)
         {
 
-            if (StaticD.BoxTypes == null)
+            if (StaticDataService.BoxTypes == null)
             {
-                StaticD.BoxTypes = _context.DcBoxTypes.AsNoTracking().ToList();
+                StaticDataService.BoxTypes = _context.DcBoxTypes.AsNoTracking().ToList();
             }
-            var result = StaticD.BoxTypes.Where(d => d.IsTransport == transport).ToDictionary(i => i.BoxTypeId.ToString(), i => i.BoxType);
+            var result = StaticDataService.BoxTypes.Where(d => d.IsTransport == transport).ToDictionary(i => i.BoxTypeId.ToString(), i => i.BoxType);
             return result;
         }
         public Dictionary<string, string> GetBoxTypes()
         {
 
-            if (StaticD.BoxTypes == null)
+            if (StaticDataService.BoxTypes == null)
             {
-                StaticD.BoxTypes = _context.DcBoxTypes.AsNoTracking().ToList();
+                StaticDataService.BoxTypes = _context.DcBoxTypes.AsNoTracking().ToList();
             }
-            var result = StaticD.BoxTypes.ToDictionary(i => i.BoxTypeId.ToString(), i => i.BoxType);
+            var result = StaticDataService.BoxTypes.ToDictionary(i => i.BoxTypeId.ToString(), i => i.BoxType);
             return result;
         }
         public Dictionary<string, string> GetYearList()
@@ -445,22 +439,22 @@ namespace Sassa.Brm.Common.Services
 
         public Dictionary<string, string> GetRequestCategories()
         {
-            if (StaticD.RequestCategories == null)
+            if (StaticDataService.RequestCategories == null)
             {
-                StaticD.RequestCategories = _context.DcReqCategories.OrderBy(e => e.CategoryDescr).AsNoTracking().ToList();
+                StaticDataService.RequestCategories = _context.DcReqCategories.OrderBy(e => e.CategoryDescr).AsNoTracking().ToList();
             }
-            var result = StaticD.RequestCategories.ToDictionary(i => i.CategoryId.ToString(), i => i.CategoryDescr);
+            var result = StaticDataService.RequestCategories.ToDictionary(i => i.CategoryId.ToString(), i => i.CategoryDescr);
             //result.Add("", "select...");
             return result;
         }
 
         public Dictionary<string, string> GetRequestCategoryTypes()
         {
-            if (StaticD.RequestCategoryTypes == null)
+            if (StaticDataService.RequestCategoryTypes == null)
             {
-                StaticD.RequestCategoryTypes = _context.DcReqCategoryTypes.AsNoTracking().ToList();
+                StaticDataService.RequestCategoryTypes = _context.DcReqCategoryTypes.AsNoTracking().ToList();
             }
-            var result = StaticD.RequestCategoryTypes.ToDictionary(i => i.TypeId.ToString(), i => i.TypeDescr);
+            var result = StaticDataService.RequestCategoryTypes.ToDictionary(i => i.TypeId.ToString(), i => i.TypeDescr);
             //result.Add("", "select...");
             return result;
         }
@@ -470,16 +464,16 @@ namespace Sassa.Brm.Common.Services
             Dictionary<string, string> result = new Dictionary<string, string>();
             if (string.IsNullOrEmpty(CategoryId)) return result;
             decimal.TryParse(CategoryId, out decimal catid);
-            if (StaticD.RequestCategoryTypes == null)
+            if (StaticDataService.RequestCategoryTypes == null)
             {
-                StaticD.RequestCategoryTypes = _context.DcReqCategoryTypes.AsNoTracking().ToList();
+                StaticDataService.RequestCategoryTypes = _context.DcReqCategoryTypes.AsNoTracking().ToList();
             }
-            if (StaticD.RequestCategoryTypeLinks == null)
+            if (StaticDataService.RequestCategoryTypeLinks == null)
             {
-                StaticD.RequestCategoryTypeLinks = _context.DcReqCategoryTypeLinks.AsNoTracking().ToList();
+                StaticDataService.RequestCategoryTypeLinks = _context.DcReqCategoryTypeLinks.AsNoTracking().ToList();
             }
-            result = (from r in StaticD.RequestCategoryTypes
-                      join c in StaticD.RequestCategoryTypeLinks
+            result = (from r in StaticDataService.RequestCategoryTypes
+                      join c in StaticDataService.RequestCategoryTypeLinks
                              on r.TypeId equals c.TypeId
                       where c.CategoryId == catid
                       select r).ToDictionary(i => i.TypeId.ToString(), i => i.TypeDescr);
@@ -488,11 +482,11 @@ namespace Sassa.Brm.Common.Services
         }
         public Dictionary<string, string> GetStakeHolders()
         {
-            if (StaticD.StakeHolders == null)
+            if (StaticDataService.StakeHolders == null)
             {
-                StaticD.StakeHolders = _context.DcStakeholders.Distinct().AsNoTracking().ToList();
+                StaticDataService.StakeHolders = _context.DcStakeholders.Distinct().AsNoTracking().ToList();
             }
-            var result = StaticD.StakeHolders.Distinct().ToDictionary(i => i.StakeholderId.ToString(), i => i.Name + " " + i.Surname);
+            var result = StaticDataService.StakeHolders.Distinct().ToDictionary(i => i.StakeholderId.ToString(), i => i.Name + " " + i.Surname);
             result.Add("", "");
             return result;
         }
@@ -500,11 +494,11 @@ namespace Sassa.Brm.Common.Services
         {
             decimal did;
             decimal.TryParse(DepartmentId, out did);
-            if (StaticD.StakeHolders == null)
+            if (StaticDataService.StakeHolders == null)
             {
-                StaticD.StakeHolders = _context.DcStakeholders.Distinct().AsNoTracking().ToList();
+                StaticDataService.StakeHolders = _context.DcStakeholders.Distinct().AsNoTracking().ToList();
             }
-            var result = StaticD.StakeHolders.Where(s => s.DepartmentId == did).ToDictionary(i => i.StakeholderId.ToString(), i => i.Name + " " + i.Surname);
+            var result = StaticDataService.StakeHolders.Where(s => s.DepartmentId == did).ToDictionary(i => i.StakeholderId.ToString(), i => i.Name + " " + i.Surname);
             result.Add("", "");
             return result;
         }

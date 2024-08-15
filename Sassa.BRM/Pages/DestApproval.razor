@@ -12,7 +12,7 @@
                 <span class="input-group-text">Destruction Year</span>
                 <select class="form-select" @bind="@destructionYear">
                     <option selected>@destructionYear</option>
-                    @foreach (var val in StaticD.DestructionYears)
+                    @foreach (var val in StaticDataService.DestructionYears)
                     {
                         <option value="@val">@val</option>
                     }
@@ -91,7 +91,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        destructionYear = StaticD.DestructionYears.First();
+        destructionYear = StaticDataService.DestructionYears.First();
         RegionId = int.Parse(sessionservice.session.Office.RegionId);
         await OnExclusionBatchPaged(1);
 

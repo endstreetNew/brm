@@ -110,7 +110,7 @@
     protected async Task GetRegionOffices()
     {
         List<CustRescode> ResCodes = await ss.GetResCodes(regionId);
-        regionOffices = StaticD.LocalOffices.Where(o => o.RegionId == regionId).Select(o =>
+        regionOffices = StaticDataService.LocalOffices.Where(o => o.RegionId == regionId).Select(o =>
         new RegionOffice
         {
             OfficeId = int.Parse(o.OfficeId),

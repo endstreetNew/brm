@@ -522,11 +522,13 @@
             toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
 
             await rd.SaveHtmlReport(sb.ToString(), helper.GetFileName($"Box_{rebox.BoxNo}",sessionservice.session));
+            sheets = null;
 
         }
         catch (Exception ex)
         {
             toast.Error($"Box :{rebox.BoxNo} Coversheets error. {ex.Message}");
+            
 
         }
         //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}coversheets/{rebox.BoxNo}", "_blank");

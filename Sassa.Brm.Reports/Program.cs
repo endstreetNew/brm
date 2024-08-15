@@ -33,7 +33,7 @@ namespace Sassa.Brm.Reports
             {
                 options.FallbackPolicy = options.DefaultPolicy;
             });
-            builder.Services.AddSingleton<StaticD>();
+            builder.Services.AddSingleton<StaticDataService>();
             //Factory pattern
             builder.Services.AddDbContextFactory<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));

@@ -20,7 +20,7 @@
                     <span class="input-group-text">From Quarter</span>
                     <select class="form-select" @bind="fromQuarter">
                         <option selected>select...</option>
-                        @foreach (var val in StaticD.QuarterList())
+                        @foreach (var val in StaticDataService.QuarterList())
                         {
                             <option value="@val.Key">@val.Key</option>
                         }
@@ -32,7 +32,7 @@
                     <span class="input-group-text">To Quarter</span>
                     <select class="form-select" @bind="toQuarter">
                         <option selected>select...</option>
-                        @foreach (var val in StaticD.QuarterList())
+                        @foreach (var val in StaticDataService.QuarterList())
                         {
                             <option value="@val.Key">@val.Key</option>
                         }
@@ -138,7 +138,7 @@ else
             return;
         }
         toast.Info($"Progress Dashboard loading...");
-        dashboardData = await og.MissingProgress(StaticD.QuarterList()[fromQuarter], StaticD.QuarterList()[toQuarter],office.RegionId);
+        dashboardData = await og.MissingProgress(StaticDataService.QuarterList()[fromQuarter], StaticDataService.QuarterList()[toQuarter],office.RegionId);
         IsDashboardLoaded = true;
     }
 
@@ -148,8 +148,8 @@ else
         {
             await Task.Delay(100);
 
-            period.FromDate = StaticD.QuarterList()[quarterName].FromDate;
-            period.ToDate = StaticD.QuarterList()[quarterName].ToDate;
+            period.FromDate = StaticDataService.QuarterList()[quarterName].FromDate;
+            period.ToDate = StaticDataService.QuarterList()[quarterName].ToDate;
             toast.Info($"{rs.reportList["3"]} queued.");
             string FileName = helper.GetFileName(rs.reportList["3"].Replace(" ", "_"),sessionService.session);
             //db.session.Office.RegionCode + "-" + db.session.SamName.ToUpper() + "-" + reportList["3"].Replace(" ", "_") + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");

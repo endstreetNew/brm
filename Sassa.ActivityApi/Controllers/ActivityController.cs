@@ -4,49 +4,40 @@ using Sassa.BRM.Models;
 using Sassa.Activity.Api.Helpers;
 using Microsoft.EntityFrameworkCore;
 
-namespace Sassa.Activity.Api.Controllers
+namespace Sassa.Activity.Api.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ActivityController(IDbContextFactory<ModelContext> _contextFactory) : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class ActivityController : ControllerBase
+
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<ActionResult> PostActivity(DcActivity activity)
     {
-        private readonly IDbContextFactory<ModelContext> _contextFactory;
 
-        public ActivityController(IDbContextFactory<ModelContext> contextFactory) //ILogger<ActivityController> logger)
+        ApiResponse<string> response = new ApiResponse<string>();
+        try
         {
-            _contextFactory = contextFactory;
-        }
-
-
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<ActionResult> PostActivity(DcActivity activity)
-        {
-
-            ApiResponse<string> response = new ApiResponse<string>();
-            try
+            using (var _context = _contextFactory.CreateDbContext())
             {
-                using (var _context = _contextFactory.CreateDbContext())
+                try
                 {
-                    try
-                    {
-                        _context.DcActivities.Add(activity);
-                        await _context.SaveChangesAsync();
-                        response.Success = true;
-                    }
-                    catch
-                    {
-                        //just ignoring activity post errors for now.
-                    }
+                    _context.DcActivities.Add(activity);
+                    await _context.SaveChangesAsync();
+                    response.Success = true;
+                }
+                catch
+                {
+                    //just ignoring activity post errors for now.
                 }
             }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.ErrorMessage = ex.Message;
-            }
-
-            return Ok(response);
         }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.ErrorMessage = ex.Message;
+        }
+        return Ok(response);
     }
 }

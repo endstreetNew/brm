@@ -310,7 +310,8 @@ namespace Sassa.BRM.Services
                 //attachment list
                 files = new List<string>();
                 //write attachments for manual download/add to mail
-                File.WriteAllText(StaticD.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+                File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", tpl.CreateCSV());
+                files.Add(StaticDataService.ReportFolder + $@"{FileName}.csv");
             }
             //send mail to TDW
             try
