@@ -279,6 +279,7 @@
         int tdwBatch = await db.CreateTdwBatch(boxfiles.result.Where(b => b.IsSelected).ToList());
         //Todo: send tdwBatch data to TDW
         btnPrint_Click(tdwBatch);
+        boxfiles = await db.GetAllBoxes(page, period);
     }
 
     protected void btnPrint_Click(int tdwBatch)

@@ -42,11 +42,11 @@ namespace Sassa.BRM
             services.AddDbContextFactory<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             //Services 
-            services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString));
+            services.AddScoped<BRMDbService>();//.AddDbContext<ModelContext>(options =>
+            //options.UseOracle(BrmConnectionString));
             services.AddSingleton<StaticDataService>();
-            services.AddScoped<StaticService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString));
+            services.AddSingleton<StaticService>();//.AddDbContext<ModelContext>(options =>
+            //options.UseOracle(BrmConnectionString));
             services.AddScoped<SessionService>();
             services.AddScoped<ActivityService, ActivityService>();
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
@@ -59,6 +59,8 @@ namespace Sassa.BRM
             options.UseOracle(BrmConnectionString));
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
+            services.AddSingleton<FileService>();
+
             services.AddSingleton<IEmailSettings, EmailSettings>(c =>
             {
                 EmailSettings emailSettings = new EmailSettings();
@@ -92,8 +94,10 @@ namespace Sassa.BRM
                 emailSettings.RegionIDEmails.Add("3", Configuration.GetValue<string>("TDWEmail:NORTHERN CAPE")!);
                 return emailSettings;
             });
+            services.AddSingleton<EmailClient>();
             services.AddSingleton<MailMessages>();
-            services.AddSingleton<FileService>();
+
+            
 
             services.AddScoped<IAlertService, AlertService>();
             services.AddScoped<Navigation>();

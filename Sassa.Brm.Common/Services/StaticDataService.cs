@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 using System;
@@ -11,10 +13,11 @@ namespace Sassa.Brm.Common.Services
 {
     public class StaticDataService
     {
-        public StaticDataService(IConfiguration config)
+        public StaticDataService(IConfiguration config,IWebHostEnvironment env)
         {
-            ReportFolder = config.GetValue<string>("Folders:Reports");
-            DocumentFolder = config.GetValue<string>("Folders:CS");
+
+            ReportFolder = Path.Combine(env.ContentRootPath, config["Folders:Reports"]!)+"\\";
+            DocumentFolder = $"{env.WebRootPath}\\{config.GetValue<string>("Folders:CS")}\\"; //env.ContentRootPath  + "//" + config.GetValue<string>("Folders:CS") + "/";
             //"Reports": "BRMfiles",
             //"TDW": "TDWAttachments",
             //"CS": "CSImages"

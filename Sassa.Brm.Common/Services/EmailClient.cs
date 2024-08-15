@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -11,48 +12,54 @@ namespace Sassa.Brm.Common.Services
     {
         private bool disposed;
         private SmtpClient? client;
-        private string _smtpServer;
-        private int _port;
         private NetworkCredential _credential;
 
-        public EmailClient(string smptpserver, int port, NetworkCredential credential)
+        private string _SMTPServer;
+        private int _SMTPPort;
+        private string _SMTPUser;
+        private string _SMTPPassword;
+
+        public EmailClient(IConfiguration config)
         {
-            _smtpServer = smptpserver;
-            _port = port;
-            _credential = credential;
+            _SMTPServer = config.GetValue<string>("Email:SMTPServer")!;
+            _SMTPUser = config.GetValue<string>("Email:SMTPUser")!;
+            _SMTPPassword = config.GetValue<string>("Email:SMTPPassword")!;
+            _SMTPPort = config.GetValue<int>("Email:SMTPPort")!;
+            _credential = new NetworkCredential(_SMTPUser, _SMTPPassword);
         }
         public void SendMail(string from, string to, string subject, string body, List<string> attachments)
         {
-            client = new SmtpClient(_smtpServer, _port);
-            NetworkCredential basicCredential1 = _credential;
-            client.EnableSsl = false;
-            client.UseDefaultCredentials = true;// false;
-            //client.Credentials = basicCredential1;
-
-            MailMessage message = new MailMessage(from, to);
-
-            string mailbody = body;// $
-            message.Subject = subject;// "File Request";
-            message.Body = body;
-            message.BodyEncoding = Encoding.UTF8;
-            message.IsBodyHtml = true;
-            Attachment attachment;
-            foreach (string file in attachments)
+            using (var client = new SmtpClient(_SMTPServer, _SMTPPort))
             {
-                attachment = new Attachment(file);
-                message.Attachments.Add(attachment);
-            }
+                client.Credentials = _credential;
+                client.EnableSsl = false;
+                //client.UseDefaultCredentials = true;
 
-            try
-            {
-                client.Send(message);
-            }
-            catch (Exception ex)
-            {
-                using (EventLog eventLog = new EventLog("Application"))
+                MailMessage message = new MailMessage(from, to);
+
+                string mailbody = body;// $
+                message.Subject = subject;// "File Request";
+                message.Body = body;
+                message.BodyEncoding = Encoding.UTF8;
+                message.IsBodyHtml = true;
+                Attachment attachment;
+                foreach (string file in attachments)
                 {
-                    eventLog.Source = "BRM Application";
-                    eventLog.WriteEntry($"From {from} to {to} err: {ex.Message}", EventLogEntryType.Error, 101, 1);
+                    attachment = new Attachment(file);
+                    message.Attachments.Add(attachment);
+                }
+
+                try
+                {
+                    client.Send(message);
+                }
+                catch (Exception ex)
+                {
+                    using (EventLog eventLog = new EventLog("Application"))
+                    {
+                        eventLog.Source = "BRM Application";
+                        eventLog.WriteEntry($"From {from} to {to} err: {ex.Message}", EventLogEntryType.Error, 101, 1);
+                    }
                 }
             }
         }

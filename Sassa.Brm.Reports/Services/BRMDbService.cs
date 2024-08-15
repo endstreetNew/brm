@@ -2968,7 +2968,7 @@ namespace Sassa.Brm.Reports.Services
             if (string.IsNullOrEmpty(regionId)) throw new Exception("Invalid Region");
             string sql = $"SELECT d.PENSION_NO,f.REGION,f.CONTAINER_CODE,CONTAINER_ALTCODE,FILEFOLDER_CODE,FILEFOLDER_ALTCODE,d.DESTRUCTIO_DATE,f.NAME from TDW_FILE_LOCATION f JOIN DC_DESTRUCTION d ON d.PENSION_NO = f.DESCRIPTION WHERE f.REGION ='{region}' AND d.PENSION_NO NOT IN (SELECT ID_NO from Dc_Exclusions)";
             DataTable dt = await _raw.GetTable(sql);
-            string FileName = session.Office.RegionCode + "-" + session.SamName.ToUpper() + "-Destruction-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");
+            string FileName = session.Office.RegionCode + "-" + session.SamName!.ToUpper() + "-Destruction-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");
             //File.WriteAllText(FileName, dt.ToCSV());
             File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", dt.ToCSV());
         }
