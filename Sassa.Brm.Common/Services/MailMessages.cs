@@ -34,23 +34,24 @@ public class MailMessages
 
     public void SendTDWReceipt(UserSession session, string tdwOfficemail, string PickListNo, List<string> files)
     {
-
-            //send mail to TDW
-            string body = $"Thank you,<br/><br/>Piclist no: {PickListNo} has been received by our office.<br/><br/>Kind Regards<br/><br/>{session.Name}<br/><br/><br/><br/>";
-            client.SendMail($"no-reply@sassa.gov.za", tdwOfficemail, @"SASSA Picklist receipt.", body, files);
-            //send mail to Originator
-            body = $"A receipt for Picklist no: {PickListNo} has been sent to TDW.<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
-            client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA Picklist receipt sent", body, files);
+        if(session.Email == null)throw new Exception("User email in AD is null");
+        //send mail to TDW
+        string body = $"Thank you,<br/><br/>Piclist no: {PickListNo} has been received by our office.<br/><br/>Kind Regards<br/><br/>{session.Name}<br/><br/><br/><br/>";
+        client.SendMail($"no-reply@sassa.gov.za", tdwOfficemail, @"SASSA Picklist receipt.", body, files);
+        //send mail to Originator
+        body = $"A receipt for Picklist no: {PickListNo} has been sent to TDW.<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
+        client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA Picklist receipt sent", body, files);
 
     }
     public void SendTDWRequest(UserSession session, string tdwOfficemail, string PickListNo, List<string> files)
     {
+        if (session.Email == null) throw new Exception("User email in AD is null");
         //send mail to TDW
         string body = $"Please find attached file request(s) for processing (Picklist#{PickListNo}).<br/><br/>Kind Regards<br/><br/>{session.Name}<br/><br/><br/><br/>";
         client.SendMail($"no-reply@sassa.gov.za", tdwOfficemail, @"SASSA File request.", body, files);
         //send mail to Originator
         body = $"Please find attached file request(s) sent to TDW for processing (PickList#{PickListNo}).<br/><br/>Kind Regards<br/><br/>BRM System<br/>Please do not reply to this mail<br/><br/><br/>";
-        client.SendMail($"no-reply@sassa.gov.za", session.Email!, "SASSA File request confirmation", body, files);
+        client.SendMail($"no-reply@sassa.gov.za", session.Email, "SASSA File request confirmation", body, files);
     }
 
     //Returned box detail

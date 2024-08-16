@@ -541,7 +541,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
             catch (Exception ex)
             {
-
+                var message = ex.Message;
             }
             return false;
         }

@@ -238,7 +238,7 @@ namespace Sassa.Brm.Common.Helpers
         private static string CreateBatchItem(DcFile u)
         {
             BarCodeService bcService = new BarCodeService();
-            string qrCode = bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, StaticDataService.GrantTypes[u.GrantType]);
+            string qrCode = bcService.GetQrSvg(u.BrmBarcode, u.UnqFileNo, u.GrantType == "S" ? u.SrdNo : u.ApplicantNo, u.FullName, StaticDataService.GrantTypes![u.GrantType]);
             StringBuilder sb = new StringBuilder();
             sb.Append("<tr>");
             sb.Append($"<td>{u.UnqFileNo}</td>");

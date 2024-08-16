@@ -8,10 +8,9 @@ using System.Text;
 
 namespace Sassa.Brm.Common.Services
 {
-    public class EmailClient : IDisposable
+    public class EmailClient 
     {
         private bool disposed;
-        private SmtpClient? client;
         private NetworkCredential _credential;
 
         private string _SMTPServer;
@@ -65,28 +64,28 @@ namespace Sassa.Brm.Common.Services
         }
 
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-            {
-                return;
-            }
+        //public void Dispose()
+        //{
+        //    Dispose(true);
+        //    GC.SuppressFinalize(this);
+        //}
+        //protected virtual void Dispose(bool disposing)
+        //{
+        //    if (disposed)
+        //    {
+        //        return;
+        //    }
 
-            if (disposing)
-            {
-                // Dispose managed objects
-                if (client != null)
-                {
-                    client.Dispose();
-                }
-            }
-            // Dispose unmanaged objects
-            disposed = true;
-        }
+        //    if (disposing)
+        //    {
+        //        // Dispose managed objects
+        //        if (client != null)
+        //        {
+        //            client.Dispose();
+        //        }
+        //    }
+        //    // Dispose unmanaged objects
+        //    disposed = true;
+        //}
     }
 }

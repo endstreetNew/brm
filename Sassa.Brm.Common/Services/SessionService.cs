@@ -28,14 +28,14 @@ namespace Sassa.Brm.Common.Services
             //_context = context;
             try
             {
-                _windowsIdentity = (WindowsIdentity)httpContextAccessor.HttpContext.User.Identity;
+                _windowsIdentity = (WindowsIdentity)httpContextAccessor.HttpContext!.User.Identity!;
                 _session = GetUserSession(_windowsIdentity);
                 SessionInitialized?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
                 _session = null;
-                throw new Exception("Some user details not found in AD");
+                throw new Exception($"Some user details not found in AD {ex.Message}");
             }
         }
 
@@ -44,12 +44,12 @@ namespace Sassa.Brm.Common.Services
             //S-1-5-21-1204054820-1125754781-535949388-513 (test value)
             _session = new UserSession();
 
-            DirectoryEntry user = new DirectoryEntry($"LDAP://<SID={identity.User.Value}>");
-            _session.SamName = (string)user.Properties["SAMAccountName"].Value;
+            DirectoryEntry user = new DirectoryEntry($"LDAP://<SID={identity.User!.Value}>");
+            _session.SamName = (string)user.Properties["SAMAccountName"].Value!;
             _session.Roles = identity.GetRoles();
-            _session.Email = (string)user.Properties["mail"].Value;
-            _session.Name = (string)user.Properties["name"].Value;
-            _session.Surname = (string)user.Properties["sn"].Value;
+            _session.Email = (string)user.Properties["mail"].Value!;
+            _session.Name = (string)user.Properties["name"].Value!;
+            _session.Surname = (string)user.Properties["sn"].Value!;
 
             return _session;
         }

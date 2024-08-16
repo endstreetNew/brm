@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sassa.Brm.Common.Services;
 
-public class StaticService(IDbContextFactory<ModelContext> _contextFactory, StaticDataService StaticData)
+public class StaticService(IDbContextFactory<ModelContext> _contextFactory)
 {
 
     ModelContext context = _contextFactory.CreateDbContext();

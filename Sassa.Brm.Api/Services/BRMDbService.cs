@@ -882,7 +882,7 @@ namespace Sassa.BRM.Services
         /// <returns></returns>
         public void CreateActivity(string Area, string Activity, string userName, string UniqueFileNo = "")
         {
-            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = _session.Office.RegionId, OfficeId = decimal.Parse(_session.Office.OfficeId), Userid = 0, Username = userName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
+            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = _session.Office.RegionId, OfficeId = decimal.Parse(_session.Office.OfficeId!), Userid = 0, Username = userName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
             try
             {
 

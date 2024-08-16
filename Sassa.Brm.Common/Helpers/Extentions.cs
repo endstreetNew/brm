@@ -157,7 +157,7 @@ namespace Sassa.Brm.Common.Helpers
                 {
                     if (!Convert.IsDBNull(dr[i]))
                     {
-                        string value = dr[i].ToString().Trim();
+                        string value = dr[i].ToString()!.Trim();
                         if (value.Contains(","))
                         {
                             value = String.Format("\"{0}\"", value);
@@ -167,7 +167,7 @@ namespace Sassa.Brm.Common.Helpers
                         else
                         {
 
-                            sb.Append(rgx.Replace(dr[i].ToString().Trim(), ""));
+                            sb.Append(rgx.Replace(dr[i].ToString()!.Trim(), ""));
                         }
                     }
                     if (i < dtDataTable.Columns.Count - 1)
