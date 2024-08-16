@@ -19,12 +19,32 @@ public class ActivityService(IHttpClientFactory _httpClientFactory, IConfigurati
     }
     #region Activity
 
-    public void CreateActivity(string Area, string Activity, string regionId, decimal officeId, string samName, string UniqueFileNo = "")
+    public void CreateActivity(string action, string srdNo, decimal? lcType, string Activity, string regionId, decimal officeId, string samName, string UniqueFileNo = "")
     {
-        DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = regionId, OfficeId = officeId, Userid = 0, Username = samName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
-        PostActivity(activity);
+        try
+        {
+            string area = action + GetFileArea(srdNo, lcType);
+            DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = regionId, OfficeId = officeId, Userid = 0, Username = samName, Area = area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
+            PostActivity(activity);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
     }
 
+    public string GetFileArea(string srdNo, decimal? lcType)
+    {
+        if (!string.IsNullOrEmpty(srdNo))
+        {
+            return "-SRD";
+        }
+        if (lcType != null)
+        {
+            return "-LC";
+        }
+        return "-File";
+    }
     #endregion
 
 }

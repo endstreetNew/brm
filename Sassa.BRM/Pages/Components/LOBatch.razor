@@ -442,9 +442,10 @@
 
     public void Dispose()
     {
-        // GC.Collect();
-        // GC.WaitForPendingFinalizers();
-        // GC.Collect();
+        DTBatch = null;
+        items = null;
+        selectedBatch = null;
+        GC.Collect();
     }
 
 }

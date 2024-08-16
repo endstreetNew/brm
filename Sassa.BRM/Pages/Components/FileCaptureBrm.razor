@@ -304,8 +304,10 @@
 
     public void Dispose()
     {
+        selectedApp = null;
         DTBrm = null;
         DTMerges = null;
+        GC.Collect();
     }
 
 }

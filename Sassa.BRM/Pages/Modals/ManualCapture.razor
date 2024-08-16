@@ -4,6 +4,8 @@
 @inject Navigation Navigate
 @inject IAlertService toast
 @inject IJSRuntime JSRuntime
+
+@implements IDisposable
 <!-- Bootstrap Modal Dialog -->
 @if (ready)
 {
@@ -145,11 +147,10 @@
     public EventCallback ModalClosed { get; set; }
 
     [Parameter]
-    public EventCallback<bool> BrmSave { get; set; }
+    public EventCallback<bool> ManualBrmSave { get; set; }
 
     bool grantTypeVisible;
     Dictionary<string, string> grantTypes;
-    //Dictionary<decimal, string> lcTypes;
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;
@@ -215,7 +216,6 @@
         {
             await Task.Delay(10);
             showOverWrite = true;
-            //StateHasChanged();
             return;
         }
         ready = false;
@@ -238,13 +238,6 @@
                     {
                         throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
                     }
-                    //if (!(TargetBoxType.Contains("LC") && br.AppStatus.Contains("LC")))
-                    //{
-                    //    if (TargetBoxType != br.AppStatus)
-                    //    {
-                    //        throw new Exception($"Filetype / Boxtype mismatch expecting {TargetBoxType} file.");
-                    //    }
-                    //}
                 }
             }
             br.ChildId = ("" + br.ChildId).Trim();
@@ -256,7 +249,7 @@
             br.BATCH_NO = file.BatchNo.ToString();
             br.Clm_No = file.UnqFileNo;
 
-            await BrmSave.InvokeAsync(br.IsMergeCandidate);
+            await ManualBrmSave.InvokeAsync(br.IsMergeCandidate);
             //Run sync on purpose
             await db.SetBatchCount(br.BATCH_NO);
             await JSRuntime.InvokeVoidAsync("open",System.Threading.CancellationToken.None, $"coversheet/{br.Brm_BarCode}", "_blank");
@@ -310,6 +303,8 @@
                     br.AppStatus = "LC-" + br.AppStatus;
                 }
             }
+            if (br.GrantName == "S" && string.IsNullOrEmpty(br.Srd_No.Trim()) ) throw new Exception("Srd with no Srd No.");
+
             br.Source = "ManualCapture";
 
             return true;
@@ -319,5 +314,12 @@
             toast.Error(ex.Message);
             return false;
         }
+    }
+
+    public void Dispose()
+    {
+        // br = null;
+        // grantTypes.Clear();
+        GC.Collect();
     }
 }

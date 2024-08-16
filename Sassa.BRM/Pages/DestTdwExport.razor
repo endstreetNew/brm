@@ -151,7 +151,7 @@
         }
         catch(Exception ex)
         {
-            toast.Error("File upload failed.");
+            toast.Error($"File upload failed. {ex.Message}");
             isLoading = false;
         }
         isLoading = false;

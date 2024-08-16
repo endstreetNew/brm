@@ -10,7 +10,7 @@
 
 @if(showManualCapture && SelectedApplication != null)
 {
-    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
+    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" ManualBrmSave="ManualBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
 }
 
 
@@ -95,7 +95,7 @@
     string manualGrantType = "";
 
     // bool showConfirmRegion = false;
-    bool showBrmModal = false;
+    // bool showBrmModal = false;
     bool showManualCapture = false;
 
     long srdNo;
@@ -209,42 +209,17 @@
         showManualCapture = true;
     }
 
-    private void ConfirmedRegion()
-    {
-        // showConfirmRegion = false;
-        showBrmModal = true;
-        StateHasChanged();
-    }
 
-    private void CancelRegion()
+    private async Task ManualBrmSaved(bool merge)
     {
-        // showConfirmRegion = false;
-        showBrmModal = false;
-        StateHasChanged();
-    }
-
-    private async Task OnBrmSaved(bool merge)
-    {
-        // showBrmModal = false;
-        // showManualCapture = false;
-        // await OnBrmChanged();
-        // if (merge)
-        // {
-        //     var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BATCH_NO == SelectedApplication.BATCH_NO || s.BATCH_NO ==null)).ToList();
-        //     await db.AutoMerge(SelectedApplication, parents);
-        //     //Running Syncronously on purpose
-        //     await db.SetParentBatchCount(SelectedApplication.BATCH_NO);
-        //     await OnBrmChanged();
-        // }
-        // rebox = await db.GetBoxCounts(rebox);
+        showManualCapture = false;
+        rebox = await db.GetBoxCounts(rebox);
         await Task.CompletedTask;
     }
 
     private async Task OnModalClosed()
     {
-
         SelectedApplication = null;
-        showBrmModal = false;
         showManualCapture = false;
         await Task.CompletedTask;
     }

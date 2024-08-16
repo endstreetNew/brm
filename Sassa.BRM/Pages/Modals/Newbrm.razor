@@ -4,6 +4,8 @@
 @inject Navigation Navigate
 @inject IAlertService toast
 @inject IJSRuntime JSRuntime
+
+@implements IDisposable
 <!-- Bootstrap Modal Dialog -->
 @if (ready)
 {
@@ -124,7 +126,6 @@
 
     bool grantTypeVisible;
     Dictionary<string, string> grantTypes;
-    //Dictionary<decimal, string> lcTypes;
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;
@@ -164,13 +165,11 @@
         base.OnInitialized();
 
     }
-
     protected async Task btnOverwrite_Click()
     {
         if (!IsValid()) return;
         await Save($"Overwrite selected by : {sessionservice.session.SamName}");
     }
-
     private async Task btnOk_Click()
     {
         string socpenDate = br.AppDate;
@@ -186,7 +185,6 @@
         {
             await Task.Delay(10);
             showOverWrite = true;
-            //StateHasChanged();
             return;
         }
         await Save(reason);
@@ -248,10 +246,12 @@
         }
 
     }
+
     private void btnCancel_Click()
     {
         ModalClosed.InvokeAsync();
     }
+
     private bool IsValid()
     {
         try //Catch from validation errors in thistry
@@ -279,6 +279,7 @@
                     br.AppStatus = "LC-" + br.AppStatus;
                 }
             }
+            if (br.GrantName == "S" && string.IsNullOrEmpty(br.Srd_No.Trim())) throw new Exception("Srd with no Srd No.");
             br.Source = "Capture";
 
             return true;
@@ -288,5 +289,12 @@
             toast.Error(ex.Message);
             return false;
         }
+    }
+
+    public void Dispose()
+    {
+        // br = null;
+        // if(grantTypes != null)grantTypes.Clear();
+        GC.Collect();
     }
 }

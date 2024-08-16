@@ -7,7 +7,7 @@
 @if (showBrmModal)
 {
 
-    <Newbrm br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></Newbrm>
+    <Newbrm br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="OnBrmSaved" TargetBoxType="@rebox.RegType"></Newbrm>
 
 }
 
@@ -158,16 +158,13 @@
             return;
         }
         SelectedApplication = a;
-        if (a.RegionId == sessionservice.session.Office.RegionId)
-        {
-            ConfirmedRegion();//Save normal capture
-        }
-        else
+        if (a.RegionId != sessionservice.session.Office.RegionId)
         {
             regionChangeMessage = $"Are you sure you want to change the region of this application from {sservice.GetRegion(a.RegionId)} to {sservice.GetRegion(sessionservice.session.Office.RegionId)} ?";
             showConfirmRegion = true;
-            //toast.Error($"Please set your region to {db.GetRegion(a.RegionId)} to capture this record");
         }
+        //toast.Error($"Please set your region to {db.GetRegion(a.RegionId)} to capture this record");
+        ConfirmedRegion();//Save normal capture
     }
 
     private void ConfirmedRegion()
@@ -196,8 +193,6 @@
             await db.SetParentBatchCount(SelectedApplication.BATCH_NO);
             await OnChanged();
         }
-        rebox = await db.GetBoxCounts(rebox);
-
     }
 
     protected async Task OnChanged()
@@ -239,12 +234,14 @@
     {
         SelectedApplication = null;
         showBrmModal = false;
-        // showManualCapture = false;
         StateHasChanged();
     }
 
     public void Dispose()
     {
         DTSocPen = null;
+        DTBrm = null;
+        SelectedApplication = null;
+        GC.Collect();
     }
 }

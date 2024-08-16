@@ -37,17 +37,18 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             DcFile file = await _context.DcFiles.Where(d => d.BrmBarcode == brm.Brm_BarCode).FirstAsync();
             file.BrmBarcode = barCode;
             await _context.SaveChangesAsync();
-            CreateActivity("Update" + GetFileArea(file.SrdNo, file.Lctype), "Update BRM Barcode", file.UnqFileNo);
+            CreateActivity("Update " ,file.SrdNo, file.Lctype, "Update BRM Barcode", file.UnqFileNo);
         }
 
     }
 
     public async Task<DcFile> CreateBRM(Application application, string reason)
     {
+        //This allowws overwriting if selected;
+        await RemoveBRM(application.Brm_BarCode, reason);
+
         using (var _context = _contextFactory.CreateDbContext())
         {
-            //Removes all duplicates
-            //await RemoveBRM(application.Brm_BarCode, reason);
             decimal? batch = null;
             var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
             if (office.ManualBatch == "A")
@@ -98,12 +99,12 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
             catch (Exception ex)
             {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+                CreateActivity("Capture" , file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
                 throw;
             }
 
             file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
-            CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Print Coversheet", file.UnqFileNo);
+            CreateActivity("Capture" ,file.SrdNo, file.Lctype, "Print Coversheet", file.UnqFileNo);
             DcSocpen dc_socpen;
             long? srd;
             try
@@ -168,7 +169,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
             catch (Exception ex)
             {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+                CreateActivity("Capture",file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
                 throw;
             }
 
@@ -664,7 +665,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 boxedFile.FromDcFile(file);
 
                 await _context.SaveChangesAsync();
-                CreateActivity("Reboxing" + GetFileArea(file.SrdNo, file.Lctype), "Rebox file", file.UnqFileNo);
+                CreateActivity("Reboxing",file.SrdNo, file.Lctype, "Rebox file", file.UnqFileNo);
             }
             catch //(Exception ex)
             {
@@ -1736,7 +1737,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     dcfile.FileComment = reason;
                     await BackupDcFileEntry(dcfile);
                     _context.DcFiles.Remove(dcfile);
-                    CreateActivity("Delete" + GetFileArea(dcfile.SrdNo, dcfile.Lctype), "Delete BRM Record", dcfile.UnqFileNo);
+                    CreateActivity("Delete",dcfile.SrdNo, dcfile.Lctype, "Delete BRM Record", dcfile.UnqFileNo);
 
                 }
             }
@@ -1963,7 +1964,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             }
         }
-        CreateActivity("Batching", $"Status {newStatus}");
+        CreateActivity("Batching",null,0, $"Status {newStatus}");
     }
     public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
     {
@@ -2009,7 +2010,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             file.BatchNo = 0;
             await _context.SaveChangesAsync();
         }
-        CreateActivity("Batching" + GetFileArea(file.SrdNo, file.Lctype), "Remove File", file.UnqFileNo);
+        CreateActivity("Batching",file.SrdNo, file.Lctype, "Remove File", file.UnqFileNo);
         if (batchNo != 0) await SetBatchCount(batchNo.ToString());
 
     }
@@ -2043,7 +2044,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 await _context.SaveChangesAsync();
             }
-            CreateActivity("Batching" + GetFileArea(file.SrdNo, file.Lctype), "Add File", file.UnqFileNo);
+            CreateActivity("Batching",file.SrdNo, file.Lctype, "Add File", file.UnqFileNo);
             await SetBatchCount(batchNo.ToString());
             if (sourceBatch != 0) await SetBatchCount(sourceBatch.ToString());
         }
@@ -2305,7 +2306,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 throw new Exception("Duplicate Brm Record please delete duplicate first.");
             }
             DcFile file = dcfiles.First();
-            CreateActivity("Enquiry" + GetFileArea(file.SrdNo, file.Lctype), "Enquiry", file.UnqFileNo);
+            CreateActivity("Enquiry",file.SrdNo, file.Lctype, "Enquiry", file.UnqFileNo);
 
             var merged = await _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode).ToListAsync();
 
@@ -2361,7 +2362,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             List<Enquiry> resultlist = new List<Enquiry>();
             var dcfiles = await _context.DcFiles.Where(f => f.ApplicantNo.Contains(idNumber.Trim())).ToListAsync();
             if (!dcfiles.Any()) throw new Exception("Applicant Id not found");
-            CreateActivity("Enquiry" + GetFileArea(dcfiles.First().SrdNo, dcfiles.First().Lctype), "Enquiry", dcfiles.First().UnqFileNo);
+            CreateActivity("Enquiry",dcfiles.First().SrdNo, dcfiles.First().Lctype, "Enquiry", dcfiles.First().UnqFileNo);
             foreach (DcFile file in dcfiles)
             {
                 Enquiry result = new Enquiry();
@@ -2883,25 +2884,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     /// <param name="Area"></param>
     /// <param name="Activity"></param>
     /// <returns></returns>
-    public void CreateActivity(string Area, string Activity, string UniqueFileNo = "")
+    public void CreateActivity(string action,string srdNo, decimal? lcType, string Activity, string UniqueFileNo = "")
     {
-        DcActivity activity = new DcActivity { ActivityDate = DateTime.Now, RegionId = _userSession.Office.RegionId, OfficeId = decimal.Parse(_userSession.Office.OfficeId), Userid = 0, Username = _userSession.SamName, Area = Area, Activity = Activity, Result = "OK", UnqFileNo = UniqueFileNo };
-        _activity.PostActivity(activity);
+        _activity.CreateActivity(action, srdNo, lcType, Activity, _userSession.Office.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession.SamName,UniqueFileNo);
     }
-
-    public string GetFileArea(string srdNo, decimal? lcType)
-    {
-        if (!string.IsNullOrEmpty(srdNo))
-        {
-            return "-SRD";
-        }
-        if (lcType != null)
-        {
-            return "-LC";
-        }
-        return "-File";
-    }
-
     #endregion
 }
 

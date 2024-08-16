@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #print documents
-wwwroot/CSImages/
+**/*/wwwroot/CSImages/
 BRMfiles/

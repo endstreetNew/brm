@@ -11,12 +11,12 @@
 @if (showBrmModal)
 {
 
-    <Newbrm br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></Newbrm>
+    <Newbrm br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="OnBrmSaved" TargetBoxType="@rebox.RegType"></Newbrm>
 
 }
 @if(showManualCapture)
 {
-    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="@OnBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
+    <ManualCapture br="@SelectedApplication" ModalClosed="OnModalClosed" BrmSave="OnBrmSaved" TargetBoxType="@rebox.RegType"></ManualCapture>
 }
 @if(showConfirmRegion)
 {

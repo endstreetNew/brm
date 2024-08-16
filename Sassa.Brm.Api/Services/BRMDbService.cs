@@ -584,9 +584,7 @@ namespace Sassa.BRM.Services
             {
                 throw new Exception("Office not found");
             }
-            //Removes all duplicates in case LO retries after DC_Activity failure
-            //await RemoveBRM(application.Brm_BarCode, "Api retry");
-            if (_context.DcFiles.Where(f => f.BrmBarcode == application.Brm_BarCode).ToList().Any())
+            if ((await _context.DcFiles.Where(f => f.BrmBarcode == application.Brm_BarCode).ToListAsync()).Any())
             {
                 throw new Exception("Duplicate BRM");
             }
@@ -703,7 +701,7 @@ namespace Sassa.BRM.Services
             }
             catch (Exception ex)
             {
-                CreateActivity("Capture" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UpdatedByAd, file.UnqFileNo);
+                CreateActivity("ApiInsert" + GetFileArea(file.SrdNo, file.Lctype), "Error:" + ex.Message.Substring(0, 200), file.UpdatedByAd, file.UnqFileNo);
                 //throw;
             }
 

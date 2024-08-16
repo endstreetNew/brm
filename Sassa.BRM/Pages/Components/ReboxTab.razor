@@ -410,7 +410,7 @@
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.BrmBarcode = string.Empty;
             DcFile file = await AddFile();
-            db.CreateActivity("Rebox" + db.GetFileArea(null, 0), $"File Created from MIS {rebox.MisFileNo.Trim()}", file.UnqFileNo);
+            
         }
         catch (Exception ex)
         {

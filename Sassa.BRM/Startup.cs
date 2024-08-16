@@ -44,9 +44,8 @@ namespace Sassa.BRM
             //Services 
             services.AddScoped<BRMDbService>();//.AddDbContext<ModelContext>(options =>
             //options.UseOracle(BrmConnectionString));
-            services.AddSingleton<StaticDataService>();
-            services.AddSingleton<StaticService>();//.AddDbContext<ModelContext>(options =>
-            //options.UseOracle(BrmConnectionString));
+            //services.AddSingleton<StaticDataService>();
+            services.AddSingleton<StaticService>();
             services.AddScoped<SessionService>();
             services.AddScoped<ActivityService, ActivityService>();
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
@@ -55,8 +54,7 @@ namespace Sassa.BRM
             options.UseOracle(BrmConnectionString));
             services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
             options.UseOracle(BrmConnectionString));
-            services.AddScoped<TdwBatchService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString));
+            services.AddScoped<TdwBatchService>();
             services.AddSingleton<BarCodeService>();
             services.AddSingleton<RawSqlService>();
             services.AddSingleton<FileService>();
