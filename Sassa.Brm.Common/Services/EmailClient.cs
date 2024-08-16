@@ -10,7 +10,7 @@ namespace Sassa.Brm.Common.Services
 {
     public class EmailClient 
     {
-        private bool disposed;
+        //private bool disposed;
         private NetworkCredential _credential;
 
         private string _SMTPServer;

@@ -550,20 +550,11 @@ namespace Sassa.BRM.Services
 
         public bool checkBRMExists(string brmno)
         {
-            return _context.DcFiles.Where(f => f.BrmBarcode == brmno).Any();
+            return _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToList().Any();
             //return _context.DcFiles.Where(k => k.BrmBarcode.ToLower() == brmno.ToLower()).Any();
         }
 
 
-        public async Task EditBarCode(Application brm, string barCode)
-        {
-
-            DcFile file = await _context.DcFiles.Where(d => d.BrmBarcode == brm.Brm_BarCode).FirstAsync();
-            file.BrmBarcode = barCode;
-            await _context.SaveChangesAsync();
-            CreateActivity("Update" + GetFileArea(file.SrdNo, file.Lctype), "Update BRM Barcode", file.UnqFileNo);
-
-        }
 
         public async Task<DcFile> CreateBRM(Application application, string reason)
         {

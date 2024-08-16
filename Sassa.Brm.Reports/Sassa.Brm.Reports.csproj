@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Pages\Components\DailyProgressDetail.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
     <Content Update="Pages\Components\OfficeProgress.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
