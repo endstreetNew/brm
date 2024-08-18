@@ -16,7 +16,7 @@
     <Confirmation Title="Confirm Region Change" Message="@regionChangeMessage" Cancel="CancelRegion" Ok="ConfirmedRegion"></Confirmation>
 }
 
-        <div id="SocpenGrid">
+<div id="SocpenGrid">
             @if (DTSocPen != null)
             {
                 <table class="table table-sm" style="font-size:small;">
@@ -73,24 +73,11 @@
     public string txtSearchId { get; set; }
 
     [Parameter]
-    public long txtSearchSRD { get; set; }
+    public Reboxing rebox { get; set; }
 
     [Parameter]
-    public string txtManualGrantType { get; set; }
+    public List<Application> DTSocPen { get; set; } = new List<Application>();
 
-    [Parameter]
-    public bool chkSearchFull { get; set; }
-
-    [Parameter]
-    public bool searchById { get; set; }
-
-    [Parameter]
-    public Reboxing rebox{ get; set; }
-
-    [Parameter]
-    public EventCallback<bool> SocpenChanged { get; set; }
-
-    protected List<Application> DTSocPen { get; set; } = new List<Application>();
     //used to set parents etc on new brm
     protected List<Application> DTBrm;
     protected Application SelectedApplication;
@@ -103,36 +90,11 @@
     string regionChangeMessage = "";
     // string manualGrantType = "";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await Search();
-    }
+    // protected override async Task OnInitializedAsync()
+    // {
 
-    private async Task Search()
-    {
-        try
-        {
-            //Clear previous results
-            DTSocPen = null;
+    // }
 
-            //Searching on ID
-            if(!searchById)
-            {
-                DTSocPen = await db.SearchSocpenSrd(txtSearchSRD);
-            }
-            else
-            {
-                DTSocPen = await db.SearchSocpenId(txtSearchId, chkSearchFull);
-            }
-            if (!DTSocPen.Any()) toast.Info("No Socpen results");
-            await SocpenChanged.InvokeAsync(DTSocPen.Where(s => s.GrantType == txtManualGrantType).Any());
-        }
-        catch (Exception ex)
-        {
-            DTSocPen = null;
-            toast.Error(ex.Message);
-        }
-    }
 
     private async Task btnNewCover_Click(Application a)
     {
@@ -184,7 +146,7 @@
     private async Task OnBrmSaved(bool merge)
     {
         showBrmModal = false;
-        // showManualCapture = false;
+
         await OnChanged();
         if (merge)
         {

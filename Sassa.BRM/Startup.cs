@@ -45,9 +45,9 @@ namespace Sassa.BRM
             services.AddScoped<BRMDbService>();//.AddDbContext<ModelContext>(options =>
             //options.UseOracle(BrmConnectionString));
             //services.AddSingleton<StaticDataService>();
-            services.AddSingleton<StaticService>();
             services.AddScoped<SessionService>();
-            services.AddScoped<ActivityService, ActivityService>();
+            services.AddSingleton<StaticService>();
+            services.AddSingleton<ActivityService>();
             services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
             options.UseOracle(BrmConnectionString));
             services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
@@ -190,6 +190,7 @@ namespace Sassa.BRM
             //    RequestPath = new PathString(env.ContentRootPath + "\\brmFiles"),
             //    EnableDirectoryBrowsing = false
             //});
+            //app.MapRazorComponents();
 
 
         }

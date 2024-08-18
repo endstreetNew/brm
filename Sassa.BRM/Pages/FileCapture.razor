@@ -29,7 +29,7 @@
     <div class="col">
         <div class="input-group mb-1" >
             <span class="input-group-text" style="width:120px;">Grant Type</span>
-            <select class="form-select" @bind="@manualGrantType" style="max-width:220px;">
+            <select class="form-select" @bind="@txtManualGrantType" style="max-width:220px;">
                 <option value="" selected>All...</option>
                 @foreach (var val in sservice.GetGrantTypes())
                 {
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="col">
-        @if (showManualCapture && !string.IsNullOrEmpty(manualGrantType))//a search has been done and a grantype selected
+        @if (AllowManualCature())//a search has been done and a grantype selected
         {
             <div style="vertical-align: middle; display: table-cell; padding: 0 5px 0 5px;">
             <button class="btn btn-primary btn-sm active" data-bs-toggle="modal" data-bs-target="#myModal" @onclick="@(() => btnManualCapture_Click())">Manual Capture</button>
@@ -65,7 +65,7 @@
     <TabPage Text="Socpen Results" Id="1" Enabled="true">
         @if (showSocpen)
         {
-            <FileCaptureSocpen SocpenChanged="OnSocpenChanged" txtManualGrantType="@manualGrantType" txtSearchId="@txtSearchId" txtSearchSRD="@srdNo" chkSearchFull="@chkSearchFull" searchById="@searchById" rebox="@rebox"></FileCaptureSocpen>
+            <FileCaptureSocpen Refresh = "chkRefresh" SocpenChanged="OnSocpenChanged" txtManualGrantType="@txtManualGrantType" txtSearchId="@txtSearchId" txtSearchSRD="@srdNo" chkSearchFull="@chkSearchFull" searchById="@searchById" rebox="@rebox"></FileCaptureSocpen>
         }
     </TabPage>
     <TabPage Text="BRM Results" Id="2" Enabled="true">
@@ -80,9 +80,14 @@
 
 @code {
 
+
+    [Parameter]
+    public EventCallback<bool> SocpenChanged { get; set; }
+
     string txtSearchId;
     string txtSearchSRD;
     bool chkSearchFull;
+    bool chkRefresh;
 
     //Parameters for socpen
     protected bool showSocpen = false;
@@ -92,11 +97,17 @@
     Application SelectedApplication;
 
     // string regionChangeMessage = "";
-    string manualGrantType = "";
+    string txtManualGrantType = "";
 
     // bool showConfirmRegion = false;
     // bool showBrmModal = false;
     bool showManualCapture = false;
+
+    protected List<Application> DTSocPen;
+    // protected List<Application> DTBrm;
+    // protected List<Application> DTBrmParents;
+    // protected List<Application> DTMerged;
+    // protected Dictionary<string, int> Unmerged;
 
     long srdNo;
 
@@ -147,10 +158,9 @@
                 {
                     searchById = true;
                 }
+                chkRefresh = !chkRefresh;
                 showSocpen = true;
-                // if (!DTSocPen.Any()) toast.Info("No Socpen results");
 
-                // if (!DTBrm.Any()) toast.Info("No Brm results");
             }
 
         }
@@ -161,7 +171,31 @@
         }
         await Task.CompletedTask;
     }
+    private async Task SearchSocpen()
+    {
+        try
+        {
+            //Clear previous results
+            DTSocPen = null;
 
+            //Searching on ID
+            if (!searchById)
+            {
+                DTSocPen = await db.SearchSocpenSrd(long.Parse(txtSearchSRD));
+            }
+            else
+            {
+                DTSocPen = await db.SearchSocpenId(txtSearchId, chkSearchFull);
+            }
+            if (!DTSocPen.Any()) toast.Info("No Socpen results");
+            await SocpenChanged.InvokeAsync(DTSocPen.Where(s => s.GrantType == txtManualGrantType).Any());
+        }
+        catch (Exception ex)
+        {
+            DTSocPen = null;
+            toast.Error(ex.Message);
+        }
+    }
     protected async Task OnSocpenChanged(bool hasRecords)
     {
         showManualCapture = !hasRecords;
@@ -189,7 +223,7 @@
                 return;
             }
         }
-        if (manualGrantType == "S" && string.IsNullOrEmpty(txtSearchSRD))
+        if (txtManualGrantType == "S" && string.IsNullOrEmpty(txtSearchSRD))
         {
             toast.Error("a Srd record requires an SRD no.");
             return;
@@ -198,7 +232,7 @@
         SelectedApplication.TRANS_TYPE = 0;
         SelectedApplication.TDW_BOXNO = rebox.BoxNo;
         SelectedApplication.MiniBox = rebox.MiniBox;
-        SelectedApplication.GrantType = manualGrantType;
+        SelectedApplication.GrantType = txtManualGrantType;
         SelectedApplication.RegionId = sessionservice.session.Office.RegionId;
         SelectedApplication.Id = txtSearchId;
         SelectedApplication.Srd_No = txtSearchSRD;
@@ -213,6 +247,8 @@
     private async Task ManualBrmSaved(bool merge)
     {
         showManualCapture = false;
+        chkRefresh = !chkRefresh;
+
         rebox = await db.GetBoxCounts(rebox);
         await Task.CompletedTask;
     }
@@ -224,6 +260,10 @@
         await Task.CompletedTask;
     }
 
+    private bool AllowManualCature()
+    {
+        return showManualCapture && !string.IsNullOrEmpty(txtManualGrantType);
+    }
     public void Dispose()
     {
         // GC.Collect();

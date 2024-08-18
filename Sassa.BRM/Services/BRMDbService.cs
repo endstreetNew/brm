@@ -20,13 +20,12 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 {
     private UserSession _userSession = _sessionService.session;
 
-    #region BRM Records
+    #region Brm Capture
     public async Task<bool> checkBRMExists(string brmno)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            var interim = await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync();
-            return interim.Any();
+            return (await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync()).Any();
         }
     }
 
@@ -826,7 +825,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             if (results.Any())
             {
                 result.Add("", "All");
-                foreach (var gt in results.ToList())
+                foreach (var gt in results)
                 {
                     if (result.ContainsKey(gt.GrantType)) continue;
                     result.Add(gt.GrantType, StaticDataService.GrantTypes[gt.GrantType]);

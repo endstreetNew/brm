@@ -8,6 +8,8 @@
 @inject IAlertService toast
 @inject Navigation Navigation
 
+@implements IDisposable
+
 @if (file != null)
 {
     <div>
@@ -127,5 +129,10 @@
         //Navigation.NavigateTo($"searchapplicant/{file.ApplicantNo}");
         //Navigation.NavigateBack();
         Js.InvokeVoidAsync("window.close");
+    }
+
+    public void Dispose()
+    {
+        file = null;
     }
 }
