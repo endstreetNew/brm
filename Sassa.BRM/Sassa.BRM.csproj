@@ -8,6 +8,14 @@
 		<Watch Include="**\*.razor" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Remove="Startup.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Watch Remove="Routes.razor" />
+	</ItemGroup>
+
   <ItemGroup>
     <Folder Include="BRMfiles\" />
     <Folder Include="wwwroot\CSImages\" />

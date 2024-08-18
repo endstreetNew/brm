@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
-public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, ActivityService _activity)
+public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, BrmApiService brmApiService)
 {
 
     private UserSession _userSession = _sessionService.session;
@@ -445,7 +445,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                 boxedFile.FromDcFile(file);
 
                 await _context.SaveChangesAsync();
-                _activity.CreateActivity("Reboxing",file.SrdNo, file.Lctype, "Rebox file",_userSession.Office.RegionId,decimal.Parse(_userSession.Office.OfficeId),_userSession.SamName, file.UnqFileNo);
+                brmApiService.CreateActivity("Reboxing",file.SrdNo, file.Lctype, "Rebox file",_userSession.Office.RegionId,decimal.Parse(_userSession.Office.OfficeId),_userSession.SamName, file.UnqFileNo);
             }
             catch //(Exception ex)
             {

@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Sassa.BRM.Models;
-using Sassa.BRM.Services;
+using Sassa.BRM.Api.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 string BrmConnectionString = builder.Configuration.GetConnectionString("BrmConnection")!;
-var ActivityApi = new Uri(builder.Configuration["Urls:ActivityApi"]!);
+var ActivityApi = new Uri(builder.Configuration["Urls:BrmApi"]!);
 
 // Add services to the container.
-builder.Services.AddScoped<BRMDbService>().AddDbContext<ModelContext>(options =>
-            options.UseOracle(BrmConnectionString));
-builder.Services.AddScoped<ActivityService>();
-
+//Factory pattern
+builder.Services.AddDbContextFactory<ModelContext>(options =>
+options.UseOracle(BrmConnectionString));
+builder.Services.AddScoped<ApplicationService>();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

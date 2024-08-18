@@ -1,4 +1,6 @@
-﻿namespace Sassa.BRM.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Sassa.BRM.Models
 {
     public class Application
     {
@@ -9,10 +11,11 @@
         private string child_id;
         //private string aRCHIVE_YEAR;
 
-        public string ChildId
+        public string ChildId 
         {
             get { return child_id; }
-            set { child_id = value == null ? null : value.Trim().PadLeft(13, ' '); }
+            set { child_id = value == null ? null : value.Trim().PadLeft(13, ' ');
+        }
         }//-----------------------------------------------
         public string Name { get; set; }
         public string SurName { get; set; }
@@ -23,37 +26,49 @@
         public string GrantType { get; set; }
         public string GrantName { get; set; }
         public string AppDate { get; set; }
-        /// <summary>
-        /// MAIN / ARCHIVE
-        /// </summary>
         public string AppStatus { get; set; }
         public string StatusDate { get; set; }
         public string DocsPresent { get; set; }
         public string LastReviewDate { get; set; }
+        [JsonIgnore]
         public string DateApproved { get; set; }
+        [JsonIgnore]
         public string Prim_Status { get; set; }
+        [JsonIgnore]
         public string Sec_Status { get; set; }
         public string LcType { get; set; }
+        [JsonIgnore]
         public string Child_App_Date { get; set; }
+        [JsonIgnore]
         public string Child_Status_Date { get; set; }
+        [JsonIgnore]
         public string Child_Status_Code { get; set; }
         public string Srd_No { get; set; }
         public string Brm_Parent { get; set; }
         public string Brm_BarCode { get; set; }
+        [JsonIgnore]
         public string Clm_No { get; set; }
         public string TDW_BOXNO { get; set; }
         public int MiniBox { get; set; }
         public string BATCH_NO { get; set; }
+        [JsonIgnore]
         public string IdHistory { get; set; }
+        [JsonIgnore]
         public string IsRMC { get; set; }
         public decimal? TRANS_TYPE { get; set; }
+        [JsonIgnore]
         public bool IsNew { get; set; }
+        [JsonIgnore]
         public string RowType { get; set; }
         public string Source { get; set; }
+        [JsonIgnore]
         public bool IsMergeCandidate { get; set; }
-        public bool IsCombinationCandidate { get; set; }
+        //public bool IsCombinationCandidate { get; set; }
         public string BrmUserName { get; set; }
+        public decimal? FspId { get; set; }
+        [JsonIgnore]
         public bool IsSelected { get; set; }
+        [JsonIgnore]
         public string FullName
         {
             get
@@ -61,6 +76,7 @@
                 return Name + " " + SurName;
             }
         }
+        [JsonIgnore]
         public string Status
         {
             get
@@ -75,6 +91,7 @@
                 return "MAIN|LC-MAIN|ARCHIVE|LC-ARCHIVE".Contains(AppStatus);
             }
         }
+
         public bool IsValid()
         {
             if (string.IsNullOrEmpty(Name))

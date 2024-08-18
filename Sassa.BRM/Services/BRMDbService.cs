@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
-public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, ActivityService _activity)
+public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, BrmApiService brmApiService)
 {
     private UserSession _userSession = _sessionService.session;
 
@@ -43,7 +44,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     public async Task<DcFile> CreateBRM(Application application, string reason)
     {
-        //This allowws overwriting if selected;
+        //This allows overwriting if selected;
         await RemoveBRM(application.Brm_BarCode, reason);
 
         using (var _context = _contextFactory.CreateDbContext())
@@ -59,118 +60,127 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
                 batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
             }
+            application.OfficeId = office.OfficeId;
+            application.RegionId = office.RegionId;
+            application.FspId = _userSession.Office.FspId;
+            application.BrmUserName = _userSession.SamName;
+            application.BATCH_NO = batch.ToString();
 
-            DcFile file = new DcFile()
-            {
-                UnqFileNo = "",
-                ApplicantNo = application.Id,
-                BrmBarcode = application.Brm_BarCode,
-                BatchAddDate = DateTime.Now,
-                TransType = application.TRANS_TYPE,
-                BatchNo = batch,
-                GrantType = application.GrantType,
-                OfficeId = _userSession.Office.OfficeId,
-                RegionId = _userSession.Office.RegionId,
-                FspId = _userSession.Office.FspId,
-                DocsPresent = application.DocsPresent,
-                UpdatedDate = DateTime.Now,
-                UserFirstname = application.Name,
-                UserLastname = application.SurName,
-                ApplicationStatus = application.AppStatus,
-                TransDate = application.AppDate.ToDate("dd/MMM/yy"),
-                SrdNo = application.Srd_No,
-                ChildIdNo = application.ChildId,
-                Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
-                Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
-                ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
-                Lctype = string.IsNullOrEmpty(application.LcType.Trim('0')) ? null : (Decimal?)Decimal.Parse(application.LcType),
-                TdwBoxno = application.TDW_BOXNO,
-                MiniBoxno = application.MiniBox,
-                FileComment = reason,
-                UpdatedByAd = _userSession.SamName,
-                TdwBatch = 0
-            };
-            _context.ChangeTracker.Clear();
-            _context.DcFiles.Add(file);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                CreateActivity("Capture" , file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
-                throw;
-            }
 
-            file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
-            CreateActivity("Capture" ,file.SrdNo, file.Lctype, "Print Coversheet", file.UnqFileNo);
-            DcSocpen dc_socpen;
-            long? srd;
-            try
-            {
-                srd = long.Parse(application.Srd_No);
-            }
-            catch
-            {
-                srd = null;
-            }
-            //Remove existing Barcode for this id/grant
-            _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
-            await _context.SaveChangesAsync();
 
-            //Add/Update Socpen record 
-            var result = new List<DcSocpen>();
-            if (("C95".Contains(application.GrantType) && application.ChildId.Trim() == application.ChildId.Trim()))//child Grant
-            {
-                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
-            }
-            else
-            {
-                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd).ToListAsync();
-            }
+            DcFile file = await brmApiService.PostApplication(application);
 
-            if (result.ToList().Any())
-            {
-                dc_socpen = result.First();
-                dc_socpen.CaptureReference = file.UnqFileNo;
-                dc_socpen.BrmBarcode = file.BrmBarcode;
-                dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = _userSession.Office.RegionId;
-                dc_socpen.LocalofficeId = _userSession.Office.OfficeId;
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
-                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-            }
-            else
-            {
-                dc_socpen = new DcSocpen();
-                dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
-                dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
-                dc_socpen.BeneficiaryId = application.Id;
-                dc_socpen.SrdNo = srd;
-                dc_socpen.GrantType = application.GrantType;
-                dc_socpen.ChildId = application.ChildId;
-                dc_socpen.Name = application.Name;
-                dc_socpen.Surname = application.SurName;
-                dc_socpen.CaptureReference = file.UnqFileNo;
-                dc_socpen.BrmBarcode = file.BrmBarcode;
-                dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = _userSession.Office.RegionId;
-                dc_socpen.LocalofficeId = _userSession.Office.OfficeId;
-                dc_socpen.Documents = file.DocsPresent;
+            //DcFile file = new DcFile()
+            //{
+            //    UnqFileNo = "",
+            //    ApplicantNo = application.Id,
+            //    BrmBarcode = application.Brm_BarCode,
+            //    BatchAddDate = DateTime.Now,
+            //    TransType = application.TRANS_TYPE,
+            //    BatchNo = batch,
+            //    GrantType = application.GrantType,
+            //    OfficeId = application.OfficeId,
+            //    RegionId = application.RegionId,
+            //    FspId = application.FspId,
+            //    DocsPresent = application.DocsPresent,
+            //    UpdatedDate = DateTime.Now,
+            //    UserFirstname = application.Name,
+            //    UserLastname = application.SurName,
+            //    ApplicationStatus = application.AppStatus,
+            //    TransDate = application.AppDate.ToDate("dd/MMM/yy"),
+            //    SrdNo = application.Srd_No,
+            //    ChildIdNo = application.ChildId,
+            //    Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
+            //    Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
+            //    ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
+            //    Lctype = string.IsNullOrEmpty(application.LcType.Trim('0')) ? null : (Decimal?)Decimal.Parse(application.LcType),
+            //    TdwBoxno = application.TDW_BOXNO,
+            //    MiniBoxno = application.MiniBox,
+            //    FileComment = reason,
+            //    UpdatedByAd = application.BrmUserName,
+            //    TdwBatch = 0
+            //};
+            //_context.ChangeTracker.Clear();
+            //_context.DcFiles.Add(file);
+            //try
+            //{
+            //    await _context.SaveChangesAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    CreateActivity("Capture" , file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+            //    throw;
+            //}
 
-                _context.DcSocpen.Add(dc_socpen);
-            }
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                CreateActivity("Capture",file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
-                throw;
-            }
+            //file = _context.DcFiles.Where(k => k.BrmBarcode == application.Brm_BarCode).FirstOrDefault();
+            //CreateActivity("Capture" ,file.SrdNo, file.Lctype, "Print Coversheet", file.UnqFileNo);
+            //DcSocpen dc_socpen;
+            //long? srd;
+            //try
+            //{
+            //    srd = long.Parse(application.Srd_No);
+            //}
+            //catch
+            //{
+            //    srd = null;
+            //}
+            ////Remove existing Barcode for this id/grant
+            //_context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
+            //await _context.SaveChangesAsync();
+
+            ////Add/Update Socpen record 
+            //var result = new List<DcSocpen>();
+            //if (("C95".Contains(application.GrantType) && application.ChildId.Trim() == application.ChildId.Trim()))//child Grant
+            //{
+            //    result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
+            //}
+            //else
+            //{
+            //    result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd).ToListAsync();
+            //}
+
+            //if (result.ToList().Any())
+            //{
+            //    dc_socpen = result.First();
+            //    dc_socpen.CaptureReference = file.UnqFileNo;
+            //    dc_socpen.BrmBarcode = file.BrmBarcode;
+            //    dc_socpen.CaptureDate = DateTime.Now;
+            //    dc_socpen.RegionId = _userSession.Office.RegionId;
+            //    dc_socpen.LocalofficeId = _userSession.Office.OfficeId;
+            //    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
+            //    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+            //    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+            //}
+            //else
+            //{
+            //    dc_socpen = new DcSocpen();
+            //    dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
+            //    dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
+            //    dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
+            //    dc_socpen.BeneficiaryId = application.Id;
+            //    dc_socpen.SrdNo = srd;
+            //    dc_socpen.GrantType = application.GrantType;
+            //    dc_socpen.ChildId = application.ChildId;
+            //    dc_socpen.Name = application.Name;
+            //    dc_socpen.Surname = application.SurName;
+            //    dc_socpen.CaptureReference = file.UnqFileNo;
+            //    dc_socpen.BrmBarcode = file.BrmBarcode;
+            //    dc_socpen.CaptureDate = DateTime.Now;
+            //    dc_socpen.RegionId = _userSession.Office.RegionId;
+            //    dc_socpen.LocalofficeId = _userSession.Office.OfficeId;
+            //    dc_socpen.Documents = file.DocsPresent;
+
+            //    _context.DcSocpen.Add(dc_socpen);
+            //}
+            //try
+            //{
+            //    await _context.SaveChangesAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    CreateActivity("Capture",file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
+            //    throw;
+            //}
 
             return file;
         }
@@ -1325,6 +1335,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 ARCHIVE_YEAR = StaticDataService.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
                 ChildId = d.ChildId,
                 LcType = "0",
+                FspId = _userSession.Office.FspId,
                 IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
                 DocsPresent = d.Documents,
                 IdHistory = d.IdHistory,
@@ -1560,7 +1571,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 '' AS IdHistory,
                 'Brm' as Source,
                 '' as BrmUserName,
-                0 as IsSelected
+                0 as IsSelected,
+                null as FspId
                         from Dc_File f
                         inner join DC_REGION rg on f.Region_ID = rg.REGION_ID
                         inner join DC_Grant_type g on g.TYPE_ID = f.GRANT_TYPE
@@ -1637,29 +1649,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-    //public async Task<string> GetSocPenSearchId(string SRDNo)
-    //{
-
-    //    List<IdResult> srdquery = await _context.IdResults.FromSqlRaw
-    //            ($@"select cast(srdben.ID_NO as nvarchar2(13)) as IdString
-    //            from SASSA.SOCPEN_SRD_BEN srdben
-    //            left
-    //            join SASSA.SOCPEN_SRD_TYPE srdtype on srdtype.SOCIAL_RELIEF_NO = srdben.SRD_NO
-    //            inner
-    //            join DC_REGION rg on rg.REGION_ID = cast(srdben.PROVINCE as NUMBER)
-    //            where cast(srdben.SRD_NO as NUMBER) = cast('{SRDNo}' as NUMBER)").AsNoTracking().ToListAsync();
-
-    //    if (!srdquery.Any())
-    //    {
-    //        throw new Exception("SRD not found.");
-    //    }
-    //    foreach (IdResult value in srdquery)
-    //    {
-    //        if (value.IdString == null) throw new Exception("SRD has no Id Number associated and can't be processed.");
-    //        return value.IdString;
-    //    }
-    //    return null;
-    //}
 
     //private string GetWhereclause(string SearchId, bool FullSearch)
     //{
@@ -2356,12 +2345,14 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     public async Task<List<Enquiry>> GetEnquiryById(string idNumber)
     {
+        List<Enquiry> resultlist = new List<Enquiry>();
         using (var _context = _contextFactory.CreateDbContext())
         {
-            List<Enquiry> resultlist = new List<Enquiry>();
             var dcfiles = await _context.DcFiles.Where(f => f.ApplicantNo.Contains(idNumber.Trim())).ToListAsync();
             if (!dcfiles.Any()) throw new Exception("Applicant Id not found");
-            CreateActivity("Enquiry",dcfiles.First().SrdNo, dcfiles.First().Lctype, "Enquiry", dcfiles.First().UnqFileNo);
+            var brmBarcodeList = dcfiles.Select(f => f.BrmBarcode).ToList();
+            var merges = await _context.DcMerges.Where(m => brmBarcodeList.Contains(m.BrmBarcode)).ToListAsync();
+            var socpen = await _context.DcSocpen.Where(f => f.BeneficiaryId == idNumber).ToListAsync();
             foreach (DcFile file in dcfiles)
             {
                 Enquiry result = new Enquiry();
@@ -2376,57 +2367,61 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
-                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode).ToList();
+                var merged = merges.Where(m => m.BrmBarcode == file.BrmBarcode);
                 if (merged.Any())
                 {
-                    result.MergeParent = (merged.First()).ParentBrmBarcode;
+                    result.MergeParent = merged.First().ParentBrmBarcode;
                 }
                 result.MultiGrant = merged.Any();
                 result.Province = _staticService.GetRegion(file.RegionId);
                 result.RegType = file.RegType;
-                result.SocPenActive = false;
-                result.SocPenRecord = false;
+                result.SocPenActive = socpen.Any(s => s.StatusCode == "ACTIVE" && s.GrantType == file.GrantType);
+                result.SocPenRecord = socpen.Any(s => s.GrantType == file.GrantType);
 
                 result.UnqFileNo = file.UnqFileNo;
-
                 //Tdw
-                //var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = _context.DcSocpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
+                result.TdwRecord = socpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
 
-                List<Application> spresult = null;
-                //SocPen
-                if (idNumber.Contains("S"))
-                {
-                    if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
-                    {
-                        spresult = await SearchSocpenSrd(lsrd);
-                        result.SocPenRecord = true;
-                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
-                    }
+                //List<Application> spresult = null;
+                ////SocPen
+                //if (idNumber.Contains("S"))
+                //{
+                //    if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
+                //    {
+                //        spresult = await SearchSocpenSrd(lsrd);
+                //        result.SocPenRecord = true;
+                //        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
+                //    }
 
-                }
-                else
-                {
-                    spresult = await SearchSocpenId(idNumber, false);
-                    if (spresult.Any())
-                    {
-                        foreach (Application sr in spresult)
-                        {
-                            if (string.IsNullOrEmpty(result.AppDate)) continue;
-                            if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
-                            {
-                                result.SocPenRecord = true;
-                                result.SocPenActive = sr.AppStatus.Contains("MAIN");
-                                break;
-                            }
-                        }
-                    }
-                }
+                //}
+                //else
+                //{
+                //    spresult = await SearchSocpenId(idNumber, false);
+                //    if (spresult.Any())
+                //    {
+                //        foreach (Application sr in spresult)
+                //        {
+                //            if (string.IsNullOrEmpty(result.AppDate)) continue;
+                //            if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
+                //            {
+                //                result.SocPenRecord = true;
+                //                result.SocPenActive = sr.AppStatus.Contains("MAIN");
+                //                break;
+                //            }
+                //        }
+                //    }
+                //}
 
 
 
                 resultlist.Add(result);
             }
+            CreateActivity("Enquiry", dcfiles.First().SrdNo, dcfiles.First().Lctype, "Enquiry", dcfiles.First().UnqFileNo);
+            dcfiles = null;
+            brmBarcodeList = null;
+            merges = null;
+            socpen = null;
+
             return resultlist;
         }
     }
@@ -2438,7 +2433,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             var dcfiles = await _context.DcFiles.Where(f => f.SrdNo.Contains(idNumber.Trim())).ToListAsync();
             if (!dcfiles.Any()) throw new Exception("SRD not found");
-
+            var brmBarcodeList = dcfiles.Select(f => f.BrmBarcode).ToList();
+            var socpen = await _context.DcSocpen.Where(f => f.BeneficiaryId == idNumber || f.SrdNo.ToString() == idNumber.Trim()).ToListAsync();
             foreach (DcFile file in dcfiles)
             {
                 Enquiry result = new Enquiry();
@@ -2453,50 +2449,29 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
-                var merged = _context.DcMerges.Where(m => m.BrmBarcode == file.BrmBarcode);
-                if (merged.Any())
-                {
-                    result.MergeParent = (await merged.FirstAsync()).ParentBrmBarcode;
-                }
-                result.MultiGrant = merged.Any();
                 result.Province = _staticService.GetRegion(file.RegionId);
                 result.RegType = file.RegType;
                 result.SocPenActive = false;
                 result.SocPenRecord = false;
-
                 result.UnqFileNo = file.UnqFileNo;
 
                 //Tdw
-                var tdwresult = _context.TdwFileLocations.Where(t => t.FilefolderCode == file.BrmBarcode);
-                result.TdwRecord = tdwresult.Any();
+                result.TdwRecord = socpen.Where(f => f.BeneficiaryId == file.ApplicantNo && f.GrantType == file.GrantType && f.TdwRec != null).ToList().Any();
 
                 //SocPen
-                if (long.TryParse(idNumber.Replace("S", ""), out long lsrd))
+                if (socpen.Any())
                 {
-                    var spresult = await SearchSocpenSrd(lsrd);
-                    if (spresult.Any())
-                    {
-                        result.SocPenRecord = true;
-                        result.SocPenActive = spresult.First().AppStatus.Contains("MAIN");
-                    }
+                    result.SocPenRecord = true;
+                    result.SocPenActive = socpen.Any(s => s.StatusCode == "ACTIVE");
                 }
-                //var socpenresult = await SearchSocPenID(file.ApplicantNo, false);
-                //if (socpenresult.Any())
-                //{
-                //    foreach (Application sr in socpenresult)
-                //    {
-                //        if (string.IsNullOrEmpty(result.AppDate)) continue;
-                //        if (sr.GrantType == file.GrantType && sr.Id == result.ApplicantNo && sr.AppDate == result.AppDate)
-                //        {
-                //            result.SocPenRecord = true;
-                //            result.SocPenActive = GetStatusFromSocpen(sr).Contains("MAIN");
-                //            break;
-                //        }
-                //    }
-                //}
 
                 resultlist.Add(result);
             }
+            CreateActivity("Enquiry", dcfiles.First().SrdNo, dcfiles.First().Lctype, "Enquiry", dcfiles.First().UnqFileNo);
+            dcfiles = null;
+            brmBarcodeList = null;
+            socpen = null;
+
             return resultlist;
         }
     }
@@ -2885,7 +2860,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     /// <returns></returns>
     public void CreateActivity(string action,string srdNo, decimal? lcType, string Activity, string UniqueFileNo = "")
     {
-        _activity.CreateActivity(action, srdNo, lcType, Activity, _userSession.Office.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession.SamName,UniqueFileNo);
+        brmApiService.CreateActivity(action, srdNo, lcType, Activity, _userSession.Office.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession.SamName,UniqueFileNo);
     }
     #endregion
 }

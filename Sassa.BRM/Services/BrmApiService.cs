@@ -6,18 +6,38 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Sassa.Brm.Common.Models;
 using Sassa.BRM.Models;
+using System.Threading.Tasks;
+using System.Text.Json;
 
-namespace Sassa.BRM.Api.Services;
 
-public class ActivityService(IHttpClientFactory _httpClientFactory, IConfiguration config)
+namespace Sassa.BRM.Services;
+
+public class BrmApiService(IHttpClientFactory _httpClientFactory, IConfiguration config)
 {
-    string _brmApiUrl = config["Urls:BrmApi"]!;
+    string _brmApiUrl = config["Urls:BrmApi"];
+    #region Application
+    public async Task<DcFile> PostApplication(Application application)
+    {
+        var client = _httpClientFactory.CreateClient("BrmApplication");
+
+        
+        var serializationOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IgnoreReadOnlyProperties = true,
+            IgnoreReadOnlyFields =true
+        };
+        var result = await client.PostAsJsonAsync(_brmApiUrl + "Application", application,serializationOptions);
+        return await result.Content.ReadFromJsonAsync<DcFile>();
+    }
+    #endregion
+    #region Activity
+
     public void PostActivity(DcActivity activity)
     {
-        var client = _httpClientFactory.CreateClient("Brm");
-        _ = client.PostAsJsonAsync(_brmApiUrl + "Activity",activity);
+        var client = _httpClientFactory.CreateClient("BrmActivity");
+        _ = client.PostAsJsonAsync(_brmApiUrl + "Activity", activity);
     }
-    #region Activity
 
     public void CreateActivity(string action, string srdNo, decimal? lcType, string Activity, string regionId, decimal officeId, string samName, string UniqueFileNo = "")
     {

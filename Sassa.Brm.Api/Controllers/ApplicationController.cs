@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sassa.Brm.Api.Helpers;
 using Sassa.BRM.Models;
-using Sassa.BRM.Services;
+using Sassa.BRM.Api.Services;
 //using System.ServiceModel.Channels;
 
 namespace Sassa.BRM.Controller
@@ -13,10 +13,10 @@ namespace Sassa.BRM.Controller
     public class ApplicationController : ControllerBase
     {
 
-        private readonly BRMDbService _brmService;
+        private readonly ApplicationService _brmService;
         IConfiguration _config;
 
-        public ApplicationController(BRMDbService context, IConfiguration config)
+        public ApplicationController(ApplicationService context, IConfiguration config)
         {
             _brmService = context;
             _config = config;
@@ -51,12 +51,18 @@ namespace Sassa.BRM.Controller
             ApiResponse<string> response = new ApiResponse<string>();
             try
             {
-                if (_brmService.session == null)
+                if(app.BrmUserName == "SVC_BRM_LO")
                 {
-                    _brmService.SetUserSession(app.BrmUserName);
+                    if (_brmService.session == null)
+                    {
+                        _brmService.SetUserSession(app.BrmUserName,app.OfficeId);
+                    }
+                    result = await _brmService.ValidateApiAndInsert(app, "Inserted via API.");
                 }
-                _brmService.SetUserOffice(app.OfficeId);
-                result = await _brmService.CreateBRM(app, "Inserted via API.");
+                else
+                {
+                    result = await _brmService.CreateBRM(app, "Inserted via BRM Capture.");
+                }
                 return result;
             }
             catch (Exception ex)
@@ -69,6 +75,28 @@ namespace Sassa.BRM.Controller
             return Ok(response);
 
         }
+
+        //[HttpPost]
+        //[AllowAnonymous]
+        //public async Task<ActionResult<DcFile>> PostBrmApplication(Application app)
+        //{
+        //    DcFile result;
+        //    ApiResponse<string> response = new ApiResponse<string>();
+        //    try
+        //    {
+        //        result = await _brmService.CreateBRM(app, "Captured via BRM.");
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Handle both ValidationException and InternalServerErrorException here
+        //        response.Success = false;
+        //        response.ErrorMessage = ex.Message;
+        //    }
+
+        //    return Ok(response);
+
+        //}
 
 
     }
