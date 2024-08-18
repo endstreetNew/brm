@@ -157,7 +157,7 @@ public partial class ModelContext : DbContext
             entity.Property(e => e.BatchNo)
                 .ValueGeneratedOnAdd()
                 .HasColumnType("NUMBER")
-                .HasColumnName("BATCH_NO");
+                .HasColumnName("BatchNo");
             entity.Property(e => e.BatchComment)
                 .HasMaxLength(500)
                 .IsUnicode(false)
@@ -491,7 +491,7 @@ public partial class ModelContext : DbContext
                 .HasColumnName("BATCH_ADD_DATE");
             entity.Property(e => e.BatchNo)
                 .HasColumnType("NUMBER")
-                .HasColumnName("BATCH_NO");
+                .HasColumnName("BatchNo");
             entity.Property(e => e.BoxLocked)
                 .HasColumnType("NUMBER(38)")
                 .HasColumnName("BOX_LOCKED");
@@ -710,7 +710,7 @@ public partial class ModelContext : DbContext
                 .HasColumnName("BATCH_ADD_DATE");
             entity.Property(e => e.BatchNo)
                 .HasColumnType("NUMBER")
-                .HasColumnName("BATCH_NO");
+                .HasColumnName("BatchNo");
             entity.Property(e => e.BrmBarcode)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -914,7 +914,7 @@ public partial class ModelContext : DbContext
                 .HasColumnName("BATCH_ADD_DATE");
             entity.Property(e => e.BatchNo)
                 .HasColumnType("NUMBER")
-                .HasColumnName("BATCH_NO");
+                .HasColumnName("BatchNo");
             entity.Property(e => e.BrmBarcode)
                 .HasMaxLength(20)
                 .IsUnicode(false)

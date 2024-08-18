@@ -386,10 +386,10 @@
         await OnChanged();
         if (merge)
         {
-            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BATCH_NO == SelectedApplication.BATCH_NO || s.BATCH_NO ==null)).ToList();
+            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo ==null)).ToList();
             await db.AutoMerge(SelectedApplication, parents);
             //Running Syncronously on purpose
-            await db.SetParentBatchCount(SelectedApplication.BATCH_NO);
+            await db.SetParentBatchCount(SelectedApplication.BatchNo);
             await OnChanged();
         }
         rebox = await db.GetBoxCounts(rebox);

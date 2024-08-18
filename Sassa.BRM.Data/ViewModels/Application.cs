@@ -50,7 +50,7 @@ namespace Sassa.BRM.Models
         public string Clm_No { get; set; }
         public string TDW_BOXNO { get; set; }
         public int MiniBox { get; set; }
-        public string BATCH_NO { get; set; }
+        public decimal? BatchNo { get; set; }
         [JsonIgnore]
         public string IdHistory { get; set; }
         [JsonIgnore]

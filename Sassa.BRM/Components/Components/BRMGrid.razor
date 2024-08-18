@@ -70,10 +70,10 @@
                     <tr style="background-color:@(u.AppStatus == "DESTROY" ? "orange":"white");">
                         <td>@u.Id</td>
                         <td>
-                            @if (int.Parse(u.BATCH_NO ?? "0") == 0)
-                            {
-                                <button class="btn btn-primary btn-sm active" @onclick="@(() => btnBatch_Click(u))">Batch</button>
-                            }
+                        @if (u.BatchNo == null || u.BatchNo == 0 )
+                        {
+                            <button class="btn btn-primary btn-sm active" @onclick="@(() => btnBatch_Click(u))">Batch</button>
+                        }
                         </td>
                         <td><button class="btn btn-primary btn-sm active" @onclick="@(() => btnView_Click(u))">View Cover</button></td>
                         <td><button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(u))" disabled="@(!sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">Delete</button></td>
@@ -87,7 +87,7 @@
                         <td>@u.Name</td>
                         <td>@u.SurName</td>
                         <td>@u.AppDate</td>
-                        <td>@u.BATCH_NO</td>
+                        <td>@u.BatchNo</td>
                         <td>@u.TDW_BOXNO</td>
                         <td>@u.MiniBox</td>
                         <td>@u.ARCHIVE_YEAR</td>
@@ -143,7 +143,7 @@
                                                                 <td>@um.Name</td>
                                                                 <td>@um.SurName</td>
                                                                 <td>@um.AppDate</td>
-                                                                <td>@um.BATCH_NO</td>
+                                                                <td>@um.BatchNo</td>
                                                                 <td>@um.TDW_BOXNO</td>
                                                                 <td>@um.ARCHIVE_YEAR</td>
                                                             </tr>
@@ -193,13 +193,13 @@
         //Navigate.NavigateTo($"coversheet/{app.Brm_BarCode}");
         try
         {
-            if (int.Parse(app.BATCH_NO) > 0)
+            if (app.BatchNo > 0)
             {
-                throw new Exception($"File {app.Brm_BarCode} already in batch {app.BATCH_NO}");
+                throw new Exception($"File {app.Brm_BarCode} already in batch {app.BatchNo}");
             };
             string batchType = app.Id.StartsWith("S") ? "SrdNoId" : app.AppStatus;
             decimal batchNo = (decimal)(await db.CreateBatchForUser(batchType));
-            await db.AddFileToBatch(app.BATCH_NO, batchNo);
+            await db.AddFileToBatch(app.Brm_BarCode, batchNo);
             await Changed.InvokeAsync();
         }
         catch (Exception ex)

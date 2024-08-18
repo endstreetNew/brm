@@ -246,12 +246,12 @@
                 throw new Exception("Child ID too long");
             }
             DcFile file = await db.CreateBRM(br,reason);
-            br.BATCH_NO = file.BatchNo.ToString();
+            br.BatchNo = file.BatchNo;
             br.Clm_No = file.UnqFileNo;
 
             await ManualBrmSave.InvokeAsync(br.IsMergeCandidate);
             //Run sync on purpose
-            await db.SetBatchCount(br.BATCH_NO);
+            await db.SetBatchCount(br.BatchNo);
             await JSRuntime.InvokeVoidAsync("open",System.Threading.CancellationToken.None, $"coversheet/{br.Brm_BarCode}", "_blank");
             //Navigate.NavigateTo($"coversheet/{br.Brm_BarCode}");
         }

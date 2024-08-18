@@ -116,7 +116,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
                 if (office.ManualBatch == "A")
                 {
-                    application.BATCH_NO = "0";
+                    application.BatchNo = 0;
                 }
                 else
                 {
@@ -167,7 +167,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 BrmBarcode = application.Brm_BarCode,
                 BatchAddDate = DateTime.Now,
                 TransType = application.TRANS_TYPE,
-                BatchNo = decimal.Parse(application.BATCH_NO),
+                BatchNo = application.BatchNo,
                 GrantType = application.GrantType,
                 OfficeId = application.OfficeId,
                 RegionId = application.RegionId,

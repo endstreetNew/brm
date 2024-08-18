@@ -64,9 +64,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             application.RegionId = office.RegionId;
             application.FspId = _userSession.Office.FspId;
             application.BrmUserName = _userSession.SamName;
-            application.BATCH_NO = batch.ToString();
-
-
+            application.BatchNo = batch;
 
             DcFile file = await brmApiService.PostApplication(application);
 
@@ -1548,7 +1546,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                                 null as Child_Status_Date,
                                 f.TDW_BOXNO,
                                 NVL(f.Mini_Boxno,1) As MiniBox,
-                                f.BATCH_NO,
+                                f.BatchNo,
                                 f.SRD_NO as Srd_No,
                                 f.CHILD_ID_NO as ChildId,
                                 m.PARENT_BRM_Barcode as Brm_Parent,
@@ -1904,13 +1902,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             return result;
         }
     }
-    public async Task SetBatchCount(string batchIds)
+    public async Task SetBatchCount(decimal? batchId)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            //if (session.IsRmc()) return;
-            if (string.IsNullOrEmpty(batchIds)) return;
-            decimal batchId = decimal.Parse(batchIds);
+            if (batchId == null || batchId == 0) return;
             int fileCount = await GetBatchCount(batchId);
             if (fileCount == 0)
             {
@@ -1924,19 +1920,18 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             await _context.SaveChangesAsync();
         }
     }
-    public async Task<int> GetBatchCount(decimal batchId)
+    public async Task<int> GetBatchCount(decimal? batchId)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
             return await _context.DcFiles.CountAsync(b => b.BatchNo == batchId);
         }
     }
-    public async Task SetBatchStatus(string batchIdS, string newStatus)
+    public async Task SetBatchStatus(decimal? batchId, string newStatus)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            if (string.IsNullOrEmpty(batchIdS)) return;
-            decimal batchId = decimal.Parse(batchIdS);
+            if (batchId < 1) return;
             DcBatch batch = _context.DcBatches.Where(b => b.BatchNo == batchId).First();
             batch.BatchStatus = newStatus;
             if (newStatus == "Closed" && _userSession.Office.OfficeType == "LO")
@@ -1948,7 +1943,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             //Set the batchcount
             if (newStatus == "Closed")
             {
-                await SetBatchCount(batchIdS);
+                await SetBatchCount(batchId);
 
             }
         }
@@ -1999,7 +1994,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             await _context.SaveChangesAsync();
         }
         CreateActivity("Batching",file.SrdNo, file.Lctype, "Remove File", file.UnqFileNo);
-        if (batchNo != 0) await SetBatchCount(batchNo.ToString());
+        if (batchNo != 0) await SetBatchCount(batchNo);
 
     }
 
@@ -2033,8 +2028,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 await _context.SaveChangesAsync();
             }
             CreateActivity("Batching",file.SrdNo, file.Lctype, "Add File", file.UnqFileNo);
-            await SetBatchCount(batchNo.ToString());
-            if (sourceBatch != 0) await SetBatchCount(sourceBatch.ToString());
+            await SetBatchCount(batchNo);
+            if (sourceBatch != 0) await SetBatchCount(sourceBatch);
         }
         catch
         {
@@ -2071,11 +2066,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     /// </summary>
     /// <param name="batchId"></param>
     /// <returns></returns>
-    public async Task SetParentBatchCount(string batchIds)
+    public async Task SetParentBatchCount(decimal? batchId)
     {
         if (_userSession.IsRmc()) return;
-        if (string.IsNullOrEmpty(batchIds)) return;
-        decimal batchId = decimal.Parse(batchIds);
+        if (batchId == 0) return;
         bool updated = false;
         using (var _context = _contextFactory.CreateDbContext())
         {
@@ -2098,7 +2092,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
         if (updated)
         {
-            await SetBatchCount(batchIds);
+            await SetBatchCount(batchId);
         }
 
     }
@@ -2181,16 +2175,16 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-    public async Task<List<string>> GetBatchBarcodes(string BatchNo)
+    public async Task<List<string>> GetBatchBarcodes(decimal? batchNo)
     {
-        decimal batch;
+
         using (var _context = _contextFactory.CreateDbContext())
         {
-            if (!decimal.TryParse(BatchNo, out batch))
+            if (batchNo == null)
             {
                 throw new Exception("Invalid batch No.");
             }
-            return await (from file in _context.DcFiles.Where(f => f.BatchNo == batch) select file.BrmBarcode).ToListAsync();
+            return await (from file in _context.DcFiles.Where(f => f.BatchNo == batchNo) select file.BrmBarcode).ToListAsync();
         }
     }
 

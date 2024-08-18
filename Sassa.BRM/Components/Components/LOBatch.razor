@@ -355,7 +355,7 @@
         try
         {
             showConfirmation = false;
-            if (selectedBatch.BatchNo != 0) await db.SetBatchStatus(selectedBatch.BatchNo.ToString(), "Closed");
+            if (selectedBatch.BatchNo != 0) await db.SetBatchStatus(selectedBatch.BatchNo, "Closed");
             DTBatch = await db.GetBatches(filterStatus, page);
             toast.Success($"Batch #{selectedBatch.BatchNo} Closed.");
         }
@@ -394,7 +394,7 @@
     {
         foreach (DcBatch batch in DTBatch.result.Where(b => b.isSelected))
         {
-            if(batch.BatchNo != 0)await db.SetBatchStatus(batch.BatchNo.ToString(), "Closed");
+            if(batch.BatchNo != 0)await db.SetBatchStatus(batch.BatchNo, "Closed");
         }
         DTBatch = await db.GetBatches("Open", page);
         toast.Success($"Selected batches Closed.");
