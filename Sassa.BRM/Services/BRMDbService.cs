@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using razor.Components.Models;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
@@ -9,7 +8,6 @@ using Sassa.BRM.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
