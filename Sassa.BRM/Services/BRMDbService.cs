@@ -1772,7 +1772,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     #region Batching
 
-    public async Task<decimal?> CreateBatchForUser(string sRegType)
+    public async Task<decimal> CreateBatchForUser(string sRegType)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
@@ -1981,13 +1981,13 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     public async Task RemoveFileFromBatch(string brmBarCode)
     {
-        decimal? batchNo;
+        decimal batchNo;
         DcFile file;
         using (var _context = _contextFactory.CreateDbContext())
         {
             _context.ChangeTracker.Clear();
             file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
-            batchNo = file.BatchNo;
+            batchNo = (decimal)file.BatchNo;
             file.BatchNo = 0;
             await _context.SaveChangesAsync();
         }
@@ -2006,7 +2006,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             {
                 file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
 
-                if (file.BatchNo != 0)
+                if ((decimal)file.BatchNo != 0)
                 {
                     var interim = await _context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").ToListAsync();
                     if (interim.Any())

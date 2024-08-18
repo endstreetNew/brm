@@ -254,7 +254,7 @@
                 throw new Exception($"File {BrmBarCode} already in batch {application.BatchNo}");
             };
             string batchType = application.ApplicantNo.StartsWith("S") ? "SrdNoId" : application.RegType;
-            selectedBatch.BatchNo = (decimal)(await db.CreateBatchForUser(batchType));
+            selectedBatch.BatchNo = await db.CreateBatchForUser(batchType);
             await btnAddFileToBatch();
         }
         catch (Exception ex)
@@ -418,11 +418,11 @@
         {
             _ = sservice.GetGrantTypes();
 
-            List<DcFile> files = await db.GetAllFilesByBatchNo((decimal)batch.BatchNo);
+            List<DcFile> files = await db.GetAllFilesByBatchNo(batch.BatchNo);
             StringBuilder sb = new StringBuilder();
 
             sb.Append(BulkPrint.Header());
-            sb.Append(BulkPrint.CreateBatchCover(files, sessionservice.session.Office.OfficeName, batch.BatchNo.ToString()));
+            sb.Append(BulkPrint.CreateBatchCover(files, sessionservice.session.Office.OfficeName, batch.BatchNo));
             sb.Append(BulkPrint.Footer());
 
             string FileName = sessionservice.session.Office.RegionCode + "-" + sessionservice.session.SamName.ToUpper() + "-" + "Batch_" + batch.BatchNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");//.Replace(":", "-");
@@ -436,7 +436,7 @@
             toast.Error($"Batch cover :{batch.BatchNo} error.");
 
         }
-        await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
+        await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo.ToString()}", "_blank");
         //await Js.InvokeAsync<object>("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
     }
 

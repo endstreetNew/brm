@@ -179,10 +179,10 @@ namespace Sassa.Brm.Common.Helpers
             return $"Invalid Cover {file.BrmBarcode}";
 
         }
-        public static string CreateBatchCover(List<DcFile> items, string officeName, string batchId)
+        public static string CreateBatchCover(List<DcFile> items, string officeName, decimal batchId)
         {
             BarCodeService bcService = new BarCodeService();
-            string batchBarCode = bcService.GetBarCode(batchId);
+            string batchBarCode = bcService.GetBarCode(batchId.ToString());
             StringBuilder sb = new StringBuilder();
             sb.Append("<div class=\"printme pdf\" >");
             sb.Append("<div class=\"row\">");

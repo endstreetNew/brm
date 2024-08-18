@@ -198,7 +198,7 @@
                 throw new Exception($"File {app.Brm_BarCode} already in batch {app.BatchNo}");
             };
             string batchType = app.Id.StartsWith("S") ? "SrdNoId" : app.AppStatus;
-            decimal batchNo = (decimal)(await db.CreateBatchForUser(batchType));
+            decimal batchNo = await db.CreateBatchForUser(batchType);
             await db.AddFileToBatch(app.Brm_BarCode, batchNo);
             await Changed.InvokeAsync();
         }

@@ -547,10 +547,6 @@
                 if ((rebox.IsLCSelected && !file.ApplicationStatus.Contains("LC")) || (!rebox.IsLCSelected && file.ApplicationStatus.Contains("LC")))
                 {
                     throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
-                    //if (rebox.RegType != file.ApplicationStatus)
-                    //{
-                    //    throw new Exception($"Filetype / Boxtype mismatch expecting {rebox.RegType} file.");
-                    //}
                 }
             }
         }

@@ -472,11 +472,11 @@
         {
             sservice.GetGrantTypes();
 
-            List<DcFile> files = await db.GetAllFilesByBatchNo((decimal)batch.BatchNo);
+            List<DcFile> files = await db.GetAllFilesByBatchNo(batch.BatchNo);
             StringBuilder sb = new StringBuilder();
 
             sb.Append(BulkPrint.Header());
-            sb.Append(BulkPrint.CreateBatchCover(files, sessionservice.session.Office.OfficeName, batch.BatchNo.ToString()));
+            sb.Append(BulkPrint.CreateBatchCover(files, sessionservice.session.Office.OfficeName, batch.BatchNo));
             sb.Append(BulkPrint.Footer());
 
             string FileName = sessionservice.session.Office.RegionCode + "-" + sessionservice.session.SamName.ToUpper() + "-" + "Batch_" + batch.BatchNo + "-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToString("HH-mm");//.Replace(":", "-");
