@@ -150,7 +150,7 @@
         await OnChanged();
         if (merge)
         {
-            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo ==null)).ToList();
+            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo == 0)).ToList();
             await db.AutoMerge(SelectedApplication, parents);
             await db.SetParentBatchCount(SelectedApplication.BatchNo);
             await OnChanged();

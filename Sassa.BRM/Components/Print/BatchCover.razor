@@ -94,7 +94,7 @@ else
 @code {
 
     [Parameter]
-    public decimal BatchId { get; set; }
+    public string BatchId { get; set; }
 
     protected string officename;
     protected string fspname = "";
@@ -105,15 +105,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(200);
-        items = await db.GetAllFilesByBatchNo(BatchId);
+        items = await db.GetAllFilesByBatchNo(decimal.Parse(BatchId));
         //QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, db.GetGrantType(file.GrantType));
         if(items.Any())
         {
             officename = sservice.GetOfficeName(items.First().OfficeId);
             fspname = sservice.GetFspName(items.First().FspId);
         }
-        BatchBarCode = bcService.GetBarCode(BatchId.ToString());
+        BatchBarCode = bcService.GetBarCode(BatchId);
     }
 
     private async Task btnPrint_Click()

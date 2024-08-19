@@ -8,6 +8,7 @@ using Sassa.BRM.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,10 +23,20 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     #region Brm Capture
     public async Task<bool> checkBRMExists(string brmno)
     {
-        using (var _context = _contextFactory.CreateDbContext())
+        bool result = true;
+        try
         {
-            return (await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync()).Any();
+            using (var _context = _contextFactory.CreateDbContext())
+            {
+                var interim = await _context.DcFiles.Where(f => f.BrmBarcode == brmno).ToListAsync();
+                result = interim.Any();
+            }
         }
+        catch (Exception ex)
+        {
+            Debug.Print(ex.Message);
+        }
+        return result;
     }
 
     public async Task EditBarCode(Application brm, string barCode)
@@ -47,14 +58,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
         using (var _context = _contextFactory.CreateDbContext())
         {
-            decimal? batch = null;
+            decimal batch = 0;
             var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
-            if (office.ManualBatch == "A")
-            {
-                batch = 0;
-            }
-            else
-            {
+            if (office.ManualBatch != "A")
+             {
                 string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
                 batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
             }
@@ -1355,9 +1362,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     RegionCode = StaticDataService.RegionCode(d.RegionId),
                     RegionName = StaticDataService.RegionName(d.RegionId),
                     AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                    ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                    ARCHIVE_YEAR = StaticDataService.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
                     ChildId = d.ChildId,
                     LcType = "0",
+                    FspId = _userSession.Office.FspId,
                     IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
                     DocsPresent = d.Documents,
                     IdHistory = d.IdHistory,
@@ -1544,7 +1552,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                                 null as Child_Status_Date,
                                 f.TDW_BOXNO,
                                 NVL(f.Mini_Boxno,1) As MiniBox,
-                                f.BatchNo,
+                                NVL(f.BATCH_NO,0) as BatchNo,
                                 f.SRD_NO as Srd_No,
                                 f.CHILD_ID_NO as ChildId,
                                 m.PARENT_BRM_Barcode as Brm_Parent,
@@ -1552,23 +1560,23 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                                 f.UNQ_FILE_NO as Clm_No,
                                 f.LCTYPE,
                                 f.LASTREVIEWDATE as LASTREVIEWDATE,
-                0 As IsCombinationCandidate,
-                0 As IsMergeCandidate,
-                0 As IsNew,
-                    '{(_userSession.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                0 As SocpenIsn,
-                '' as Prim_Status,
-                '' as Sec_Status,
-                0 As RowType,
-                0 As StatusCode,
+                                0 As IsCombinationCandidate,
+                                0 As IsMergeCandidate,
+                                0 As IsNew,
+                                    '{(_userSession.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
+                                0 As SocpenIsn,
+                                '' as Prim_Status,
+                                '' as Sec_Status,
+                                0 As RowType,
+                                0 As StatusCode,
                                 '' AS ARCHIVE_YEAR,
                                 null as DateApproved,
-                0 As Trans_type,
-                '' AS IdHistory,
-                'Brm' as Source,
-                '' as BrmUserName,
-                0 as IsSelected,
-                null as FspId
+                                0 As Trans_type,
+                                '' AS IdHistory,
+                                'Brm' as Source,
+                                '' as BrmUserName,
+                                0 as IsSelected,
+                                null as FspId
                         from Dc_File f
                         inner join DC_REGION rg on f.Region_ID = rg.REGION_ID
                         inner join DC_Grant_type g on g.TYPE_ID = f.GRANT_TYPE
@@ -2173,12 +2181,12 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-    public async Task<List<string>> GetBatchBarcodes(decimal? batchNo)
+    public async Task<List<string>> GetBatchBarcodes(decimal batchNo)
     {
 
         using (var _context = _contextFactory.CreateDbContext())
         {
-            if (batchNo == null)
+            if (batchNo == 0)
             {
                 throw new Exception("Invalid batch No.");
             }

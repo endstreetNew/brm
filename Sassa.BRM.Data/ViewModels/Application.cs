@@ -9,8 +9,6 @@ namespace Sassa.BRM.Models
         public string Id { get; set; }
         //Change to accomodate invalid child ids from socpen
         private string child_id;
-        //private string aRCHIVE_YEAR;
-
         public string ChildId 
         {
             get { return child_id; }
@@ -50,7 +48,7 @@ namespace Sassa.BRM.Models
         public string Clm_No { get; set; }
         public string TDW_BOXNO { get; set; }
         public int MiniBox { get; set; }
-        public decimal? BatchNo { get; set; }
+        public decimal BatchNo { get; set; }
         [JsonIgnore]
         public string IdHistory { get; set; }
         [JsonIgnore]
@@ -63,7 +61,7 @@ namespace Sassa.BRM.Models
         public string Source { get; set; }
         [JsonIgnore]
         public bool IsMergeCandidate { get; set; }
-        //public bool IsCombinationCandidate { get; set; }
+        public bool IsCombinationCandidate { get; set; }
         public string BrmUserName { get; set; }
         public decimal? FspId { get; set; }
         [JsonIgnore]

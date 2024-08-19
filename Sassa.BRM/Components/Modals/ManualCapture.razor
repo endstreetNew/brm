@@ -246,7 +246,7 @@
                 throw new Exception("Child ID too long");
             }
             DcFile file = await db.CreateBRM(br,reason);
-            br.BatchNo = file.BatchNo;
+            br.BatchNo = (decimal)file.BatchNo;
             br.Clm_No = file.UnqFileNo;
 
             await ManualBrmSave.InvokeAsync(br.IsMergeCandidate);

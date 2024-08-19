@@ -25,25 +25,25 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-        string BrmConnectionString = builder.Configuration.GetConnectionString("BrmConnection");
+        string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection");
+        string SocpenConnection = builder.Configuration.GetConnectionString("SocpenConnection");
         //var BrmApi = new Uri(builder.Configuration["Urls:BrmApi"]);
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
         //Factory pattern
         builder.Services.AddDbContextFactory<ModelContext>(options =>
-        options.UseOracle(BrmConnectionString));
+        options.UseOracle(BrmConnection));
+        builder.Services.AddDbContextFactory<SocpenContext>(options =>
+        options.UseOracle(SocpenConnection));
         //Services 
         builder.Services.AddScoped<BRMDbService>();
         builder.Services.AddScoped<SessionService>();
         builder.Services.AddSingleton<StaticService>();
         builder.Services.AddSingleton<BrmApiService>();
-        builder.Services.AddScoped<MisFileService>().AddDbContext<ModelContext>(options =>
-        options.UseOracle(BrmConnectionString));
-        builder.Services.AddScoped<DestructionService>().AddDbContext<ModelContext>(options =>
-        options.UseOracle(BrmConnectionString));
-        builder.Services.AddScoped<SocpenService>().AddDbContext<SocpenContext>(options =>
-        options.UseOracle(BrmConnectionString));
+        builder.Services.AddScoped<MisFileService>();
+        builder.Services.AddScoped<DestructionService>();
+        builder.Services.AddScoped<SocpenService>();
         builder.Services.AddScoped<TdwBatchService>();
         builder.Services.AddSingleton<BarCodeService>();
         builder.Services.AddSingleton<RawSqlService>();

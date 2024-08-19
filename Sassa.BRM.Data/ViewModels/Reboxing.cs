@@ -19,7 +19,7 @@
             SelectedType = "";
         }
         public string BoxNo { get; set; }
-        public decimal? BatchNo { get; set; }
+        public decimal BatchNo { get; set; }
         public string RegType { get; set; }
         public string ArchiveYear { get; set; }
         public string ToRegionId { get; set; }

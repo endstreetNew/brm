@@ -81,7 +81,7 @@
         <div id="SocpenGrid">
             @if (DTSocPen != null)
             {
-                <table class="table table-sm" style="font-size:small;">
+                <table style="font-size:small;width:100%;">
                     <thead>
                         <tr>
                             <th scope="col">ID No</th>
@@ -386,7 +386,7 @@
         await OnChanged();
         if (merge)
         {
-            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo ==null)).ToList();
+            var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo == 0)).ToList();
             await db.AutoMerge(SelectedApplication, parents);
             //Running Syncronously on purpose
             await db.SetParentBatchCount(SelectedApplication.BatchNo);

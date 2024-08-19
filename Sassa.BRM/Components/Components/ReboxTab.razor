@@ -423,7 +423,7 @@
     {
         try
         {
-            if (rebox.BatchNo == null|| rebox.BatchNo == 0) throw new Exception("Invalid BatchNo");
+            if (rebox.BatchNo == 0) throw new Exception("Invalid BatchNo");
             if (string.IsNullOrEmpty(rebox.SelectedType)) throw new Exception("Please select a boxtype.");
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
 
@@ -457,7 +457,7 @@
     {
         try
         {
-            List<string> barcodes = await db.GetBatchBarcodes(rebox.BatchNo);
+            List<string> barcodes = await db.GetBatchBarcodes((decimal)rebox.BatchNo);
             //if (boxfiles.count + barcodes.Count() > 150) throw new Exception($"Too many files for this box result: {boxfiles.count + barcodes.Count()} Maximun allowed: 150.");
             rebox.ToRegionId = rebox.SelectedType == "3" ? rebox.ToRegionId : rebox.SelectedType;
             rebox.MisFileNo = string.Empty;
@@ -559,7 +559,7 @@
 
         await db.Rebox(rebox, file);
 
-        if (rebox.BatchNo == null || rebox.BatchNo == 0)
+        if ( rebox.BatchNo == 0)
         {
             string scanState = file.ScanDatetime == null ? "Not Scanned" : "Scanned";
             toast.Success($"BRM# {rebox.BrmBarcode} added to TDW box {rebox.BoxNo}. ({scanState})");

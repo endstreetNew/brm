@@ -70,7 +70,7 @@
                     <tr style="background-color:@(u.AppStatus == "DESTROY" ? "orange":"white");">
                         <td>@u.Id</td>
                         <td>
-                            @if (u.BatchNo == null || u.BatchNo == 0)
+                            @if (u.BatchNo == 0)
                             {
                                 <button class="btn btn-primary btn-sm active" @onclick="@(() => btnBatch_Click(u))">Batch</button>
                             }

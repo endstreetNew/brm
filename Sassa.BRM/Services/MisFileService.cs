@@ -4,19 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sassa.BRM.Services
+namespace Sassa.BRM.Services;
+
+public class MisFileService(IDbContextFactory<ModelContext> dbContextFactory)
 {
-    public class MisFileService
+
+    public async Task<List<MisLivelinkTbl>> GetMisFiles(string idNumber)
     {
-        ModelContext _context;
-        public MisFileService(ModelContext context)
-        {
-            //if (StaticD.Users == null) StaticD.Users = new List<string>();
-            _context = context;
-
-        }
-
-        public async Task<List<MisLivelinkTbl>> GetMisFiles(string idNumber)
+        using var _context = dbContextFactory.CreateDbContext();
         {
             return await _context.MisLivelinkTbls.Where(x => x.IdNumber == idNumber).ToListAsync();
         }

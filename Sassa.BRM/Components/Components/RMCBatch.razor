@@ -289,7 +289,7 @@
             }
             rebox.BatchNo = batch.BatchNo;
             rebox.MiniBox = batch.MiniBox;
-            List<string> barcodes = await db.GetBatchBarcodes(rebox.BatchNo);
+            List<string> barcodes = await db.GetBatchBarcodes((decimal)rebox.BatchNo);
 
             rebox.ToRegionId = rebox.RegType;
             rebox.MisFileNo = string.Empty;
