@@ -173,9 +173,7 @@
                                     <td>@p.Region</td>
                                     <td>@p.TdwSendDate</td>
                                     <td>
-                                        <div class="input-group mb-3">
-                                            <button type="button" class="btn btn-primary btn-sm" style="width: 160px; margin: 5px 0 5px;" @onclick="@(() => btnPrint_Click(@p.TdwBatchNo))">Reprint Cover</button>
-                                        </div>
+                                        <button type="button" class="btn btn-primary btn-sm" style="width: 160px; margin: 0px 0 5px;" @onclick="@(() => btnPrint_Click(@p.TdwBatchNo))">Reprint Cover</button>
                                     </td>
                                 </tr>
                             }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using razor.Components.Models;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
@@ -6,6 +7,7 @@ using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -1383,121 +1385,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-
-    //public string DcSocpenSql(string SearchId)
-    //{
-    //    //Select* from DC_Socpen spn
-    //    //where spn.BENEFICIARY_ID = '8112226059082'
-    //    //order by spn.STATUS_DATE desc
-
-
-    //    return @$"select 
-    //                        spn.BENEFICIARY_ID as Id,
-    //                        spn.NAME as Name,
-    //                        spn.SURNAME as Surname,
-    //                        spn.GRANT_TYPE as GrantType,
-    //                        g.TYPE_NAME as GrantName,
-    //                        spn.APPLICATION_DATE as AppDate,
-    //                        spn.Region_id as RegionId,
-    //                        rg.REGION_CODE as REGIONCODE,
-    //                        rg.REGION_NAME as REGIONNAME,
-    //                        null as DOCSPRESENT,
-    //                        spn.PRIM_STATUS as Prim_Status,
-    //                        spn.SEC_STATUS as Sec_Status,
-    //                        spn.STATUS_DATE as StatusDate,
-    //                        spn.APPLICATION_DATE as Child_App_Date,
-    //                        spn.STATUS_CODE as Child_Status_Code,
-    //                        spn.STATUS_DATE as Child_Status_Date,
-    //                        spn.Child_id as ChildId,
-    //                        r.DATE_REVIEWED as LASTREVIEWDATE,
-    //                        '' AS ARCHIVE_YEAR,
-    //                        Status_code As AppStatus,
-    //                        '' As Brm_Barcode,
-    //                        '' As Brm_Parent,
-    //                        '' As Clm_no,
-    //                        '' As DateApproved,
-    //                        0 As IsCombinationCandidate,
-    //                        0 As IsMergeCandidate,
-    //                        0 As IsNew,
-    //                        'Y' AS IsRmc,
-    //                        0 As Batch_No,
-    //                        ID As SocpenIsn,
-    //                        0 As LcType,
-    //                        0 As RowType,
-    //                        '' As Srd_No,
-    //                        0 As StatusCode,
-    //                        0 As Tdw_BoxNo,
-    //                        0 As Trans_type,
-    //                        '' as IdHistory,
-    //                        'Socpen' as Source
-    //                from DC_Socpen spn
-    //                inner join DC_REGION rg on spn.Region_ID = rg.REGION_ID
-    //                inner join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
-    //                left join SASSA.SOCPEN_REVIEW r on r.PENSION_NO = spn.BENEFICIARY_ID
-    //                where spn.BENEFICIARY_ID = '{SearchId}'
-    //                order by spn.STATUS_DATE desc";
-    //}
-
-    //public async Task<List<Application>> SearchOldIds(string SearchId)
-    //{
-    //    List<Application> idquery;
-    //    string sql = $@"select spn.PENSION_NO as Id,
-    //                                spn.NAME as Name,
-    //                                spn.SURNAME as Surname,
-    //                                spn.GRANT_TYPE as GrantType,
-    //                                g.TYPE_NAME as GrantName,
-    //                                spn.APP_DATE as AppDate,
-    //                                spn.PROVINCE as RegionId,
-    //                                rg.REGION_CODE as REGIONCODE,
-    //                                rg.REGION_NAME as REGIONNAME,
-    //                                spn.DOCS_PRESENT as DOCSPRESENT,
-    //                                spn.PRIM_STATUS as Prim_Status,
-    //                                spn.SEC_STATUS as Sec_Status,
-    //                                spn.STATUS_DATE as StatusDate,
-    //                                null as Child_App_Date,
-    //                                null as Child_Status_Code,
-    //                                null as Child_Status_Date,
-    //                                null as ChildId,
-    //                                null as LASTREVIEWDATE,
-    //                                '' AS ARCHIVE_YEAR,
-    //                                CASE
-    //                                WHEN spn.PRIM_STATUS IN ('B','A','9') AND spn.SEC_STATUS IN ('2') THEN 'MAIN'
-    //                                ELSE 'ARCHIVE'
-    //                                END AS AppStatus,
-    //                                '' As Brm_Barcode,
-    //                                '' As Brm_Parent,
-    //                                '' As Clm_no,
-    //                                '' As DateApproved,
-    //                                0 As IsCombinationCandidate,
-    //                                0 As IsMergeCandidate,
-    //                                0 As IsNew,
-    //                                '{(session.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-    //                                0 As Batch_No,
-    //                                0 As SocpenIsn,
-    //                                0 As LcType,
-    //                                0 As RowType,
-    //                                '' As Srd_No,
-    //                                0 As StatusCode,
-    //                                0 As Tdw_BoxNo,
-    //                                1 As MiniBox,
-    //                                0 As Trans_type,
-    //                                spn.OLD_ID1||' '||spn.OLD_ID2||' '|| spn.OLD_ID3||' '|| spn.OLD_ID4||' '|| spn.OLD_ID5||' '|| spn.OLD_ID6||' '|| spn.OLD_ID7||' '|| spn.OLD_ID8||' '|| spn.OLD_ID9||' '|| spn.OLD_ID10 as IdHistory,
-    //                                'Socpen' as Source
-    //                        from SOCPENGRANTS spn
-    //                        inner join DC_REGION rg on spn.PROVINCE = rg.REGION_ID
-    //                        inner join DC_Grant_type g on g.TYPE_ID = spn.GRANT_TYPE
-    //                        where '{SearchId}' in ( spn.OLD_ID1, spn.OLD_ID2, spn.OLD_ID3, spn.OLD_ID4, spn.OLD_ID5, spn.OLD_ID6, spn.OLD_ID7, spn.OLD_ID8, spn.OLD_ID9, spn.OLD_ID10)
-    //                        order by spn.STATUS_DATE desc";
-    //    idquery = await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
-    //    return idquery;
-    //}
-    /// <summary>
-    /// Deprecated for switch to DC_SOCPEN
-    /// </summary>
-    /// <param name="SearchId"></param>
-    /// <param name="FullSearch"></param>
-    /// <returns></returns>
-
     public async Task<List<Application>> SearchSocpenSrd(long srd)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -1534,59 +1421,49 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            string sql = $@"select f.APPLICANT_NO as Id,
-                                f.USER_FirstName as Name,
-                                f.USER_LASTNAME as Surname,
-                                f.GRANT_TYPE as GrantType,
-                                g.TYPE_NAME as GrantName,
-                                f.TRANS_DATE as AppDate,
-                                f.Office_ID as OfficeId,
-                                f.REGION_ID as RegionId,
-                                rg.REGION_CODE as REGIONCODE,
-                                rg.REGION_NAME as REGIONNAME,
-                                f.DOCS_PRESENT as DOCSPRESENT,
-                                f.APPLICATION_STATUS as APPSTATUS,
-                                null as StatusDate,
-                                null as Child_App_Date,
-                                null as Child_Status_Code,
-                                null as Child_Status_Date,
-                                f.TDW_BOXNO,
-                                NVL(f.Mini_Boxno,1) As MiniBox,
-                                NVL(f.BATCH_NO,0) as BatchNo,
-                                f.SRD_NO as Srd_No,
-                                f.CHILD_ID_NO as ChildId,
-                                m.PARENT_BRM_Barcode as Brm_Parent,
-                                f.BRM_BARCODE as Brm_BarCode,
-                                f.UNQ_FILE_NO as Clm_No,
-                                f.LCTYPE,
-                                f.LASTREVIEWDATE as LASTREVIEWDATE,
-                                0 As IsCombinationCandidate,
-                                0 As IsMergeCandidate,
-                                0 As IsNew,
-                                    '{(_userSession.Office.OfficeType == "RMC" ? "Y" : "N")}' AS IsRmc,
-                                0 As SocpenIsn,
-                                '' as Prim_Status,
-                                '' as Sec_Status,
-                                0 As RowType,
-                                0 As StatusCode,
-                                '' AS ARCHIVE_YEAR,
-                                null as DateApproved,
-                                0 As Trans_type,
-                                '' AS IdHistory,
-                                'Brm' as Source,
-                                '' as BrmUserName,
-                                0 as IsSelected,
-                                null as FspId
-                        from Dc_File f
-                        inner join DC_REGION rg on f.Region_ID = rg.REGION_ID
-                        inner join DC_Grant_type g on g.TYPE_ID = f.GRANT_TYPE
-                        left join DC_Merge m on f.BRM_BARCODE = m.BRM_BARCODE
-                            where f.APPLICANT_NO  = '{SearchId}' and f.BRM_BARCODE is not null
-                        order by f.TRANS_DATE desc";
 
-            return await _context.Applications.FromSqlRaw(sql).AsNoTracking().ToListAsync();
+
+            return await _context.DcFiles
+                .Where(f => f.ApplicantNo == SearchId)
+                .GroupJoin(_context.DcMerges, fgm => fgm.BrmBarcode, merge => merge.BrmBarcode, (fgm, merge) => new { file = fgm,merge = merge })
+                .SelectMany(x => x.merge.DefaultIfEmpty(), (f, merge) => new Application
+            {
+                Id = f.file.ApplicantNo,
+                Name = f.file.UserFirstname,
+                SurName = f.file.UserLastname,
+                GrantType = f.file.GrantType,
+                GrantName = StaticDataService.GrantTypes[f.file.GrantType],
+                AppDate = f.file.TransDate.ToStandardDateString(),
+                OfficeId = f.file.OfficeId,
+                RegionId = f.file.RegionId,
+                DocsPresent = f.file.DocsPresent,
+                AppStatus = f.file.ApplicationStatus,
+                StatusDate = null,
+                Child_App_Date = null,
+                Child_Status_Code = null,
+                Child_Status_Date = null,
+                TDW_BOXNO = f.file.TdwBoxno,
+                MiniBox = (int)f.file.MiniBoxno,
+                BatchNo = (decimal)f.file.BatchNo,
+                Srd_No = f.file.SrdNo,
+                ChildId = f.file.ChildIdNo,
+                Brm_Parent = merge.ParentBrmBarcode,
+                Brm_BarCode = f.file.BrmBarcode,
+                Clm_No = f.file.UnqFileNo,
+                LcType = f.file.Lctype.ToString(),
+                LastReviewDate = f.file.Lastreviewdate.ToStandardDateString(),
+                IsCombinationCandidate = false,
+                IsMergeCandidate = false,
+                IsNew = false,
+                IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
+                SocpenIsn = 0,
+                Prim_Status = "",
+                Sec_Status = "",
+                RowType = "",
+                ARCHIVE_YEAR = f.file.ArchiveYear,
+                DateApproved = null
+            }).AsNoTracking().ToListAsync();
         }
-
     }
 
     /// <summary>
@@ -1652,68 +1529,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             throw;
         }
     }
-
-
-    //private string GetWhereclause(string SearchId, bool FullSearch)
-    //{
-    //    return FullSearch ? $" where '{SearchId}' in (spn.PENSION_NO, spn.OLD_ID1, spn.OLD_ID2, spn.OLD_ID3, spn.OLD_ID4, spn.OLD_ID5, spn.OLD_ID6, spn.OLD_ID7, spn.OLD_ID8, spn.OLD_ID9, spn.OLD_ID10) " : $" where spn.PENSION_NO  = '{SearchId}' ";
-    //}
-
-    //private string GetStatusFromSocpen(Application application)
-    //{
-    //    string mystatus;
-
-    //    switch (application.Child_Status_Code)
-    //    {
-    //        case null:
-    //            string checkstatus = application.Prim_Status == null ? "" : application.Prim_Status.Trim() + (application.Sec_Status == null ? "" : application.Sec_Status.Trim());
-    //            if (checkstatus == "B2" || checkstatus == "A2" || checkstatus == "92")
-    //            {
-    //                mystatus = "MAIN";
-    //            }
-    //            else
-    //            {
-    //                mystatus = "ARCHIVE";
-    //            }
-    //            break;
-
-    //        case "1":
-    //            mystatus = "MAIN";
-    //            break;
-
-    //        default:
-    //            mystatus = "ARCHIVE";
-    //            break;
-    //    }
-    //    return mystatus;
-    //}
-
-    //public async Task<DcFile> RemoveDuplicateBRM(string brmNo)
-    //{
-
-    //    var files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
-    //    if (files.Count() > 1)
-    //    {
-    //        foreach (var dcfile in files)
-    //        {
-    //            if (string.IsNullOrEmpty(dcfile.ApplicantNo))
-    //            {
-    //                await BackupDcFileEntry(dcfile);
-    //                _context.DcFiles.Remove(dcfile);
-    //                await _context.SaveChangesAsync();
-    //            }
-    //        }
-    //    }
-    //    files = _context.DcFiles.Where(k => k.BrmBarcode == brmNo);
-    //    if (files.Any())
-    //    {
-    //        return files.FirstOrDefault();
-    //    }
-    //    else
-    //    {
-    //        return null;
-    //    }
-    //}
 
     public async Task RemoveBRM(string brmNo, string reason)
     {

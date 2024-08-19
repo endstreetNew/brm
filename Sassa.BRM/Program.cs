@@ -119,35 +119,8 @@ public class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
-        app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
+        app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
         app.Run();
-
-        //// Configure the HTTP request pipeline.
-        //if (!app.Environment.IsDevelopment())
-        //{
-        //    app.UseExceptionHandler("/Error");
-        //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        //    app.UseHsts();
-        //}
-        //app.UseStaticFiles();
-        //app.UseRouting();
-        //app.UseAntiforgery();
-        //var wsOptions = new WebSocketOptions()
-        //{
-        //    KeepAliveInterval = TimeSpan.FromSeconds(10)
-        //};
-        //app.UseWebSockets(wsOptions);
-        //app.UseHttpsRedirection();
-        //app.UseEndpoints(endpoints =>
-        //{
-        //    endpoints.MapControllers();
-        //    endpoints.MapBlazorHub();
-        //    //endpoints.MapBlazorHub(options => options.WebSockets.CloseTimeout = new TimeSpan(1, 1, 1));
-        //    endpoints.MapFallbackToPage("/_Host");
-        //});
-        //app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-        //app.Run();
     }
 }
