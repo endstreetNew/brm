@@ -35,7 +35,7 @@ public class Program
         builder.Services.AddDbContextFactory<ModelContext>(options =>
         options.UseOracle(BrmConnection));
         builder.Services.AddDbContextFactory<SocpenContext>(options =>
-        options.UseOracle(SocpenConnection));
+        options.UseOracle(BrmConnection));
         //Services 
         builder.Services.AddScoped<BRMDbService>();
         builder.Services.AddScoped<SessionService>();
