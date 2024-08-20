@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
+using Sassa.BRM.Models;
 using System.DirectoryServices;
 using System.Security.Principal;
 
@@ -8,6 +9,8 @@ namespace Sassa.Brm.Common.Services
 {
     public class SessionService 
     {
+        StaticService _staticservice;
+        private readonly WindowsIdentity _windowsIdentity;
         private UserSession? _session;
         public UserSession? session
         {
@@ -18,19 +21,18 @@ namespace Sassa.Brm.Common.Services
             set
             { _session = value; }
         }
-        public event EventHandler? SessionInitialized;
-        //ModelContext _context;
+        //public event EventHandler? SessionInitialized;
+        public event EventHandler? UserOfficeChanged;
+        
 
-        private readonly WindowsIdentity _windowsIdentity;
-
-        public SessionService(IHttpContextAccessor httpContextAccessor)
+        public SessionService(IHttpContextAccessor httpContextAccessor,StaticService staticservice)
         {
-            //_context = context;
+            _staticservice = staticservice;
             try
             {
                 _windowsIdentity = (WindowsIdentity)httpContextAccessor.HttpContext!.User.Identity!;
                 _session = GetUserSession(_windowsIdentity);
-                SessionInitialized?.Invoke(this, EventArgs.Empty);
+                //SessionInitialized?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -50,8 +52,14 @@ namespace Sassa.Brm.Common.Services
             _session.Email = (string)user.Properties["mail"].Value!;
             _session.Name = (string)user.Properties["name"].Value!;
             _session.Surname = (string)user.Properties["sn"].Value!;
-
+            UpdateUserOffice();
             return _session;
+        }
+
+        public  void UpdateUserOffice()
+        {
+            _session!.Office = _staticservice.GetUserLocalOffice(_session.SamName!, _session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N").Result;
+            UserOfficeChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

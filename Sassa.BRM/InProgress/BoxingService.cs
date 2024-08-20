@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
-public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, BrmApiService brmApiService)
+public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, RawSqlService _raw, MailMessages _mail, SessionService _sessionService, BrmApiService brmApiService)
 {
 
-    private UserSession _userSession = _sessionService.session;
+    private UserSession _userSession = _sessionService.session!;
 
     #region Boxing and Re-Boxing
     public async Task<PagedResult<ReboxListItem>> GetAllFilesByBoxNo(string boxNo, int page)
@@ -29,10 +29,6 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
             bool repaired = await RepairAltBoxSequence(boxNo);
 
             PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
-            if (StaticDataService.GrantTypes == null)
-            {
-                _ = _staticService.GetGrantTypes();
-            }
             result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).Count();
 
             var interim = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderByDescending(f => f.UpdatedDate).ToList();
@@ -43,7 +39,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                             BrmNo = f.BrmBarcode,
                             IdNo = f.ApplicantNo,
                             FullName = f.FullName,
-                            GrantType = StaticDataService.GrantTypes[f.GrantType],
+                            GrantType = StaticDataService.GrantTypes![f.GrantType],
                             BoxNo = boxNo,
                             AltBoxNo = f.AltBoxNo,
                             Scanned = f.ScanDatetime != null,
@@ -63,10 +59,6 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
         {
             PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
             searchText = searchText.ToUpper();
-            if (StaticDataService.GrantTypes == null)
-            {
-                _ = _staticService.GetGrantTypes();
-            }
             result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).Count();
             if (result.count == 0) throw new Exception("No result!");
             result.result = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking()
@@ -76,7 +68,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                             BrmNo = f.BrmBarcode,
                             IdNo = f.ApplicantNo,
                             FullName = f.FullName,
-                            GrantType = StaticDataService.GrantTypes[f.GrantType],
+                            GrantType = StaticDataService.GrantTypes![f.GrantType],
                             BoxNo = boxNo,
                             AltBoxNo = f.AltBoxNo,
                             Scanned = f.ScanDatetime != null,
@@ -145,7 +137,6 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
 
         using (var _context = _contextFactory.CreateDbContext())
         {
-            _ = _staticService.GetGrantTypes();
             if (notScanned)
             {
                 var interimNs = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && bn.ScanDatetime == null).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
@@ -155,7 +146,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                     BrmNo = f.BrmBarcode,
                     IdNo = f.ApplicantNo,
                     FullName = f.FullName,
-                    GrantType = StaticDataService.GrantTypes[f.GrantType],
+                    GrantType = StaticDataService.GrantTypes![f.GrantType],
                     BoxNo = boxNo,
                     AltBoxNo = f.AltBoxNo,
                     Scanned = f.ScanDatetime != null
@@ -168,7 +159,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                 BrmNo = f.BrmBarcode,
                 IdNo = f.ApplicantNo,
                 FullName = f.FullName,
-                GrantType = StaticDataService.GrantTypes[f.GrantType],
+                GrantType = StaticDataService.GrantTypes![f.GrantType],
                 BoxNo = boxNo,
                 AltBoxNo = f.AltBoxNo,
                 Scanned = f.ScanDatetime != null
@@ -196,7 +187,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                     item.Status = "Returned";
                 }
                 await _context.SaveChangesAsync();
-                await SyncPicklistFromItems(item.UnqPicklist, "Returned");
+                if (item != null) await SyncPicklistFromItems(item.UnqPicklist, "Returned");
             }
 
             //Return MisFiles
@@ -236,7 +227,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                     Firstname = parent.UserFirstname,
                     Surname = parent.UserLastname,
                     ID_Number = parent.ApplicantNo,
-                    Year = parent.UpdatedDate.Value.ToString("YYYY"),
+                    Year = (parent.UpdatedDate ?? DateTime.Now).ToString("YYYY"),
                     Location = parent.TdwBoxno,
                     Reg = parent.RegType,
                     //Bin  = parent. ,
@@ -247,7 +238,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
                 tpl.Add(TdwFormat);
 
             }
-            string FileName = _userSession.Office.RegionCode + "-" + _userSession.SamName.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+            string FileName = _userSession.Office.RegionCode + "-" + _userSession.SamName!.ToUpper() + $"-TDW_ReturnedBox_{boxNo.Trim()}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
             //attachment list
             List<string> files = new List<string>();
             //write attachments for manual download/add to mail
@@ -465,7 +456,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, Stat
             await _context.SaveChangesAsync();
             if (status == "Received")
             {
-                _mail.SendTDWReceipt(_userSession, StaticDataService.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
+                _mail.SendTDWReceipt(_userSession, StaticDataService.RegionIDEmails![picklist.RegionId], picklist.UnqPicklist, new List<string>());
             }
         }
 

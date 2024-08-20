@@ -94,25 +94,26 @@ else
 @code {
 
     [Parameter]
-    public string BatchId { get; set; }
+    public string? BatchId { get; set; }
 
-    protected string officename;
-    protected string fspname = "";
-    protected string BarCode;
-    //protected string QrCode;
-    protected string BatchBarCode;
-    protected List<DcFile> items;
+    protected string officename = "unknown";
+    protected string fspname = "unknown";
+    protected string BarCode = "unknown";
+    protected string BatchBarCode = "unknown";
+    protected List<DcFile>? items;
 
     protected override async Task OnInitializedAsync()
     {
-        items = await db.GetAllFilesByBatchNo(decimal.Parse(BatchId));
-        //QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, db.GetGrantType(file.GrantType));
-        if(items.Any())
+        if (BatchId != null)
         {
-            officename = sservice.GetOfficeName(items.First().OfficeId);
-            fspname = sservice.GetFspName(items.First().FspId);
+            items = await db.GetAllFilesByBatchNo(decimal.Parse(BatchId));
+            if (items.Any())
+            {
+                officename = sservice.GetOfficeName(items.First().OfficeId);
+                fspname = sservice.GetFspName(items.First().FspId);
+            }
+            BatchBarCode = bcService.GetBarCode(BatchId);
         }
-        BatchBarCode = bcService.GetBarCode(BatchId);
     }
 
     private async Task btnPrint_Click()
@@ -122,6 +123,6 @@ else
     private void btnBack_Click()
     {
         Js.InvokeVoidAsync("window.close");
-        //Navigation.NavigateTo($"boxing");
+
     }
 }

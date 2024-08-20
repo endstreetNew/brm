@@ -33,13 +33,12 @@ else
 
 
     [Parameter]
-    public string BoxNo { get; set; }
-    public List<ReboxListItem> sheets;
+    public string? BoxNo { get; set; }
+    public List<ReboxListItem>? sheets;
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(200);
-        sheets = await db.GetAllFilesByBoxNo(BoxNo);
+        if(BoxNo != null)sheets = await db.GetAllFilesByBoxNo(BoxNo);
     }
 
     private async Task btnPrint_Click()

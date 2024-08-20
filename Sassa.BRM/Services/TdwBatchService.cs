@@ -22,7 +22,7 @@ namespace Sassa.BRM.Services;
 public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, StaticService _staticService, SessionService session, RawSqlService _raw, MailMessages _mail)
 {
 
-    UserSession _session = session.session;
+    UserSession _session = session.session!;//SessionService must be loaded before this service
 
     public async Task<PagedResult<TdwBatchViewModel>> GetBox(string boxNo)
     {
@@ -44,8 +44,8 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                    new TdwBatchViewModel
                    {
                        BoxNo = box,
-                       Region = _staticService.GetRegion(_session.Office.RegionId),
-                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno),
+                       Region = _staticService.GetRegion(_session.Office.RegionId!),
+                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno ?? 1),
                        Files = dcFiles.Count(),
                        User = _session.SamName,
                        TdwSendDate = dcFiles.First().TdwBatchDate,
@@ -85,8 +85,8 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                    new TdwBatchViewModel
                    {
                        BoxNo = box,
-                       Region = _staticService.GetRegion(_session.Office.RegionId),
-                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno),
+                       Region = _staticService.GetRegion(_session.Office.RegionId!),
+                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno??0),
                        Files = dcFiles.Count(),
                        User = _session.SamName,
                        TdwSendDate = dcFiles.First().TdwBatchDate,
@@ -158,7 +158,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                    new TdwBatchViewModel
                    {
                        TdwBatchNo = (int)batch,
-                       Region = _staticService.GetRegion(_session.Office.RegionId),
+                       Region = _staticService.GetRegion(_session.Office.RegionId!),
                        Boxes = dcFiles.Select(a => a.TdwBoxno).Distinct().Count(),
                        Files = dcFiles.Count(),
                        User = dcFiles.First().UpdatedByAd,
@@ -208,7 +208,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                 {
                     BoxNo = box.TdwBoxno,
                     Region = _session.Office.RegionName,
-                    MiniBoxes = (int)boxFiles.Max(f => f.MiniBoxno),
+                    MiniBoxes = (int)boxFiles.Max(f => f.MiniBoxno ?? 0),
                     Files = boxFiles.Count,
                     User = _session.SamName,
                     TdwSendDate = boxFiles.Max(f => f.TdwBatchDate)
@@ -288,7 +288,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                         Firstname = parent.UserFirstname,
                         Surname = parent.UserLastname,
                         ID_Number = parent.ApplicantNo,
-                        Year = parent.UpdatedDate.Value.ToString("YYYY"),
+                        Year = (parent.UpdatedDate ?? DateTime.Now).ToString("YYYY"),
                         Location = parent.TdwBoxno,
                         Reg = parent.RegType,
                         //Bin  = parent. ,
@@ -300,7 +300,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                 }
 
             }
-            string FileName = _session.Office.RegionCode + "-" + _session.SamName.ToUpper() + $"-TDW_ReturnedBatch_{tdwBatchNo}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
+            string FileName = _session.Office.RegionCode + "-" + _session.SamName!.ToUpper() + $"-TDW_ReturnedBatch_{tdwBatchNo}-" + DateTime.Now.ToShortDateString().Replace("/", "-") + "-" + DateTime.Now.ToShortTimeString().Replace(":", "-");
             //attachment list
             files = new List<string>();
             //write attachments for manual download/add to mail

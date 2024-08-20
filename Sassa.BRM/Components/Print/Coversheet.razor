@@ -92,31 +92,31 @@
 @code {
 
     [Parameter]
-    public string BrmBarCode { get; set; }
+    public string? BrmBarCode { get; set; }
 
-    protected DcFile file;
+    protected DcFile? file;
 
-    protected string QrCode;
-    protected string IdBarCode;
-    protected string ClmBarCode;
-    protected string BarCode;
+    protected string QrCode = "unknown";
+    protected string IdBarCode = "unknown";
+    protected string ClmBarCode = "unknown";
+    protected string BarCode = "unknown";
 
     protected override async Task OnInitializedAsync()
     {
-        file = await db.GetBRMRecord(BrmBarCode);
-
-        QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, sservice.GetGrantType(file.GrantType));
-
-
-        IdBarCode = bcService.GetBarCode(file.GrantType == "S" ? file.SrdNo : file.ApplicantNo);
-        ClmBarCode = bcService.GetBarCode(file.UnqFileNo);
-        BarCode = bcService.GetBarCode(file.BrmBarcode);
+        if (BrmBarCode != null)
+        {
+            file = await db.GetBRMRecord(BrmBarCode);
+            QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, sservice.GetGrantType(file.GrantType));
+            IdBarCode = bcService.GetBarCode(file.GrantType == "S" ? file.SrdNo : file.ApplicantNo);
+            ClmBarCode = bcService.GetBarCode(file.UnqFileNo);
+            BarCode = bcService.GetBarCode(file.BrmBarcode);
+        }
 
     }
 
     private async Task OnDocsChanged(string docspresent)
     {
-        await db.SaveChanges(file.UnqFileNo,docspresent);
+        await db.SaveChanges(file!.UnqFileNo,docspresent);
     }
 
     private async Task btnPrint_Click()

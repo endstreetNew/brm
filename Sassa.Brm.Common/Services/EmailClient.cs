@@ -26,7 +26,7 @@ namespace Sassa.Brm.Common.Services
             _SMTPPort = config.GetValue<int>("Email:SMTPPort")!;
             _credential = new NetworkCredential(_SMTPUser, _SMTPPassword);
         }
-        public void SendMail(string from, string to, string subject, string body, List<string> attachments)
+        public void SendMail(string from, string to, string subject, string body, List<string>? attachments)
         {
             using (var client = new SmtpClient(_SMTPServer, _SMTPPort))
             {
@@ -41,11 +41,14 @@ namespace Sassa.Brm.Common.Services
                 message.Body = body;
                 message.BodyEncoding = Encoding.UTF8;
                 message.IsBodyHtml = true;
-                Attachment attachment;
-                foreach (string file in attachments)
+                if (attachments != null)
                 {
-                    attachment = new Attachment(file);
-                    message.Attachments.Add(attachment);
+                    Attachment attachment;
+                    foreach (string file in attachments)
+                    {
+                        attachment = new Attachment(file);
+                        message.Attachments.Add(attachment);
+                    }
                 }
 
                 try

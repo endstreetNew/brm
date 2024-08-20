@@ -59,7 +59,7 @@
             }
         }
     </div>
-    @if (sessionservice.session.IsRmc())
+    @if (sessionservice.session!.IsRmc())
     {
         <div class="col-4 float-right">
         <BoxStatus rebox="@rebox"></BoxStatus>
@@ -145,28 +145,25 @@
     [Parameter]
     public string Id { get; set; }
 
-    string txtSearchId;
-    string txtSearchSRD;
+    string? txtSearchId;
+    string? txtSearchSRD;
     bool chkSearchFull;
     //bool chkSearchMv = false;
 
     string regionChangeMessage = "";
     string manualGrantType = "";
 
-    protected List<Application> DTSocPen;
-    protected List<Application> DTBrm;
-    protected List<Application> DTBrmParents;
-    protected List<Application> DTMerged;
-    protected Dictionary<string, int> Unmerged;
+    protected List<Application>? DTSocPen;
+    protected List<Application>? DTBrm;
+    protected List<Application>? DTBrmParents;
+    protected List<Application>? DTMerged;
+    protected Dictionary<string, int>? Unmerged;
 
-    protected Application SelectedApplication;
+    protected Application? SelectedApplication;
 
     bool showConfirmRegion = false;
     bool showBrmModal = false;
     bool showManualCapture = false;
-
-    string pensionNrValue;
-    string SRDNo;
 
     protected Reboxing rebox = new Reboxing();
 
@@ -181,13 +178,11 @@
 
     private async Task Search()
     {
-        pensionNrValue = txtSearchId;
-        SRDNo = txtSearchSRD;
         long srdNo = 0;
         bool srdWithNoId = false;
         try
         {
-            if (string.IsNullOrEmpty(SRDNo) && string.IsNullOrEmpty(pensionNrValue))
+            if (string.IsNullOrEmpty(txtSearchSRD) && string.IsNullOrEmpty(txtSearchId))
             {
                 throw new Exception("No search criteria provided.");
             }
@@ -197,38 +192,38 @@
             DTBrmParents = null;
             DTMerged = null;
             //Searching on SRD
-            if (!string.IsNullOrEmpty(SRDNo))
+            if (!string.IsNullOrEmpty(txtSearchSRD))
             {
-                srdNo = long.Parse(SRDNo);
+                srdNo = long.Parse(txtSearchSRD);
                 try
                 {
-                    pensionNrValue = await db.GetSocpenSearchId(SRDNo);
+                    txtSearchId = await db.GetSocpenSearchId(txtSearchSRD);
                 }
                 catch
                 {
                     toast.Info("No Socpen results");
                 }
-                if (string.IsNullOrEmpty(pensionNrValue))
+                if (string.IsNullOrEmpty(txtSearchId))
                 {
-                    pensionNrValue = $"S{SRDNo.PadLeft(12,'0')}";
+                    txtSearchId = $"S{txtSearchSRD.PadLeft(12, '0')}";
                     srdWithNoId = true;
                 }
             }
             //Searching on ID
-            if (!string.IsNullOrEmpty(pensionNrValue))
+            if (!string.IsNullOrEmpty(txtSearchId))
             {
-                pensionNrValue = pensionNrValue.Trim();
-                if (srdWithNoId || pensionNrValue.StartsWith("S"))
+                txtSearchId = txtSearchId.Trim();
+                if (srdWithNoId || txtSearchId.StartsWith("S"))
                 {
                     DTSocPen = await db.SearchSocpenSrd(srdNo);
                 }
                 else
                 {
-                    if (!pensionNrValue.IsNumeric() || pensionNrValue.Length != 13) throw new Exception("Id is Invalid.");
-                    DTSocPen = await db.SearchSocpenId(pensionNrValue, chkSearchFull);
+                    if (!txtSearchId.IsNumeric() || txtSearchId.Length != 13) throw new Exception("Id is Invalid.");
+                    DTSocPen = await db.SearchSocpenId(txtSearchId, chkSearchFull);
                 }
                 if (!DTSocPen.Any()) toast.Info("No Socpen results");
-                DTBrm = await db.SearchBRMID(pensionNrValue);
+                DTBrm = await db.SearchBRMID(txtSearchId);
                 if (!DTBrm.Any()) toast.Info("No Brm results");
             }
             Merge();
@@ -250,42 +245,42 @@
     {
         DTBrmParents = null;
         DTMerged = null;
-        DTBrm = await db.SearchBRMID(pensionNrValue);
+        DTBrm = await db.SearchBRMID(txtSearchId);
         if (DTBrm.Any()) Merge();
     }
 
     protected void Merge()
     {
 
-        if (DTSocPen == null && DTBrm == null)
-        {
-            return;
-        }
-        if (!DTSocPen.Any() && !DTBrm.Any())
+        if ((DTSocPen == null || !DTSocPen.Any()) && (DTBrm == null || !DTBrm.Any()))
         {
             return;
         }
 
-        //Combination Grants
-        foreach (var row in DTSocPen.Where(r => r.GrantType == "6"))
+        if (DTSocPen != null)
         {
-            row.RowType = "C";
-        }
-        //NergeGrants
-        foreach (var group in DTSocPen.GroupBy(d => d.AppDate).Where(g => g.Count() > 1))
-        {
-            foreach (var row in group.ToArray())
+            //Combination Grants
+            foreach (var row in DTSocPen.Where(r => r.GrantType == "6"))
             {
-                //Todo: test johan added to prevent merging to boxed records.
-                //if (row.TDW_BOXNO != null) continue;
-                row.RowType = "M";
+                row.RowType = "C";
+            }
+            //MergeGrants
+            foreach (var group in DTSocPen.GroupBy(d => d.AppDate).Where(g => g.Count() > 1))
+            {
+                foreach (var row in group.ToArray())
+                {
+                    //Todo: test johan added to prevent merging to boxed records.
+                    //if (row.TDW_BOXNO != null) continue;
+                    row.RowType = "M";
+                }
             }
         }
 
-        DTBrm = DTBrm == null ? new List<Application>() : DTBrm.ToList();
-        DTBrmParents = DTBrm.Where(r => r.Brm_Parent == null || (r.Brm_Parent != null && r.Brm_BarCode == r.Brm_Parent) ).ToList();//&& r.TDW_BOXNO == null
-        DTMerged = DTBrm.Where(r => r.Brm_Parent != null && r.Brm_BarCode != r.Brm_Parent).ToList();
-        //Bind MainGrids
+        if (DTBrm != null)
+        {
+            DTBrmParents = DTBrm.Where(r => r.Brm_Parent == null || (r.Brm_Parent != null && r.Brm_BarCode == r.Brm_Parent)).ToList();//&& r.TDW_BOXNO == null
+            DTMerged = DTBrm.Where(r => r.Brm_Parent != null && r.Brm_BarCode != r.Brm_Parent).ToList();
+        }
     }
 
     private async Task btnNewCover_Click(Application a)
@@ -293,7 +288,7 @@
         rebox.BoxNo = rebox.BoxNo.ToUpper();
         if (string.IsNullOrEmpty(rebox.BoxNo))
         {
-            if (sessionservice.session.IsRmc())
+            if (sessionservice.session!.IsRmc())
             {
                 toast.Error("a TDW BoxNo is required to capture at the RMC.");
                 return;
@@ -312,7 +307,7 @@
             return;
         }
         SelectedApplication = a;
-        if (a.RegionId == sessionservice.session.Office.RegionId)
+        if (a.RegionId == sessionservice.session!.Office.RegionId)
         {
             ConfirmedRegion();//Save normal capture
         }
@@ -330,7 +325,7 @@
         rebox.BoxNo = rebox.BoxNo.ToUpper();
         if (string.IsNullOrEmpty(rebox.BoxNo))
         {
-            if (sessionservice.session.IsRmc())
+            if (sessionservice.session!.IsRmc())
             {
                 toast.Error("a TDW BoxNo is required to capture at the RMC.");
                 return;
@@ -345,7 +340,7 @@
                 return;
             }
         }
-        if (manualGrantType == "S" && string.IsNullOrEmpty(SRDNo))
+        if (manualGrantType == "S" && string.IsNullOrEmpty(txtSearchSRD))
         {
             toast.Error("a Srd record requires an SRD no.");
             return;
@@ -355,9 +350,9 @@
         SelectedApplication.TDW_BOXNO = rebox.BoxNo;
         SelectedApplication.MiniBox = rebox.MiniBox;
         SelectedApplication.GrantType = manualGrantType;
-        SelectedApplication.RegionId = sessionservice.session.Office.RegionId;
-        SelectedApplication.Id = pensionNrValue;
-        SelectedApplication.Srd_No = SRDNo;
+        SelectedApplication.RegionId = sessionservice.session!.Office.RegionId;
+        SelectedApplication.Id = txtSearchId;
+        SelectedApplication.Srd_No = txtSearchSRD;
         SelectedApplication.LcType = "0";
         SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
         SelectedApplication.AppStatus = "MAIN";

@@ -1,20 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using razor.Components.Models;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
 using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
@@ -263,10 +256,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             bool repaired = await RepairAltBoxSequence(boxNo);
 
             PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
-            if (StaticDataService.GrantTypes == null)
-            {
-                _ = _staticService.GetGrantTypes();
-            }
             result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).Count();
 
             var interim = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).OrderByDescending(f => f.UpdatedDate).ToList();
@@ -297,10 +286,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             PagedResult<ReboxListItem> result = new PagedResult<ReboxListItem>();
             searchText = searchText.ToUpper();
-            if (StaticDataService.GrantTypes == null)
-            {
-                _ = _staticService.GetGrantTypes();
-            }
             result.count = _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).Count();
             if (result.count == 0) throw new Exception("No result!");
             result.result = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && (bn.ApplicantNo.Contains(searchText) || bn.BrmBarcode.Contains(searchText))).OrderByDescending(f => f.UpdatedDate).Skip((page - 1) * 20).Take(20).OrderBy(f => f.UnqFileNo).AsNoTracking()
@@ -379,7 +364,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
         using (var _context = _contextFactory.CreateDbContext())
         {
-            _ = _staticService.GetGrantTypes();
             if (notScanned)
             {
                 var interimNs = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo && bn.ScanDatetime == null).OrderBy(f => f.UnqFileNo).AsNoTracking().ToListAsync();
@@ -389,7 +373,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     BrmNo = f.BrmBarcode,
                     IdNo = f.ApplicantNo,
                     FullName = f.FullName,
-                    GrantType = StaticDataService.GrantTypes[f.GrantType],
+                    GrantType = StaticDataService.GrantTypes![f.GrantType],
                     BoxNo = boxNo,
                     AltBoxNo = f.AltBoxNo,
                     Scanned = f.ScanDatetime != null
@@ -402,7 +386,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 BrmNo = f.BrmBarcode,
                 IdNo = f.ApplicantNo,
                 FullName = f.FullName,
-                GrantType = StaticDataService.GrantTypes[f.GrantType],
+                GrantType = StaticDataService.GrantTypes![f.GrantType],
                 BoxNo = boxNo,
                 AltBoxNo = f.AltBoxNo,
                 Scanned = f.ScanDatetime != null

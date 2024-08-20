@@ -19,15 +19,13 @@ public class BrmApiService(IHttpClientFactory _httpClientFactory, IConfiguration
     public async Task<DcFile> PostApplication(Application application)
     {
         var client = _httpClientFactory.CreateClient("BrmApplication");
-
-        
         var serializationOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
             IgnoreReadOnlyProperties = true,
             IgnoreReadOnlyFields =true
         };
-        var result = await client.PostAsJsonAsync(_brmApiUrl + "Application", application,serializationOptions);
+        var result = await client.PostAsJsonAsync(_brmApiUrl + "Application", application, serializationOptions);
         return await result.Content.ReadFromJsonAsync<DcFile>();
     }
     #endregion

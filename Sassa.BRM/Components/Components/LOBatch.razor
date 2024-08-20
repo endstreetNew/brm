@@ -416,8 +416,6 @@
     {
         try
         {
-            _ = sservice.GetGrantTypes();
-
             List<DcFile> files = await db.GetAllFilesByBatchNo(batch.BatchNo);
             StringBuilder sb = new StringBuilder();
 

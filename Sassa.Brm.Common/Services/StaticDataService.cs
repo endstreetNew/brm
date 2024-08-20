@@ -13,16 +13,6 @@ namespace Sassa.Brm.Common.Services;
 
 public static class StaticDataService
 {
-    //public static StaticDataService(IConfiguration config,IWebHostEnvironment env)
-    //{
-
-    //    ReportFolder = Path.Combine(env.ContentRootPath, config["Folders:Reports"]!)+"\\";
-    //    DocumentFolder = $"{env.WebRootPath}\\{config.GetValue<string>("Folders:CS")}\\"; //env.ContentRootPath  + "//" + config.GetValue<string>("Folders:CS") + "/";
-    //    //"Reports": "BRMfiles",
-    //    //"TDW": "TDWAttachments",
-    //    //"CS": "CSImages"
-    //}
-
     public static string? RsWeb { get; set; }
     public static string? ReportFolder { get; set; }
     public static string? DocumentFolder { get; set; }

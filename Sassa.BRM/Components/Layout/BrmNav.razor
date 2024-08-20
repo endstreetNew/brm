@@ -1,6 +1,7 @@
 ﻿@using Microsoft.Extensions.Configuration
 @inject NavigationManager navigation
 @inject SessionService sessionservice
+@inject StaticService staticservice
 @* @inject BRMDbService db *@
 @inject IConfiguration config
 
@@ -88,14 +89,14 @@
     protected override void OnInitialized()
     {
         RsWeb = config.GetValue<string>("Url:RsWeb");
-        sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
+        sessionservice.UserOfficeChanged += new EventHandler(OnUserOfficeChanged);
         if (navigation.BaseUri.ToLower().Contains("ssvsbrmdrshc02") || navigation.BaseUri.ToLower().Contains("ssvsqabrshc02")) menucolor = "#125707";
         base.OnInitialized();
 
     }
     //UserSession gsession;
 
-    private void OnSessionChanged(object sender, EventArgs args)
+    private void OnUserOfficeChanged(object? sender, EventArgs args)
     {
         StateHasChanged();
     }

@@ -38,8 +38,9 @@ public class Program
         options.UseOracle(BrmConnection));
         //Services 
         builder.Services.AddScoped<BRMDbService>();
-        builder.Services.AddScoped<SessionService>();
         builder.Services.AddSingleton<StaticService>();
+        builder.Services.AddScoped<SessionService>();
+
         builder.Services.AddSingleton<BrmApiService>();
         builder.Services.AddScoped<MisFileService>();
         builder.Services.AddScoped<DestructionService>();

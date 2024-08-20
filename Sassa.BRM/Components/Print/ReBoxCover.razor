@@ -84,18 +84,20 @@
 @code {
 
     [Parameter]
-    public string BoxNo { get; set; }
+    public string? BoxNo { get; set; }
     [Parameter]
-    public string AltBoxNo { get; set; }
+    public string? AltBoxNo { get; set; }
 
-    protected string BarCode;
-    protected List<ReboxListItem> items;
+    protected string BarCode = "unknown";
+    protected List<ReboxListItem>? items;
 
     protected override async Task OnInitializedAsync()
     {
-        items = await db.GetAllFilesByBoxNo(BoxNo);
-
-        BarCode = bcService.GetBarCode(BoxNo);
+        if (BoxNo != null)
+        {
+            items = await db.GetAllFilesByBoxNo(BoxNo);
+            BarCode = bcService.GetBarCode(BoxNo);
+        }
 
     }
 

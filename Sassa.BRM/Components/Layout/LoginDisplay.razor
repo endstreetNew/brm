@@ -32,16 +32,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        sessionservice.SessionInitialized += new EventHandler(OnSessionChanged);
-        // if (sessionservice.session != null)
-        // {
-        //     GetServicePoint();
-        // }
-        // await Task.CompletedTask;
+        sessionservice.UserOfficeChanged += new EventHandler(OnOfficeChanged);
         await Task.CompletedTask;
     }
 
-    private void OnSessionChanged(object sender, EventArgs args)
+    private void OnOfficeChanged(object? sender, EventArgs args)
     {
         ServicePoint = staticservice.GetServicePointName(sessionservice.session.Office.FspId);
         StateHasChanged();

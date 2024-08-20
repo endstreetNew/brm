@@ -145,13 +145,13 @@
 @code {
 
     [Parameter]
-    public string BrmWaybill { get; set; }
+    public string? BrmWaybill { get; set; }
     [Parameter]
     public EventCallback Cancel { get; set; }
     [Parameter]
     public EventCallback Ok { get; set; }
 
-    protected List<DcBatch> batches;
+    protected List<DcBatch>? batches;
 
     int TotalFiles;
 
@@ -160,19 +160,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadWaybill();
+        if (BrmWaybill != null) await LoadWaybill(BrmWaybill);
     }
 
-    protected async Task LoadWaybill()
+    protected async Task LoadWaybill(string brmWaybill)
     {
+        BrmWaybill = brmWaybill;
         batches = await db.GetWaybillBatches(BrmWaybill);
         TotalFiles = 0;
 
         foreach (var batch in batches)
         {
-            TotalFiles = TotalFiles + (int)batch.NoOfFiles;
+            TotalFiles = TotalFiles + (int)(batch.NoOfFiles??0);
             TDWWaybill = batch.WaybillNo;
-            waybillDate = ((DateTime)batch.WaybillDate).ToShortDateString();
+            waybillDate = ((DateTime)(batch.WaybillDate??DateTime.Now)).ToShortDateString();
         }
     }
     private void btnCancel_Click()

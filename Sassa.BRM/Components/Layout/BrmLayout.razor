@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject SessionService sessionservice
 @* @inject BRMDbService db *@
-@inject StaticService sservice
+@inject StaticService staticservice
 @* @inject NavigationManager navigation *@
 
 @implements IDisposable
@@ -41,25 +41,24 @@
             }
         </div>
     </div>
-    <!--<div class="footer">-->
-    @*<div style="text-align:left">
-            <p>&copy; @DateTime.Now.Year - SASSA Beneficiary Records Management</p>
-        </div>*@
-    <!--</div>-->
 </div>
 
 @code
 {
     protected string Status = "Initializing session..";
+    
     protected override async Task OnInitializedAsync()
     {
+        await Task.CompletedTask;
+        while(!staticservice.IsInitialized){}
+
         try
         {
-            if (sessionservice.session.IsBrmUser())
+            if (sessionservice.session!.IsBrmUser())
             {
-                sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
+                //sessionservice.session.Office = await staticservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
                 Status = "";
-                _ConnectedUser = new ActiveUser() { Name = sessionservice.session.SamName };
+                _ConnectedUser = new ActiveUser() { Name = sessionservice.session.SamName! };
                 if (!_ConnectedUserList.Users.Contains(_ConnectedUser))
                 {
                     _ConnectedUserList.Users.Add(_ConnectedUser);
@@ -74,10 +73,10 @@
         {
             Status = ex.Message;
         }
-
+        await Task.CompletedTask;
     }
 
-    // Don't forget to remove `ConnectedUser` from
+    // remove `ConnectedUser` from
     // `ConnectedUserList` on dispose.
     public void Dispose()
     {

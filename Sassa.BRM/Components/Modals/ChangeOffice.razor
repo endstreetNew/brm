@@ -1,5 +1,5 @@
 ﻿@inject BRMDbService db
-@inject StaticService sservice
+@inject StaticService staticservice
 @inject SessionService sessionservice
 
 <div class="modal" tabindex="-1" style="display:block;" role="dialog">
@@ -14,7 +14,7 @@
                     <span class="input-group-text">Region</span>
                         <InputSelect class="form-select" ValueExpression="@(() => office.RegionId)" Value="@office.RegionId" ValueChanged="@((string value) => SelectRegion(value))">
                         <option selected>select...</option>
-                        @foreach (var region in sservice.GetRegions())
+                        @foreach (var region in staticservice.GetRegions())
                         {
                             <option value="@region.Key">@region.Value</option>
                         }
@@ -24,7 +24,7 @@
                     <span class="input-group-text">Office</span>
                     <InputSelect class="form-select" ValueExpression="@(() => office.OfficeId)" Value="office.OfficeId" ValueChanged="@((string value) => SelectOffice(value))">
                             <option selected>select...</option>
-                        @foreach (var val in sservice.GetOffices(office.RegionId).Where(o => o.ActiveStatus == "A"))
+                        @foreach (var val in staticservice.GetOffices(office.RegionId).Where(o => o.ActiveStatus == "A"))
                         {
 
                             <option value="@val.OfficeId">@val.OfficeName</option>
@@ -35,7 +35,7 @@
                         <span class="input-group-text">Fixed Service Point</span>
                         <InputSelect class="form-select" ValueExpression="@(() => office.FspId)" Value="@((decimal?)office.FspId)" ValueChanged="@((decimal? e) => SelectServicePoint(e))">
                             <option selected>select...</option>
-                            @foreach (var fsp in sservice.GetOfficeServicePoints(office.OfficeId))
+                            @foreach (var fsp in staticservice.GetOfficeServicePoints(office.OfficeId))
                             {
                                 <option value="@fsp.Id">@fsp.ServicePointName</option>
                             }
@@ -58,18 +58,17 @@
     [Parameter]
     public EventCallback Cancel { get; set; }
 
-    protected UserOffice office;
+    protected UserOffice office = new UserOffice();
 
     protected override void OnInitialized()
     {
-        office = sessionservice.session.Office;
+        office = sessionservice.session!.Office;
     }
 
     protected async Task btnOk_Click()
     {
-        await sservice.UpdateUserLocalOffice(office.OfficeId, office.FspId, sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
-        sessionservice.session.Office = await sservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
-        office = sessionservice.session.Office;
+        await staticservice.UpdateUserLocalOffice(office!.OfficeId!, office.FspId, sessionservice.session!.SamName!, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
+        sessionservice.UpdateUserOffice();
         await Cancel.InvokeAsync();
     }
     protected void btnCancel_Click()
@@ -80,7 +79,7 @@
     protected void SelectRegion(string regionid)
     {
         office.RegionId = regionid;
-        office.OfficeId = sservice.GetOffices(office.RegionId).First().OfficeId;
+        office.OfficeId = staticservice.GetOffices(office.RegionId).First().OfficeId;
     }
 
     protected void SelectOffice(string officeid)
