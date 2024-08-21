@@ -175,26 +175,26 @@
 @code {
 
     [Parameter]
-    public string txtSearchId { get; set; }
+    public string? txtSearchId { get; set; }
 
     [Parameter]
     public EventCallback<int> BrmChanged { get; set; }
 
 
 
-    protected string deleteReason;
+    protected string deleteReason = "";
     protected bool showConfirmation;
     protected bool showEditBarcodeConfirmation;
-    protected Application selectedApp;
+    protected Application? selectedApp;
 
-    protected List<Application> DTBrm { get; set; }
-    protected List<Application> DTMerges { get; set; } = new List<Application>();
+    protected List<Application>? DTBrm { get; set; }
+    protected List<Application>? DTMerges { get; set; } = new List<Application>();
 
-    protected string NewBarCode;
+    protected string? NewBarCode;
 
     protected override async Task OnInitializedAsync()
     {
-        DTBrm = await db.SearchBRMID(txtSearchId);
+        if(txtSearchId != null)DTBrm = await db.SearchBRMID(txtSearchId);
     }
 
 
@@ -233,7 +233,7 @@
 
     protected void btnDelete_Click(Application app)
     {
-        if (DTMerges.Where(b => b.Brm_Parent == app.Brm_BarCode).Any())
+        if (DTMerges!.Where(b => b.Brm_Parent == app.Brm_BarCode).Any())
         {
             toast.Warn("Please remove merged records first.");
         }
@@ -246,7 +246,7 @@
 
     protected void btnEditBarcode_Click(Application app)
     {
-        if (DTMerges.Where(b => b.Brm_Parent == app.Brm_BarCode).Any())
+        if (DTMerges!.Where(b => b.Brm_Parent == app.Brm_BarCode).Any())
         {
             //maybe not
             toast.Warn("Please remove merged records first.");
@@ -273,9 +273,9 @@
             {
                 throw new Exception("Please provide a reason for this deletion.");
             }
+            if (selectedApp == null) throw new Exception("No record selected.");
             await db.RemoveBRM(selectedApp.Brm_BarCode, deleteReason);
-            // await BrmChanged.InvokeAsync();
-            DTBrm = await db.SearchBRMID(txtSearchId);
+            if (txtSearchId != null) DTBrm = await db.SearchBRMID(txtSearchId);
             showConfirmation = false;
         }
         catch (Exception ex)
@@ -293,9 +293,9 @@
             {
                 throw new Exception("BarCode Exist!");
             }
+            if (selectedApp == null) throw new Exception("No record selected.");
             await db.EditBarCode(selectedApp, NewBarCode);
-            //await BrmChanged.InvokeAsync();
-            DTBrm = await db.SearchBRMID(txtSearchId);
+            if(txtSearchId != null) DTBrm = await db.SearchBRMID(txtSearchId);
             showEditBarcodeConfirmation = false;
         }
         catch (Exception ex)

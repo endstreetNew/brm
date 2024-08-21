@@ -1303,8 +1303,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         using (var _context = _contextFactory.CreateDbContext())
         {
             List<Application> idquery;
-            _staticService.GetGrantType("S");//Dummy call to ensure static loaded
-            _staticService.GetRegionCode("7");//Dummy call to ensure static loaded
             List<Application> oldidquery = new List<Application>();
             idquery = await _context.DcSocpen.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
             {
@@ -1314,9 +1312,9 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 Name = d.Name,
                 SurName = d.Surname,
                 GrantType = d.GrantType,
-                GrantName = StaticDataService.GrantTypes[d.GrantType],
+                GrantName = StaticDataService.GrantTypes![d.GrantType],
                 AppDate = d.ApplicationDate.ToStandardDateString(),
-                OfficeId = _userSession.Office.OfficeId,
+                OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
                 RegionCode = StaticDataService.RegionCode(d.RegionId),
                 RegionName = StaticDataService.RegionName(d.RegionId),
@@ -1416,7 +1414,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 Name = f.file.UserFirstname,
                 SurName = f.file.UserLastname,
                 GrantType = f.file.GrantType,
-                GrantName = StaticDataService.GrantTypes[f.file.GrantType],
+                GrantName = StaticDataService.GrantTypes![f.file.GrantType],
                 AppDate = f.file.TransDate.ToStandardDateString(),
                 OfficeId = f.file.OfficeId,
                 RegionId = f.file.RegionId,
@@ -1427,8 +1425,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 Child_Status_Code = null,
                 Child_Status_Date = null,
                 TDW_BOXNO = f.file.TdwBoxno,
-                MiniBox = (int)f.file.MiniBoxno,
-                BatchNo = (decimal)f.file.BatchNo,
+                MiniBox = (int)(f.file.MiniBoxno ?? 0),
+                BatchNo = (decimal)(f.file.BatchNo ?? 0),
                 Srd_No = f.file.SrdNo,
                 ChildId = f.file.ChildIdNo,
                 Brm_Parent = merge.ParentBrmBarcode,
@@ -1439,7 +1437,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 IsCombinationCandidate = false,
                 IsMergeCandidate = false,
                 IsNew = false,
-                IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
+                IsRMC = _userSession.Office!.OfficeType == "RMC" ? "Y" : "N",
                 SocpenIsn = 0,
                 Prim_Status = "",
                 Sec_Status = "",

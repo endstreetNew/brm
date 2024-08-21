@@ -1,6 +1,5 @@
 using Sassa.Brm.Portal.Components;
 using Sassa.Brm.Portal.Services;
-using Sassa.Brm.Components.Services;
 
 namespace Sassa.Brm.Portal
 {
@@ -13,8 +12,6 @@ namespace Sassa.Brm.Portal
             // Add services to the container.
             builder.Services.AddRazorComponents().AddInteractiveServerComponents();
             builder.Services.AddSingleton<MenuItems>();
-            builder.Services.AddSingleton<ServerList>();
-            builder.Services.AddSingleton<ServerService>();
 
             var app = builder.Build();
 

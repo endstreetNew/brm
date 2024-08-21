@@ -282,7 +282,7 @@
 
     protected async Task FilterUser(ChangeEventArgs args)
     {
-        showMybatches = (bool)args.Value;
+        showMybatches = (bool)args.Value!;
         DTBatch = null;
         page = 1;
         try
@@ -374,7 +374,7 @@
     }
     protected void chkSelectAll(ChangeEventArgs e)
     {
-        var selected = (bool)e.Value;
+        var selected = (bool)e.Value!;
         foreach (DcBatch batch in DTBatch.result.Where(r => r.BatchStatus == "Open"))
         {
             batch.isSelected = selected;

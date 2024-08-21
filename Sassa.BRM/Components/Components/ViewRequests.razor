@@ -156,37 +156,37 @@ else
 
     protected async Task UserFilterChange(ChangeEventArgs e)
     {
-        filterUser = (bool)e.Value;
+        filterUser = (bool)e.Value!;
         await LoadRequests();
     }
 
     protected async Task OfficeFilterChange(ChangeEventArgs e)
     {
-        filterOffice = (bool)e.Value;
+        filterOffice = (bool)e.Value!;
         await LoadRequests();
     }
 
     protected async Task StatusFilterChange(ChangeEventArgs e)
     {
-        filterStatus = (string)e.Value;
+        filterStatus = (string)e.Value!;
         await LoadRequests();
     }
     protected async Task ReasonFilterChange(ChangeEventArgs e)
     {
-        filterReason = (string)e.Value;
+        filterReason = (string)e.Value!;
         await LoadRequests();
     }
     protected Task LoadRequests()
     {
         fileRequests = db.GetFileRequests(filterUser, filterOffice, page, filterStatus, filterReason);
         piedata = db.GetRequestPieData();
-        regiondata = db.GetRequestPieData(sessionservice.session.Office.RegionId);
+        regiondata = db.GetRequestPieData(sessionservice.session!.Office!.RegionId);
         return Task.CompletedTask;
     }
 
     protected void chkSelectAll(ChangeEventArgs e)
     {
-        var selected = (bool)e.Value;
+        var selected = (bool)e.Value!;
         foreach (DcFileRequest req in fileRequests.result.Where(r => r.Status == "TDWPicklist"))
         {
             req.isSelected = selected;

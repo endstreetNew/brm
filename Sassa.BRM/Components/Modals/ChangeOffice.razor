@@ -58,11 +58,11 @@
     [Parameter]
     public EventCallback Cancel { get; set; }
 
-    protected UserOffice office = new UserOffice();
+    protected UserOffice? office;
 
     protected override void OnInitialized()
     {
-        office = sessionservice.session!.Office;
+        office = sessionservice.session!.Office!;
     }
 
     protected async Task btnOk_Click()
@@ -78,20 +78,20 @@
 
     protected void SelectRegion(string regionid)
     {
-        office.RegionId = regionid;
+        office!.RegionId = regionid;
         office.OfficeId = staticservice.GetOffices(office.RegionId).First().OfficeId;
     }
 
     protected void SelectOffice(string officeid)
     {
-        office.OfficeId = officeid;
+        office!.OfficeId = officeid;
         office.FspId = null;
 
     }
 
     private void SelectServicePoint(decimal? e)
     {
-        office.FspId = e;
+        office!.FspId = e;
 
     }
 

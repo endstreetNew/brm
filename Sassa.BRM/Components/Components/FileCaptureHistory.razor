@@ -52,7 +52,7 @@
 @code {
 
     [Parameter]
-    public string txtSearchId { get; set; }
+    public string? txtSearchId { get; set; }
 
     public List<DcFileDeleted> items { get; set; } = new List<DcFileDeleted>();
 
@@ -66,6 +66,6 @@
 
     public void Dispose()
     {
-        items = null;
+        items.Clear();
     }
 }

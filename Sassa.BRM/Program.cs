@@ -25,8 +25,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-        string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection");
-        string SocpenConnection = builder.Configuration.GetConnectionString("SocpenConnection");
+        string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection")!;
         //var BrmApi = new Uri(builder.Configuration["Urls:BrmApi"]);
 
         builder.Services.AddHttpContextAccessor();

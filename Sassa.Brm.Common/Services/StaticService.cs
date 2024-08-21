@@ -118,16 +118,8 @@ namespace Sassa.Brm.Common.Services
 
                          }).FirstOrDefault();
 
-            UserOffice Office = new UserOffice();
-            Office.OfficeName = value!.OfficeName;
-            Office.OfficeId = value.OfficeId;
-            Office.OfficeType = value.OfficeType;
-            Office.RegionId = value.RegionId;
-            Office.FspId = value.FspId;
-            Office.RegionName = GetRegion(value.RegionId);
-            Office.RegionCode = GetRegionCode(value.RegionId);
-            Office.OfficeType = !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO"; //Default to local office
-            
+            UserOffice Office = new UserOffice(value!.OfficeId, value!.OfficeName, !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO", value.RegionId, GetRegionCode(value.RegionId), GetRegion(value.RegionId), value.FspId);
+           
             return Office;
         }
         public DcLocalOffice GetLocalOffice(string officeId)

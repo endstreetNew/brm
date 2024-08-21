@@ -245,17 +245,15 @@
     {
         DTBrmParents = null;
         DTMerged = null;
-        DTBrm = await db.SearchBRMID(txtSearchId);
-        if (DTBrm.Any()) Merge();
+        if(txtSearchId != null)
+        {
+            DTBrm = await db.SearchBRMID(txtSearchId);
+            if (DTBrm.Any()) Merge();
+        }
     }
 
     protected void Merge()
     {
-
-        if ((DTSocPen == null || !DTSocPen.Any()) && (DTBrm == null || !DTBrm.Any()))
-        {
-            return;
-        }
 
         if (DTSocPen != null)
         {
@@ -313,7 +311,7 @@
         }
         else
         {
-            regionChangeMessage = $"Are you sure you want to change the region of this application from {sservice.GetRegion(a.RegionId)} to {sservice.GetRegion(sessionservice.session.Office.RegionId)} ?";
+            regionChangeMessage = $"Are you sure you want to change the region of this application from {sservice.GetRegion(a.RegionId)} to {sservice.GetRegion(sessionservice.session.Office.RegionId!)} ?";
             showConfirmRegion = true;
             //toast.Error($"Please set your region to {db.GetRegion(a.RegionId)} to capture this record");
         }
@@ -379,16 +377,15 @@
         showBrmModal = false;
         showManualCapture = false;
         await OnChanged();
+        if (DTBrm == null || SelectedApplication == null) return;
         if (merge)
         {
             var parents = DTBrm.Where(s => s.Brm_Parent != null && s.Brm_Parent == s.Brm_BarCode && (s.BatchNo == SelectedApplication.BatchNo || s.BatchNo == 0)).ToList();
             await db.AutoMerge(SelectedApplication, parents);
-            //Running Syncronously on purpose
             await db.SetParentBatchCount(SelectedApplication.BatchNo);
             await OnChanged();
         }
         rebox = await db.GetBoxCounts(rebox);
-
     }
 
     private void OnModalClosed()

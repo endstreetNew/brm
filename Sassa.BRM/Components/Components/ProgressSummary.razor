@@ -121,10 +121,10 @@ else
 
 @code {
 
-    protected UserOffice office = new UserOffice();
-    string fromQuarter;
-    string toQuarter;
-    List<MissingFile> dashboardData;
+    protected UserOffice? office;
+    protected string? fromQuarter;
+    protected string? toQuarter;
+    protected List<MissingFile>? dashboardData;
     protected bool IsDashboardLoaded;
 
     ReportPeriod period = new ReportPeriod { FromDate = DateTime.Now.AddMonths(-1), ToDate = DateTime.Now };

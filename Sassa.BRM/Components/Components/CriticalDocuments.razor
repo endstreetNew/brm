@@ -68,7 +68,7 @@
 
     private Task OnDocsChanged(RequiredDocsView doc, ChangeEventArgs e)
     {
-        if ((bool)e.Value)
+        if ((bool)e.Value!)
         {
             if (!_docspresent.Contains(doc.DOC_ID.ToString().Trim()))
             {

@@ -70,17 +70,17 @@
 @code {
 
     [Parameter]
-    public string txtSearchId { get; set; }
+    public string? txtSearchId { get; set; }
 
     [Parameter]
-    public Reboxing rebox { get; set; }
+    public Reboxing? rebox { get; set; }
 
     [Parameter]
     public List<Application> DTSocPen { get; set; } = new List<Application>();
 
     //used to set parents etc on new brm
-    protected List<Application> DTBrm;
-    protected Application SelectedApplication;
+    protected List<Application>? DTBrm;
+    protected Application? SelectedApplication;
 
 
     bool showConfirmRegion = false;
@@ -101,7 +101,7 @@
         rebox.BoxNo = rebox.BoxNo.ToUpper();
         if (string.IsNullOrEmpty(rebox.BoxNo))
         {
-            if (sessionservice.session.IsRmc())
+            if (sessionservice.session!.IsRmc())
             {
                 toast.Error("a TDW BoxNo is required to capture at the RMC.");
                 return;
@@ -120,7 +120,7 @@
             return;
         }
         SelectedApplication = a;
-        if (a.RegionId != sessionservice.session.Office.RegionId)
+        if (a.RegionId != sessionservice.session!.Office!.RegionId)
         {
             regionChangeMessage = $"Are you sure you want to change the region of this application from {sservice.GetRegion(a.RegionId)} to {sservice.GetRegion(sessionservice.session.Office.RegionId)} ?";
             showConfirmRegion = true;

@@ -135,12 +135,12 @@
 
         protected async Task RequestUserFilterChange(ChangeEventArgs e)
         {
-            filterRequestUser = (bool)e.Value;
+            filterRequestUser = (bool)e.Value!;
             await LoadPickList();
         }
         protected async Task InProgressFilterChange(ChangeEventArgs e)
         {
-            filterInProgress = (bool)e.Value;
+            filterInProgress = (bool)e.Value!;
             await LoadPickList();
         }
 

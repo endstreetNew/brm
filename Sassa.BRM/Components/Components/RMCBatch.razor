@@ -428,7 +428,7 @@
     }
     protected void chkSelectAll(ChangeEventArgs e)
     {
-        var selected = (bool)e.Value;
+        var selected = (bool)e.Value!;
         foreach (DcBatch batch in DTBatch.result.Where(r => r.BatchStatus == "Open"))
         {
             batch.isSelected = selected;
@@ -437,7 +437,7 @@
 
     protected void chkSelect(ChangeEventArgs e, DcBatch batch)
     {
-        var selected = (bool)e.Value;
+        var selected = (bool)e.Value!;
         //foreach (DcBatch batch in DTBatch.result)
         //{
         batch.isSelected = selected;

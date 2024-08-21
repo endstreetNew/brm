@@ -52,14 +52,14 @@
 @code {
 
     [Parameter]
-    public string IdNumber { get; set; }
+    public string? IdNumber { get; set; }
 
-    public List<DcFileDeleted> items { get; set; }
+    public List<DcFileDeleted>? items { get; set; }
 
 
     protected override async Task OnInitializedAsync()
     {
-        items = await db.GetDeleteHistory(IdNumber);
+        if(IdNumber != null)items = await db.GetDeleteHistory(IdNumber);
     }
 
     public void Dispose()
