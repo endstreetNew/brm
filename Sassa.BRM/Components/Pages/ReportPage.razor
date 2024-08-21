@@ -10,6 +10,7 @@
 @inject IAlertService toast
 
 
+
 <TabControl ActivePageId="1" PageActivate="OnTabActivate">
     <TabPage Text="Reports" Id="1" Enabled="true">
 
@@ -230,7 +231,7 @@
 
     </TabPage>
     <TabPage Text="Download reports" Id="5" Enabled="true">
-        <Report Title="Report List" Paged="OnPaged" pagedResult="files" OnDelete="DeleteReport"></Report>
+        <ReportDownload Title="Report List" Paged="OnPaged" pagedResult="files" OnDelete="DeleteReport" ReportFolder="@StaticDataService.ReportFolder"></ReportDownload>
     </TabPage>
 </TabControl>
 
@@ -267,7 +268,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        office = sessionservice.session.Office;
+        office = sessionservice.session!.Office!;
         page = 1;
         IsMissingDashboardLoaded = false;
         IsDashboardLoaded = false;

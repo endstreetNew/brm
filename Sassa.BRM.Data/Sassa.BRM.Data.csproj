@@ -9,8 +9,11 @@
 
 	<ItemGroup>
 	  <Compile Remove="Context\**" />
+	  <Compile Remove="DbContext\**" />
 	  <EmbeddedResource Remove="Context\**" />
+	  <EmbeddedResource Remove="DbContext\**" />
 	  <None Remove="Context\**" />
+	  <None Remove="DbContext\**" />
 	</ItemGroup>
 
 	<ItemGroup>

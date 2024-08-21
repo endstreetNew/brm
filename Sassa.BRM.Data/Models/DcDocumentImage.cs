@@ -1,4 +1,7 @@
-﻿namespace Sassa.BRM.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Sassa.BRM.Models;
 
 public partial class DcDocumentImage
 {

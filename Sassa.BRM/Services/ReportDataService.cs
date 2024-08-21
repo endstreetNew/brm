@@ -21,7 +21,7 @@ namespace Sassa.BRM.Services
     {
 
         private string connectionString = string.Empty;
-        private string reportFolder;
+       // private string reportFolder;
         public Dictionary<string, string> reportList;
 
         ProgressService _ogs;
@@ -33,14 +33,14 @@ namespace Sassa.BRM.Services
             connectionString = config.GetConnectionString("BrmConnection");
             sservice = Sservice;
             //reportFolder = config.GetSection("Folders").GetChildren().GetValue("Reports");
-            reportFolder = Path.Combine(env.ContentRootPath, config["Folders:Reports"]);
-            if (!Directory.Exists(reportFolder))
+            //reportFolder = Path.Combine(env.ContentRootPath, $@"\wwwroot\{config["Folders:Reports"]}");
+            if (!Directory.Exists(StaticDataService.ReportFolder))
             {
-                Directory.CreateDirectory(reportFolder);
+                Directory.CreateDirectory(StaticDataService.ReportFolder);
             }
             else
             {
-                string[] files = Directory.GetFiles(reportFolder);
+                string[] files = Directory.GetFiles($@"wwwroot\brmfiles\");
 
                 foreach (string file in files)
                 {
@@ -288,7 +288,7 @@ namespace Sassa.BRM.Services
                         con.Open();
                         using (OracleDataReader reader = (OracleDataReader)await cmd.ExecuteReaderAsync())
                         {
-                            reader.ToCsv(filename, header, reportFolder);
+                            reader.ToCsv(filename, header, StaticDataService.ReportFolder);
                         }
                     }
                     con.Close();
@@ -313,7 +313,7 @@ namespace Sassa.BRM.Services
             {
                 case "8"://Missing Summary
                     List<MissingFile> result = await _ogs.MissingProgress(from, to, regionId);
-                    result.ToCsv<MissingFile>(fileName, header, reportFolder);
+                    result.ToCsv<MissingFile>(fileName, header, StaticDataService.ReportFolder);
                     break;
                 default:
                     break;
@@ -328,7 +328,7 @@ namespace Sassa.BRM.Services
             string[] files = new string[0];
             try
             {
-                files = Directory.GetFiles(reportFolder, $"{regionCode}-{username.ToUpper()}*");
+                files = Directory.GetFiles(StaticDataService.ReportFolder, $"{regionCode}-{username.ToUpper()}*");
             }
             catch //(Exception ex)
             {
@@ -351,7 +351,7 @@ namespace Sassa.BRM.Services
             string[] files = new string[0];
             try
             {
-                files = Directory.GetFiles(reportFolder, $"{regionCode}-{username.ToUpper()}-TDW*");
+                files = Directory.GetFiles(StaticDataService.ReportFolder, $"{regionCode}-{username.ToUpper()}-TDW*");
             }
             catch //(Exception ex)
             {
@@ -374,7 +374,7 @@ namespace Sassa.BRM.Services
             string[] files = new string[0];
             try
             {
-                files = Directory.GetFiles(reportFolder, $"{regionCode}-{username.ToUpper()}*");
+                files = Directory.GetFiles(StaticDataService.ReportFolder, $"{regionCode}-{username.ToUpper()}*");
             }
             catch //(Exception ex)
             {
@@ -393,12 +393,12 @@ namespace Sassa.BRM.Services
 
         public void DeleteReport(string fileName)
         {
-            File.Delete($"{reportFolder}\\{fileName}");
+            File.Delete($"{StaticDataService.ReportFolder}\\{fileName}");
         }
 
         public async Task SaveHtmlReport(string data, string fileName)
         {
-            string filename = $"{reportFolder}\\{fileName}.html";
+            string filename = $"{StaticDataService.ReportFolder}\\{fileName}.html";
             await File.WriteAllTextAsync(filename, data);
         }
 

@@ -1,9 +1,7 @@
-﻿{
-  "ProviderId": "Microsoft.VisualStudio.ConnectedService.Wcf",
-  "Version": "15.0.40203.910",
+{
   "ExtendedData": {
     "inputs": [
-      "http://ssvsprcsphc02.sassa.local:8080/cws/services/DocumentManagement?wsdl"
+      "http://ssvsprcsphc02.sassa.local:8080/cws/services/DocumentManagement"
     ],
     "collectionTypes": [
       "System.Array",
@@ -12,7 +10,7 @@
     "namespaceMappings": [
       "*, Sassa.eDocs.CSDocuments"
     ],
-    "targetFramework": "net5.0",
+    "targetFramework": "net8.0",
     "typeReuseMode": "None"
   }
 }

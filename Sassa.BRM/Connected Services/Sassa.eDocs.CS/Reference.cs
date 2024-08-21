@@ -11,63 +11,63 @@ namespace Sassa.eDocs.CS
 {
     
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", ConfigurationName="Sassa.eDocs.CS.Authentication")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace="urn:Core.service.livelink.opentext.com", ConfigurationName="Sassa.eDocs.CS.Authentication")]
     public interface Authentication
     {
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/AuthenticateApplication", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/AuthenticateApplicationResp" +
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/AuthenticateApplication", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/AuthenticateApplicationResp" +
             "onse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.AuthenticateApplicationResponse> AuthenticateApplicationAsync(Sassa.eDocs.CS.AuthenticateApplicationRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/AuthenticateUser", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/AuthenticateUserResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/AuthenticateUser", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/AuthenticateUserResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<string> AuthenticateUserAsync(string userName, string userPassword);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/AuthenticateUserWithApplicationToken", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/AuthenticateUserWithApplica" +
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/AuthenticateUserWithApplicationToken", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/AuthenticateUserWithApplica" +
             "tionTokenResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<string> AuthenticateUserWithApplicationTokenAsync(string userName, string userPassword, string applicationToken);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/CombineApplicationToken", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/CombineApplicationTokenResp" +
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/CombineApplicationToken", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/CombineApplicationTokenResp" +
             "onse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.CombineApplicationTokenResponse> CombineApplicationTokenAsync(Sassa.eDocs.CS.CombineApplicationTokenRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/GetOTDSResourceID", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/GetOTDSResourceIDResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/GetOTDSResourceID", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/GetOTDSResourceIDResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<string> GetOTDSResourceIDAsync();
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/GetOTDSServer", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/GetOTDSServerResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/GetOTDSServer", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/GetOTDSServerResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<string> GetOTDSServerAsync();
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/GetSessionExpirationDate", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/GetSessionExpirationDateRes" +
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/GetSessionExpirationDate", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/GetSessionExpirationDateRes" +
             "ponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.GetSessionExpirationDateResponse> GetSessionExpirationDateAsync(Sassa.eDocs.CS.GetSessionExpirationDateRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/ImpersonateApplication", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/ImpersonateApplicationRespo" +
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/ImpersonateApplication", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/ImpersonateApplicationRespo" +
             "nse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.ImpersonateApplicationResponse> ImpersonateApplicationAsync(Sassa.eDocs.CS.ImpersonateApplicationRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/ImpersonateUser", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/ImpersonateUserResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/ImpersonateUser", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/ImpersonateUserResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.ImpersonateUserResponse> ImpersonateUserAsync(Sassa.eDocs.CS.ImpersonateUserRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/RefreshToken", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/RefreshTokenResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/RefreshToken", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/RefreshTokenResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<Sassa.eDocs.CS.RefreshTokenResponse> RefreshTokenAsync(Sassa.eDocs.CS.RefreshTokenRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="urn:Core._staticService.livelink.opentext.com/ValidateUser", ReplyAction="urn:Core._staticService.livelink.opentext.com/Authentication/ValidateUserResponse")]
+        [System.ServiceModel.OperationContractAttribute(Action="urn:Core.service.livelink.opentext.com/ValidateUser", ReplyAction="urn:Core.service.livelink.opentext.com/Authentication/ValidateUserResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         System.Threading.Tasks.Task<string> ValidateUserAsync(string capToken);
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:api.ecm.opentext.com")]
     public partial class OTAuthentication
@@ -91,19 +91,19 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="AuthenticateApplication", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="AuthenticateApplication", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class AuthenticateApplicationRequest
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string applicationID;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=1)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=1)]
         public string password;
         
         public AuthenticateApplicationRequest()
@@ -119,16 +119,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="AuthenticateApplicationResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="AuthenticateApplicationResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class AuthenticateApplicationResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string AuthenticateApplicationResult;
         
         public AuthenticateApplicationResponse()
@@ -143,16 +143,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="CombineApplicationToken", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="CombineApplicationToken", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class CombineApplicationTokenRequest
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string applicationToken;
         
         public CombineApplicationTokenRequest()
@@ -167,16 +167,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="CombineApplicationTokenResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="CombineApplicationTokenResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class CombineApplicationTokenResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string CombineApplicationTokenResult;
         
         public CombineApplicationTokenResponse()
@@ -191,9 +191,9 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetSessionExpirationDate", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="GetSessionExpirationDate", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class GetSessionExpirationDateRequest
     {
         
@@ -211,16 +211,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="GetSessionExpirationDateResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="GetSessionExpirationDateResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class GetSessionExpirationDateResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)]
         public System.Nullable<System.DateTime> GetSessionExpirationDateResult;
         
@@ -236,16 +236,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateApplication", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateApplication", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class ImpersonateApplicationRequest
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string applicationID;
         
         public ImpersonateApplicationRequest()
@@ -260,16 +260,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateApplicationResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateApplicationResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class ImpersonateApplicationResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string ImpersonateApplicationResult;
         
         public ImpersonateApplicationResponse()
@@ -284,16 +284,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateUser", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateUser", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class ImpersonateUserRequest
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string userName;
         
         public ImpersonateUserRequest()
@@ -308,16 +308,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateUserResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="ImpersonateUserResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class ImpersonateUserResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string ImpersonateUserResult;
         
         public ImpersonateUserResponse()
@@ -332,9 +332,9 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="RefreshToken", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="RefreshToken", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class RefreshTokenRequest
     {
         
@@ -352,16 +352,16 @@ namespace Sassa.eDocs.CS
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName="RefreshTokenResponse", WrapperNamespace="urn:Core._staticService.livelink.opentext.com", IsWrapped=true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="RefreshTokenResponse", WrapperNamespace="urn:Core.service.livelink.opentext.com", IsWrapped=true)]
     public partial class RefreshTokenResponse
     {
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="urn:api.ecm.opentext.com")]
         public Sassa.eDocs.CS.OTAuthentication OTAuthentication;
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core._staticService.livelink.opentext.com", Order=0)]
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="urn:Core.service.livelink.opentext.com", Order=0)]
         public string RefreshTokenResult;
         
         public RefreshTokenResponse()
@@ -375,18 +375,18 @@ namespace Sassa.eDocs.CS
         }
     }
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     public interface AuthenticationChannel : Sassa.eDocs.CS.Authentication, System.ServiceModel.IClientChannel
     {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.2.0-preview1.23462.5")]
     public partial class AuthenticationClient : System.ServiceModel.ClientBase<Sassa.eDocs.CS.Authentication>, Sassa.eDocs.CS.Authentication
     {
         
         /// <summary>
-        /// Implement this partial method to configure the _staticService endpoint.
+        /// Implement this partial method to configure the service endpoint.
         /// </summary>
         /// <param name="serviceEndpoint">The endpoint to configure</param>
         /// <param name="clientCredentials">The client credentials</param>
@@ -538,11 +538,6 @@ namespace Sassa.eDocs.CS
             return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
         }
         
-        public new virtual System.Threading.Tasks.Task CloseAsync()
-        {
-            return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginClose(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndClose));
-        }
-        
         private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
         {
             if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Authentication))
@@ -561,7 +556,7 @@ namespace Sassa.eDocs.CS
         {
             if ((endpointConfiguration == EndpointConfiguration.BasicHttpBinding_Authentication))
             {
-                return new System.ServiceModel.EndpointAddress("http://ssvsprdsphc01.sassa.local:18080/cws/services/Authentication");
+                return new System.ServiceModel.EndpointAddress("http://ssvsprcsphc02.sassa.local:8080/cws/services/Authentication");
             }
             throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
         }

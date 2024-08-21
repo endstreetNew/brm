@@ -14,9 +14,9 @@ namespace Sassa.BRM.Services;
 
 public class BrmApiService(IHttpClientFactory _httpClientFactory, IConfiguration config)
 {
-    string _brmApiUrl = config["Urls:BrmApi"];
+    string _brmApiUrl = config["Urls:BrmApi"]!;
     #region Application
-    public async Task<DcFile> PostApplication(Application application)
+    public async Task<DcFile?> PostApplication(Application application)
     {
         var client = _httpClientFactory.CreateClient("BrmApplication");
         var serializationOptions = new JsonSerializerOptions()

@@ -92,7 +92,7 @@
                     {
                         <div class="form-group alert alert-danger">
                             <label>Duplicate BRM !</label>
-                            @if (sessionservice.session.IsInRole("GRP_BRM_Monitoring"))
+                            @if (sessionservice.session!.IsInRole("GRP_BRM_Monitoring"))
                             {
                                 <button @onclick="btnOverwrite_Click" class="btn btn-warning active" style="float: right;">Overwrite</button>
                             }
@@ -168,12 +168,12 @@
     protected async Task btnOverwrite_Click()
     {
         if (!IsValid()) return;
-        await Save($"Overwrite selected by : {sessionservice.session.SamName}");
+        await Save($"Overwrite selected by : {sessionservice.session!.SamName}");
     }
     private async Task btnOk_Click()
     {
         string socpenDate = br.AppDate;
-        string reason = $"New record created by : {sessionservice.session.SamName}";
+        string reason = $"New record created by : {sessionservice.session!.SamName}";
         br.AppDate = SelectedAppDate.ToStandardDateString();
         if (socpenDate != br.AppDate)
         {
@@ -224,7 +224,7 @@
                 }
             }
             DcFile file = await db.CreateBRM(br,reason);
-            br.BatchNo = (decimal)file.BatchNo;
+            br.BatchNo = (decimal)(file.BatchNo ?? 0);
             br.Clm_No = file.UnqFileNo;
 
             await BrmSave.InvokeAsync(br.IsMergeCandidate);

@@ -54,7 +54,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
         var office = StaticDataService.LocalOffices.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
         if (office != null)
         {
-            _session.Office.OfficeName = office.OfficeName;
+            _session.Office!.OfficeName = office.OfficeName;
             _session.Office.OfficeId = office.OfficeId;
             _session.Office.OfficeType = office.OfficeType;
             _session.Office.RegionId = office.RegionId;
@@ -179,7 +179,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 ApplicationStatus = application.AppStatus,
                 TransDate = application.AppDate.ToDate("dd/MMM/yy"),
                 SrdNo = application.Srd_No,
-                ChildIdNo = application.ChildId.Trim(),
+                ChildIdNo = application.ChildId,
                 Isreview = application.TRANS_TYPE == 2 ? "Y" : "N",
                 Lastreviewdate = application.LastReviewDate.ToDate("dd/MMM/yy"),
                 ArchiveYear = application.AppStatus.Contains("ARCHIVE") ? application.ARCHIVE_YEAR : null,
@@ -210,22 +210,17 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
             SaveActivity("Capture", file.SrdNo, file.Lctype, "API Insert", file.RegionId, decimal.Parse(file.OfficeId), file.UpdatedByAd, file.UnqFileNo);
             DcSocpen dc_socpen;
             long? srd = null;
-            try
+
+            if (application.Srd_No != null && application.Srd_No.IsNumeric())
             {
-                if (application.Srd_No.IsNumeric())
-                {
-                    srd = long.Parse(application.Srd_No);
-                }
+                srd = long.Parse(application.Srd_No);
             }
-            catch
-            {
-                srd = null;
-            }
+
             //Remove existing Barcode for this id/grant from dc_socpen
             _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
             await _context.SaveChangesAsync();
             var result = new List<DcSocpen>();
-            if (("C95".Contains(application.GrantType) && application.ChildId.Trim() == application.ChildId.Trim()))//child Grant
+            if (("C95".Contains(application.GrantType) && application.ChildId == application.ChildId))//child Grant
             {
                 result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
             }
@@ -240,8 +235,8 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 dc_socpen.CaptureReference = file.UnqFileNo;
                 dc_socpen.BrmBarcode = file.BrmBarcode;
                 dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = _session.Office.RegionId;
-                dc_socpen.LocalofficeId = _session.Office.OfficeId;
+                dc_socpen.RegionId = file.RegionId;
+                dc_socpen.LocalofficeId = file.RegionId;
                 dc_socpen.StatusCode = application.AppStatus.Contains("MAIN") ? "ACTIVE" : "INACTIVE";
                 dc_socpen.ApplicationDate = application.AppDate.ToDate("dd/MMM/yy");
                 dc_socpen.SocpenDate = application.AppDate.ToDate("dd/MMM/yy");
@@ -261,8 +256,8 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 dc_socpen.CaptureReference = file.UnqFileNo;
                 dc_socpen.BrmBarcode = file.BrmBarcode;
                 dc_socpen.CaptureDate = DateTime.Now;
-                dc_socpen.RegionId = _session.Office.RegionId;
-                dc_socpen.LocalofficeId = _session.Office.OfficeId;
+                dc_socpen.RegionId = file.RegionId;
+                dc_socpen.LocalofficeId = file.RegionId;
                 dc_socpen.Documents = file.DocsPresent;
 
 

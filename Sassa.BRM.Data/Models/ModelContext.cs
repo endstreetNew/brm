@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sassa.BRM.Models;
 
 namespace Sassa.BRM.Models;
 
@@ -302,10 +303,16 @@ public partial class ModelContext : DbContext
 
         modelBuilder.Entity<DcDocumentImage>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("DC_DOCUMENT_IMAGE");
+            entity.HasKey(e => e.Id).HasName("DC_DOCUMENT_IMAGE_PK");
 
+            entity.ToTable("DC_DOCUMENT_IMAGE");
+
+            entity.HasIndex(e => e.IdNo, "DC_DOCUMENT_IMAGE_INDEX2");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnType("NUMBER")
+                .HasColumnName("ID");
             entity.Property(e => e.Csnode)
                 .HasColumnType("NUMBER")
                 .HasColumnName("CSNODE");
@@ -318,10 +325,6 @@ public partial class ModelContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("FILENAME");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnType("NUMBER")
-                .HasColumnName("ID");
             entity.Property(e => e.IdNo)
                 .IsRequired()
                 .HasMaxLength(14)

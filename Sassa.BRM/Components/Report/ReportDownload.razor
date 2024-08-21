@@ -1,5 +1,9 @@
 ﻿@using Microsoft.JSInterop
+@using System.IO
+
 @typeparam TItem
+@inject IJSRuntime JS
+
 
 <h3>@Title</h3>
 
@@ -48,13 +52,15 @@
                         @foreach (var propa in props.Where(p => p.Name == "FileName"))
                         {
                             <td>
-                                <a class="btn btn-primary btn-sm active" href="/brmfiles/@propa.GetValue(u)" download="@propa.GetValue(u)" target="_top">Download</a>
+                             <button class="btn btn-primary btn-sm active" @onclick="async () => await DownloadFileFromStream(propa,u)">
+                                    Download
+                            </button>
+@*                                <a class="btn btn-primary btn-sm active" href="../brmfiles/@propa.GetValue(u)?.ToString()" download="@propa.GetValue(u)" target="_top">Download</a> *@
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm active" @onclick="@(() => btnDelete_Click(propa.GetValue(u)!.ToString()!))">Delete</button>
                             </td>
                         }
-
                     </tr>
                 }
 
@@ -83,6 +89,9 @@ else
 
     [Parameter]
     public int PageSize { get; set; } = 12;
+
+    [Parameter]
+    public string ReportFolder { get; set; } = "";
 
     IList<PropertyInfo> props = new List<PropertyInfo>();
 
@@ -118,5 +127,32 @@ else
         OnDelete.InvokeAsync(fileName);
     }
 
+    private Stream GetFileStream(string path)
+    {
+        return File.OpenRead(path);
+    }
 
+    private async Task DownloadFileFromStream(PropertyInfo pi,TItem? u)
+    {
+        try
+        {
+
+            var fileName = @pi.GetValue(u)?.ToString();
+
+
+            await JS.InvokeVoidAsync("triggerFileDownload", fileName, $"/brmFiles/{fileName}");
+            //var path = ReportFolder + @pi.GetValue(u)?.ToString();
+            // var fileStream = GetFileStream(fileName);
+
+            // using (var streamRef = new DotNetStreamReference(stream: fileStream))
+            // {
+            //     await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+
+            // }
+        }
+        catch(Exception ex)
+        {
+            var s = ex.Message;
+        }
+    }
 }

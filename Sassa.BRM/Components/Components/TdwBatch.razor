@@ -14,7 +14,7 @@
 
 
 <TabControl>
-    <TabPage Text="Batching" Id="1" Enabled="@(sessionservice.session.Office.OfficeType != "LO" && sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">
+    <TabPage Text="Batching" Id="1" Enabled="@(sessionservice.session!.Office!.OfficeType != "LO" && sessionservice.session.IsInRole("GRP_BRM_Monitoring"))">
             <div class="whiteArea col">
                 <div class="row">
                     <div class="col">

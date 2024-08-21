@@ -62,11 +62,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
             application.OfficeId = office.OfficeId;
             application.RegionId = office.RegionId;
-            application.FspId = _userSession.Office.FspId;
+            application.FspId = _userSession.Office!.FspId;
             application.BrmUserName = _userSession.SamName;
             application.BatchNo = batch;
 
-            DcFile file = await brmApiService.PostApplication(application);
+            DcFile? file = await brmApiService.PostApplication(application);
 
             //DcFile file = new DcFile()
             //{
@@ -179,7 +179,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             //    CreateActivity("Capture",file.SrdNo, file.Lctype, "Error:" + ex.Message.Substring(0, 200), file.UnqFileNo);
             //    throw;
             //}
-
+            if(file.UnqFileNo == null) throw new Exception("Error creating BRM record");
             return file;
         }
     }
@@ -1246,7 +1246,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         using (var _context = _contextFactory.CreateDbContext())
         {
             TreeNode node = new TreeNode();
-            var intermediate = await _context.DcDocumentImages.Where(d => d.IdNo == idNo).ToListAsync();
+            var intermediate = await _context.DcDocumentImages.AsNoTracking().Where(d => d.IdNo == idNo).ToListAsync();
             var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(bool)d.Type));
             foreach (var file in files)
             {
@@ -1316,10 +1316,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 AppDate = d.ApplicationDate.ToStandardDateString(),
                 OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
-                RegionCode = StaticDataService.RegionCode(d.RegionId),
-                RegionName = StaticDataService.RegionName(d.RegionId),
+                RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
+                RegionName = StaticDataService.RegionName(d.RegionId ?? _userSession.Office.RegionId),
                 AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = StaticDataService.GetArchiveYear(d.ApplicationDate, d.StatusCode.ToUpper()),
+                ARCHIVE_YEAR = StaticDataService.GetArchiveYear(d.ApplicationDate ?? DateTime.Now, d.StatusCode.ToUpper()),
                 ChildId = d.ChildId,
                 LcType = "0",
                 FspId = _userSession.Office.FspId,
@@ -1379,14 +1379,14 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 Name = d.Name,
                 SurName = d.Surname,
                 GrantType = d.GrantType,
-                GrantName = StaticDataService.GrantTypes[d.GrantType],
+                GrantName = StaticDataService.GrantTypes![d.GrantType],
                 AppDate = d.ApplicationDate.ToStandardDateString(),
-                OfficeId = _userSession.Office.OfficeId,
+                OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
-                RegionCode = StaticDataService.RegionCode(d.RegionId),
-                RegionName = StaticDataService.RegionName(d.RegionId),
+                RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
+                RegionName = StaticDataService.RegionName(d.RegionId ?? _userSession.Office.RegionId),
                 AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)d.ApplicationDate).ToString("yyyy"),
+                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)(d.ApplicationDate??DateTime.Now)).ToString("yyyy"),
                 ChildId = d.ChildId,
                 LcType = "0",
                 IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
@@ -1429,7 +1429,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 BatchNo = (decimal)(f.file.BatchNo ?? 0),
                 Srd_No = f.file.SrdNo,
                 ChildId = f.file.ChildIdNo,
-                Brm_Parent = merge.ParentBrmBarcode,
+                Brm_Parent = merge == null ? "" : merge.ParentBrmBarcode,
                 Brm_BarCode = f.file.BrmBarcode,
                 Clm_No = f.file.UnqFileNo,
                 LcType = f.file.Lctype.ToString(),
