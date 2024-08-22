@@ -19,28 +19,26 @@ namespace Sassa.BRM.Services
     {
         ModelContext _context;
         private string connectionString;
-        private List<DcDocumentImage> DocumentList;
-        private DataTable dt;// = new DataTable();
+        private List<DcDocumentImage> DocumentList = new List<DcDocumentImage>();
+        private DataTable dt = new DataTable();
 
         private string username;
         private string password;
-        private Sassa.eDocs.CSDocuments.OTAuthentication ota;
+        private Sassa.eDocs.CSDocuments.OTAuthentication? ota; //= new Sassa.eDocs.CSDocuments.OTAuthentication();
         public long NodeId;
 
-        private DocumentManagementClient docClient;
-        string idNumber;
-        string imagePath;
+        private DocumentManagementClient docClient = new DocumentManagementClient();
+        string? idNumber;
 
-        private readonly IConfiguration _config;
+
 
         public CSService(IConfiguration config, ModelContext context, IWebHostEnvironment _env)
         {
-            _config = config;
-            username = _config.GetValue<string>("ContentServer:CSServiceUser")!;
-            password = _config.GetValue<string>("ContentServer:CSServicePass")!;
-            connectionString = _config.GetConnectionString("CsConnection")!;
+
+            username = config.GetValue<string>("ContentServer:CSServiceUser")!;
+            password = config.GetValue<string>("ContentServer:CSServicePass")!;
+            connectionString = config.GetConnectionString("CsConnection")!;
             _context = context;
-            imagePath = $"{_env.WebRootPath}\\{config.GetValue<string>("Folders:CS")}\\";
             //wrong new System.ServiceModel.EndpointAddress("http://ssvsprdsphc01.sassa.local:18080/cws/services/Authentication");
         }
         /// <summary>
@@ -93,7 +91,7 @@ namespace Sassa.BRM.Services
                 if (tmp.Rows.Count == 0) return;
                 NodeId = long.Parse(tmp.Rows[0].ItemArray[0].ToString());
             }
-            docClient = new DocumentManagementClient();
+            //docClient = new DocumentManagementClient();
             try
             {
                 //docClient.Endpoint.Binding.SendTimeout = new TimeSpan(0, 1, 30);
@@ -139,7 +137,7 @@ namespace Sassa.BRM.Services
                     var result = await docClient.GetVersionContentsAsync(ota, node.ID, node.VersionInfo.VersionNum);
                     doc = result.GetVersionContentsResult;
                     //if (doc.FileName.EndsWith("jp2")) return;
-                    SaveAttachment(doc, idNumber, imagePath, node.ID, parentNode);
+                    SaveAttachment(doc, idNumber, StaticDataService.DocumentFolder!, node.ID, parentNode);
                 }
             }
 
@@ -206,7 +204,7 @@ namespace Sassa.BRM.Services
             if (!DocumentList.Any()) return folders;
             foreach (DcDocumentImage doc in DocumentList)
             {
-                if (!(bool)doc.Type)
+                if (doc.Type != null && doc.Csnode != null && !(bool)doc.Type)
                 {
                     folders.Add(doc.Csnode.ToString(), doc.Filename);
                 }

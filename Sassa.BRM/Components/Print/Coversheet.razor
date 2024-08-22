@@ -107,7 +107,7 @@
         {
             file = await db.GetBRMRecord(BrmBarCode);
             QrCode = bcService.GetQrSvg(BrmBarCode, file.UnqFileNo, file.GrantType == "S" ? file.SrdNo : file.ApplicantNo, file.FullName, sservice.GetGrantType(file.GrantType));
-            IdBarCode = bcService.GetBarCode(file.GrantType == "S" ? file.SrdNo : file.ApplicantNo);
+            IdBarCode = bcService.GetBarCode(file.GrantType == "S" ? (file.SrdNo ?? "unknown") : file.ApplicantNo);
             ClmBarCode = bcService.GetBarCode(file.UnqFileNo);
             BarCode = bcService.GetBarCode(file.BrmBarcode);
         }

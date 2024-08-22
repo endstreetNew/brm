@@ -250,7 +250,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 dc_socpen.BeneficiaryId = application.Id;
                 dc_socpen.SrdNo = srd;
                 dc_socpen.GrantType = application.GrantType;
-                dc_socpen.ChildId = application.ChildId.Trim();
+                dc_socpen.ChildId = application.ChildId;
                 dc_socpen.Name = application.Name;
                 dc_socpen.Surname = application.SurName;
                 dc_socpen.CaptureReference = file.UnqFileNo;
