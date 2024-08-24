@@ -28,7 +28,6 @@ public class Program
         string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection")!;
         string CsConnection = builder.Configuration.GetConnectionString("CsConnection")!;
         //var BrmApi = new Uri(builder.Configuration["Urls:BrmApi"]);
-
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
         //Factory pattern

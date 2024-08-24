@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices;
 using System.Linq;
 using System.Security.Claims;
@@ -11,13 +12,20 @@ namespace Sassa.Brm.Common.Helpers
         public static List<string> GetRoles(this WindowsIdentity user)
         {
             List<string> result = new List<string>();
-            var groups = user.Claims.Where(q => q.Type == ClaimTypes.GroupSid).Select(q => q.Value);
+            var groups = user.Claims.Where(q => q.Type == ClaimTypes.GroupSid).Select(q => q.Value).ToList();
             foreach (var role in groups)
             {
-                var group = new System.Security.Principal.SecurityIdentifier(role).Translate(typeof(System.Security.Principal.NTAccount)).ToString();
-                if (!group.Contains("SASSA")) continue;
+                try
+                {
+                    var group = new System.Security.Principal.SecurityIdentifier(role).Translate(typeof(System.Security.Principal.NTAccount)).ToString();
+                    if (!group.Contains("SASSA")) continue;
 
-                result.Add(group.Substring(6));
+                    result.Add(group.Substring(6));
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
             }
             return result;
         }

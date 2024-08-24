@@ -1,7 +1,18 @@
-﻿namespace Sassa.Brm.Common.Models
+﻿using Sassa.BRM.Models;
+using System.Drawing;
+
+namespace Sassa.Brm.Common.Models
 {
     public class UserOffice
     {
+        public UserOffice(DcLocalOffice lo,decimal? fspId)
+        {
+            OfficeId = lo.OfficeId;
+            OfficeName = lo.OfficeName;
+            OfficeType = !string.IsNullOrEmpty(lo.OfficeType) ? lo.OfficeType : "LO";
+            RegionId = lo.RegionId;
+            FspId = fspId;
+        }
         public UserOffice(string officeId, string officeName, string officeType, string regionId, string regionCode, string regionName, decimal? fspId)
         {
             OfficeId = officeId;
@@ -21,5 +32,11 @@
         public string RegionName { get; set; }
         public decimal? FspId { get; set; }
 
+        //public static void DefaultIfEmpty(UserOffice office)
+        //{
+
+        //}
     }
+
+
 }

@@ -53,10 +53,6 @@ namespace Sassa.BRM.Controller
             {
                 if(app.BrmUserName == "SVC_BRM_LO")
                 {
-                    if (_brmService.session == null)
-                    {
-                        _brmService.SetUserSession(app.BrmUserName,app.OfficeId);
-                    }
                     result = await _brmService.ValidateApiAndInsert(app, "Inserted via API.");
                 }
                 else

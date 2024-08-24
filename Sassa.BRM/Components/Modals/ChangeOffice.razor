@@ -52,7 +52,6 @@
     </div>
 </div>
 
-
 @code {
 
     [Parameter]
@@ -67,8 +66,14 @@
 
     protected async Task btnOk_Click()
     {
-        await staticservice.UpdateUserLocalOffice(office!.OfficeId!, office.FspId, sessionservice.session!.SamName!, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
+        //Update the office linq
+        await staticservice.UpdateUserLocalOffice(office!.OfficeId!, sessionservice.session!);
+        //Update the User
         sessionservice.UpdateUserOffice();
+        //office = staticservice.GetUserLocalOffice(sessionservice.session!.SamName);
+        
+        //sessionservice.session.Office = office;
+
         await Cancel.InvokeAsync();
     }
     protected void btnCancel_Click()

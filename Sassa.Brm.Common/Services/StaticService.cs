@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sassa.Brm.Common.Services;
 using Microsoft.EntityFrameworkCore.Internal;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace Sassa.Brm.Common.Services
 {
@@ -79,66 +80,31 @@ namespace Sassa.Brm.Common.Services
         /// <param name="samName"></param>
         /// <param name="supervisor"></param>
         /// <returns></returns>
-        public async Task<UserOffice> GetUserLocalOffice(string samName, string supervisor)
+        public UserOffice GetUserLocalOffice(string userName)
         {
 
-            //Try local office from static.
-            if (!(from lo in StaticDataService.LocalOffices!
-                  join lou in StaticDataService.DcOfficeKuafLinks!
-                      on lo.OfficeId equals lou.OfficeId
-                  where lou.Username == samName
-                  select new
-                  {
-                      OfficeName = lo.OfficeName,
-                      OfficeId = lo.OfficeId,
-                      OfficeType = lo.OfficeType,
-                      RegionId = lo.RegionId,
-                      FspId = lou.FspId
+            var office = StaticDataService.LocalOffices!
+            .Join(StaticDataService.DcOfficeKuafLinks!.Where(l => l.Username == userName),
+            lo => lo.OfficeId,
+            link => link.OfficeId,
+            (lo, link) => new UserOffice(lo, link.FspId)).FirstOrDefault();
 
-                  }).Any())
-                {
-                DcLocalOffice ioffice = GetOffices("7").FirstOrDefault()!;
-                //Attach to first or default office in Gauteng.
-                await UpdateUserLocalOffice(ioffice.OfficeId, null, samName, supervisor);
-                //try again..
-                await GetUserLocalOffice(samName, supervisor);
+            if (office is null)
+            {
+                //Add new users to Gauteng office by default
+                DcLocalOffice defaultOffice = GetOffices("7").FirstOrDefault()!;
+                office = new UserOffice(defaultOffice, null);
             }
+            office.RegionName = GetRegion(office.RegionId);
+            office.RegionCode = GetRegionCode(office.RegionId);
+            return office;
 
-            var value = (from lo in StaticDataService.LocalOffices!
-                         join lou in StaticDataService.DcOfficeKuafLinks!
-                         on lo.OfficeId equals lou.OfficeId
-                         where lou.Username == samName
-                         select new
-                         {
-                             OfficeName = lo.OfficeName,
-                             OfficeId = lo.OfficeId,
-                             OfficeType = lo.OfficeType,
-                             RegionId = lo.RegionId,
-                             FspId = lou.FspId
-
-                         }).FirstOrDefault();
-
-            UserOffice Office = new UserOffice(value!.OfficeId, value!.OfficeName, !string.IsNullOrEmpty(value.OfficeType) ? value.OfficeType : "LO", value.RegionId, GetRegionCode(value.RegionId), GetRegion(value.RegionId), value.FspId);
-           
-            return Office;
         }
+
+
         public DcLocalOffice GetLocalOffice(string officeId)
         {
             return StaticDataService.LocalOffices!.Where(lo => lo.OfficeId == officeId).FirstOrDefault()!;
-        }
-        public UserSession SetUserOffice(string officeId)
-        {
-            var office = StaticDataService.LocalOffices!.Where(lo => lo.OfficeId == officeId).FirstOrDefault();
-            UserSession _session = new UserSession();
-            _session.Office.OfficeName = office!.OfficeName;
-            _session.Office.OfficeId = office.OfficeId;
-            _session.Office.OfficeType = office.OfficeType;
-            _session.Office.RegionId = office.RegionId;
-            //_session.Office.FspId = office.FspId;
-            _session.Office.RegionName = GetRegion(office.RegionId);
-            _session.Office.RegionCode = GetRegionCode(office.RegionId);
-            _session.Office.OfficeType = !string.IsNullOrEmpty(office.OfficeType) ? office.OfficeType : "LO"; //Default to local office
-            return _session;
         }
         public List<DcFixedServicePoint> GetServicePoints(string regionID)
         {
@@ -157,12 +123,13 @@ namespace Sassa.Brm.Common.Services
             }
             return "";
         }
-        public async Task<bool> UpdateUserLocalOffice(string officeId, decimal? fspId, string SamName, string supervisor)
+
+        public async Task<bool> UpdateUserLocalOffice(string officeId, UserSession session)
         {
             DcOfficeKuafLink officeLink;
             using (var context = _contextFactory.CreateDbContext())
             {
-                var query = await context.DcOfficeKuafLinks.Where(okl => okl.Username == SamName).ToListAsync();
+                var query = await context.DcOfficeKuafLinks.Where(okl => okl.Username == session.SamName).ToListAsync();
                 if (query.Count() > 1)
                 {
                     foreach (var ol in query)
@@ -170,24 +137,26 @@ namespace Sassa.Brm.Common.Services
                         context.DcOfficeKuafLinks.Remove(ol);
                     }
                     await context.SaveChangesAsync();
-                    query = await context.DcOfficeKuafLinks.Where(okl => okl.Username == SamName).ToListAsync();
+                    query = await context.DcOfficeKuafLinks.Where(okl => okl.Username == session.SamName).ToListAsync();
                 }
 
                 if (query.Any())
                 {
                     officeLink = query.First();
                     officeLink.OfficeId = officeId;
-                    officeLink.FspId = fspId;
+                    officeLink.FspId = session.Office?.FspId;
                 }
                 else
                 {
-                    officeLink = new DcOfficeKuafLink() { OfficeId = officeId, FspId = fspId, Username = SamName, Supervisor = supervisor };
+                    officeLink = new DcOfficeKuafLink() { OfficeId = officeId, FspId = session.Office?.FspId, Username = session.SamName, Supervisor = session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N" };
                     context.DcOfficeKuafLinks.Add(officeLink);
                 }
                 try
                 {
                     await context.SaveChangesAsync();
+                    //Update the staticData
                     StaticDataService.DcOfficeKuafLinks = await context.DcOfficeKuafLinks.AsNoTracking().ToListAsync();
+
                 }
                 catch (Exception ex)
                 {
