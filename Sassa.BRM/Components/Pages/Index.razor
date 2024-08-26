@@ -3,8 +3,8 @@
 @* @inject BRMDbService db *@
 @inject SessionService sessionservice
 @inject StaticService sservice
-
-<AuthorizeView>
+@* 
+<AuthorizeView> *@
     @if (gsession != null)
     {
         if (showOfficeModal)
@@ -66,7 +66,7 @@
             </div>
             }
             
-</AuthorizeView>
+@* </AuthorizeView> *@
     @code
 {
     bool showOfficeModal;

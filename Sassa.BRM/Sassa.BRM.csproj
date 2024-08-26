@@ -33,7 +33,6 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <Folder Include="BRMfiles\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

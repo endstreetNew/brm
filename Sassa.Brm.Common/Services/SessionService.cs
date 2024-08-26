@@ -26,7 +26,7 @@ public class SessionService(IHttpContextAccessor _httpContextAccessor, StaticSer
 
     public UserSession? GetUserSessionFromLDAP()
     {
-        string? userName = _httpContextAccessor.HttpContext?.User.Identity?.Name ?? null;
+        string? userName = Environment.UserName;// _httpContextAccessor.HttpContext?.User.Identity?.Name ?? null;
         if (userName == null) return null;
         // set up domain context
         PrincipalContext ctx = new PrincipalContext(ContextType.Domain);

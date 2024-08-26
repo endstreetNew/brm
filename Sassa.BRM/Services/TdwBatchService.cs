@@ -158,7 +158,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                    new TdwBatchViewModel
                    {
                        TdwBatchNo = (int)batch,
-                       Region = _staticService.GetRegion(_session.Office.RegionId!),
+                       Region = _staticService.GetRegion(_session.Office!.RegionId!),
                        Boxes = dcFiles.Select(a => a.TdwBoxno).Distinct().Count(),
                        Files = dcFiles.Count(),
                        User = dcFiles.First().UpdatedByAd,
@@ -252,28 +252,12 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
     {
         List<TDWRequestMain> tpl = new List<TDWRequestMain>();
         List<DcFile> parentlist;
-        //List<DcFile> boxes = await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchNo).AsNoTracking().Select(b => b.TdwBoxno).Distinct().ToListAsync();
-
-        //List<DcFile> boxes = await _context.DcFiles
-        //    .Where(f => f.TdwBatch == "1426")
-        //    .GroupBy(f => f.tdw_boxno)
-        //    .Select(g => g.Key);
-
-        //// Execute the LINQ query
-        //foreach (var boxno in result)
-        //{
-        //    Console.WriteLine(boxno);
-        //}
-
-
-
-
 
         TDWRequestMain TdwFormat;
         List<string> files;
         using (var _context = _contextFactory.CreateDbContext())
         {
-            foreach (string boxNo in await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchNo).AsNoTracking().Select(b => b.TdwBoxno).Distinct().ToListAsync())
+            foreach (string boxNo in await _context.DcFiles.Where(bn => bn.TdwBatch == tdwBatchNo).Select(b => b.TdwBoxno).Distinct().AsNoTracking().ToListAsync())
             {
 
                 parentlist = await _context.DcFiles.Where(bn => bn.TdwBoxno == boxNo).AsNoTracking().ToListAsync();

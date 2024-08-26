@@ -5,6 +5,17 @@ namespace Sassa.Brm.Common.Models
 {
     public class UserOffice
     {
+
+        public UserOffice()
+        {
+            OfficeId = "7";
+            OfficeName = "Unknown";
+            OfficeType = "LO";
+            RegionId = "";
+            RegionCode = "";
+            RegionName = "";
+            FspId = null;
+        }
         public UserOffice(DcLocalOffice lo,decimal? fspId)
         {
             OfficeId = lo.OfficeId;
@@ -12,6 +23,8 @@ namespace Sassa.Brm.Common.Models
             OfficeType = !string.IsNullOrEmpty(lo.OfficeType) ? lo.OfficeType : "LO";
             RegionId = lo.RegionId;
             FspId = fspId;
+            RegionCode = "";
+            RegionName = "";
         }
         public UserOffice(string officeId, string officeName, string officeType, string regionId, string regionCode, string regionName, decimal? fspId)
         {

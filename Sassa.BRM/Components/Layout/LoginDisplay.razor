@@ -1,7 +1,7 @@
 ﻿@inject SessionService sessionservice
 @inject StaticService staticservice
 
-<AuthorizeView>
+@* <AuthorizeView> *@
     @if (sessionservice.session != null)
     {
         <div style="width: 100%;">
@@ -21,7 +21,7 @@
         </div>
     
     }
-</AuthorizeView>
+@* </AuthorizeView> *@
 
 @code
 {

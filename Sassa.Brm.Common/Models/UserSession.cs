@@ -7,7 +7,7 @@
         public string Email { get; set; }
         public string SamName { get; set; }
         public List<string> Roles { get; set; }
-        public UserOffice? Office { get; set; }
+        public UserOffice Office { get; set; }
         public BookMarks BookMark { get; set; }
 
         public UserSession(string name,string surName, string samName,string email)
@@ -19,6 +19,7 @@
             BookMark = new BookMarks();
             BookMark.BoxingTab = 1;
             Roles = new List<string>();
+            Office = new UserOffice();
         }
 
         public bool IsInRole(string role)

@@ -11,10 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="8.1.0" />
+    <PackageReference Include="Aspire.Hosting.Oracle" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sassa.Brm.Api\Sassa.Brm.Api.csproj" />
+    <ProjectReference Include="..\Sassa.BRM.Data\Sassa.BRM.Data.csproj" />
     <ProjectReference Include="..\Sassa.BRM\Sassa.BRM.csproj" />
   </ItemGroup>
 

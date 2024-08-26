@@ -4,6 +4,8 @@ using Sassa.BRM.Api.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 string BrmConnectionString = builder.Configuration.GetConnectionString("BrmConnection")!;
 // Add services to the container.
 //Factory pattern

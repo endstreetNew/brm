@@ -27,9 +27,8 @@ public class Program
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
         string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection")!;
         string CsConnection = builder.Configuration.GetConnectionString("CsConnection")!;
-        //var BrmApi = new Uri(builder.Configuration["Urls:BrmApi"]);
-        builder.Services.AddHttpContextAccessor();
-        builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
+
+        //builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
         //Factory pattern
         builder.Services.AddDbContextFactory<ModelContext>(options =>
         options.UseOracle(BrmConnection));
@@ -102,7 +101,7 @@ public class Program
             options.SlidingExpiration = true;
         });
         builder.Services.AddRazorPages();
-        builder.Services.AddServerSideBlazor();
+        //builder.Services.AddServerSideBlazor();
         builder.Services.AddCors(options =>
         {
             options.AddPolicy(
@@ -116,7 +115,6 @@ public class Program
         });
 
         var app = builder.Build();
-
 
 
         // Configure the HTTP request pipeline.
