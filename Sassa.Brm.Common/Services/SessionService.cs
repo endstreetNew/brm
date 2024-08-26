@@ -9,7 +9,7 @@ using System.Security.Principal;
 
 namespace Sassa.Brm.Common.Services;
 
-public class SessionService(IHttpContextAccessor _httpContextAccessor, StaticService _staticservice)
+public class SessionService(StaticService _staticservice)
 {
     private UserSession? _session;
     public UserSession? session {
@@ -26,15 +26,18 @@ public class SessionService(IHttpContextAccessor _httpContextAccessor, StaticSer
 
     public UserSession? GetUserSessionFromLDAP()
     {
-        string? userName = Environment.UserName;// _httpContextAccessor.HttpContext?.User.Identity?.Name ?? null;
-        if (userName == null) return null;
+        //get the user from the environment
+        string? userName = Environment.UserName;
+        if (string.IsNullOrEmpty(userName)) return null;
         // set up domain context
         PrincipalContext ctx = new PrincipalContext(ContextType.Domain);
-        // find a user
+        // find the user
         UserPrincipal user = UserPrincipal.FindByIdentity(ctx, userName);
+
         //Set the user session values
         _session = new UserSession(user.Name, user.Surname, user.SamAccountName, user.EmailAddress);
         _session.Roles = user.GetGroups().Select(x => x.Name).ToList();
+
         UpdateUserOffice();
 
         return _session;
