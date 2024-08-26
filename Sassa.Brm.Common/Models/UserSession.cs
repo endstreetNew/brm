@@ -36,5 +36,10 @@
         {
             return Roles.Any(r => r.Contains("GRP_BRM"));
         }
+
+        public bool IsLoggedIn()
+        {
+            return !string.IsNullOrEmpty(SamName);
+        }
     }
 }
