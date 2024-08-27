@@ -157,13 +157,6 @@
 
                         </tbody>
                     </table>
-
-
-
-
-
-
-
                 </div>
                 <br/>
             </div>
@@ -177,9 +170,9 @@
 </div>
 
 @code {
-    protected UserOffice office;
-    string fromQuarter;
-    string toQuarter;
+    protected UserOffice office = new();
+    string fromQuarter = "";
+    string toQuarter ="";
     //string fromMonth;
     //string toMonth;
     bool IsDashboardLoaded;

@@ -9,13 +9,13 @@
 
 <TabControl PageActivate="OnPageActivate" ActivePageId="@tabNo">
     <TabPage Text="Batching" Id="1" Enabled="true">
-        @if (sessionservice.session.Office.OfficeType == "LO")
+        @if (sessionservice.session.IsRmc())
         {
-            <LOBatch></LOBatch>
+            <RMCBatch></RMCBatch>
         }
         else
         {
-            <RMCBatch></RMCBatch>
+            <LOBatch></LOBatch>
         }
     </TabPage>
     <TabPage Text="Waybills" Id="2" Enabled="true">
@@ -33,7 +33,7 @@
 @code 
 {
     [Parameter]
-    public string boxNo { get; set; }
+    public string boxNo { get; set; } = "";
     [Parameter]
     public int tabNo { get; set; }
 

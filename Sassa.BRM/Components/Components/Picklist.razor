@@ -34,7 +34,7 @@
     <div class="row justify-content-start">
         <div class="col-sm-5">
             <div style="max-width:600px">
-                @if (pickLists != null)
+            @if (pickLists.count >0)
             {
                 <table class="table table-sm" style="font-size:small;">
                     <thead>
@@ -69,61 +69,61 @@
         </div>
         <div class="col">
             <h5>Picklist items</h5>
-            @if (items != null)
-        {
-            <div class="input-group mb-3">
-                <div class="input-group-text">
-                    <input class="form control" type="text" @bind="BrmBarCode" placeholder="<Scan barcode>">
+            @if (items.count > 0)
+            {
+                <div class="input-group mb-3">
+                    <div class="input-group-text">
+                        <input class="form control" type="text" @bind="BrmBarCode" placeholder="<Scan barcode>">
+                    </div>
+                    <button class="btn btn-primary" @onclick="@(() => ItemReceived_Click(BrmBarCode))">Receive item</button>
                 </div>
-                <button class="btn btn-primary" @onclick="@(() => ItemReceived_Click(BrmBarCode))">Receive item</button>
-            </div>
-            <table class="table table-sm" style="font-size:small;">
-                <thead>
-                    <tr>
-                        <th scope="col">Picklist no</th>
-                        <th scope="col">Brm no</th>
-                        <th scope="col">Id number</th>
-                        <th scope="col">First name</th>
-                        <th scope="col">Grant type</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (DcPicklistItem p in items.result)
-                    {
-                    <tr>
-                        <td>@p.UnqPicklist</td>
-                        <td>@p.BrmNo</td>
-                        <td>@p.IdNumber</td>
-                        <td>@p.Firstname</td>
-                        <td>@p.GrantType</td>
-                        <td>@p.Status</td>
-                        <td>
-                            @if (p.Status != "Returned")
-                                {<button class="btn btn-primary btn-sm active" @onclick="@(() => btnItemStatus_Click(p.PicklistItemId))">@p.nextStatus</button>}
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-            <Pager Paged="OnItemsPaged" TotalSize="@items.count"></Pager>
+                <table class="table table-sm" style="font-size:small;">
+                    <thead>
+                        <tr>
+                            <th scope="col">Picklist no</th>
+                            <th scope="col">Brm no</th>
+                            <th scope="col">Id number</th>
+                            <th scope="col">First name</th>
+                            <th scope="col">Grant type</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DcPicklistItem p in items.result)
+                        {
+                        <tr>
+                            <td>@p.UnqPicklist</td>
+                            <td>@p.BrmNo</td>
+                            <td>@p.IdNumber</td>
+                            <td>@p.Firstname</td>
+                            <td>@p.GrantType</td>
+                            <td>@p.Status</td>
+                            <td>
+                                @if (p.Status != "Returned")
+                                    {<button class="btn btn-primary btn-sm active" @onclick="@(() => btnItemStatus_Click(p.PicklistItemId))">@p.nextStatus</button>}
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                <Pager Paged="OnItemsPaged" TotalSize="@items.count"></Pager>
 
-        }
+            }
         </div>
     </div>
 
     @code{
-        PagedResult<DcPicklist> pickLists;
-        private PagedResult<DcPicklistItem> items;
+        PagedResult<DcPicklist> pickLists= new();
+        private PagedResult<DcPicklistItem> items = new();
 
-        protected string SearchTxt;
+        protected string SearchTxt = "";
 
         bool filterRequestUser = false;
         bool filterInProgress = false;
 
-        string UnqPickList;
-        string BrmBarCode;
+        string UnqPickList = "";
+        string BrmBarCode = "";
 
         int itempage = 1;
         int page = 1;

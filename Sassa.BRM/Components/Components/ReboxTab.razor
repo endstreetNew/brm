@@ -13,7 +13,7 @@
 @using System.Text
 @using System.IO;
 
-@if (rebox != null && sessionservice.session != null)
+@if (!string.IsNullOrEmpty(rebox.BoxNo))
 {
     <div class="whiteArea col">
         <div class="row">
@@ -225,15 +225,14 @@
 }
 
 @code {
-
     [Parameter]
-    public string boxNo { get; set; }
+    public string boxNo { get; set; } = "";
 
     protected bool BoxLocked;
     protected bool BoxOpen;
-    protected string RemoveBarcode;
+    protected string RemoveBarcode = "";
 
-    protected string searchText;
+    protected string searchText ="";
 
     private ElementReference brmInput;
 
@@ -274,7 +273,7 @@
                 rebox.BoxNo = rebox.BoxNo.ToUpper().Trim();
                 await OnPaged(page);//Load items in this box
                                     //Todo: fix field in db
-                rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox);
+                rebox.MiniBox = boxfiles.result.Max(r => r.MiniBox) == null ? 1 : (int)boxfiles.result.Max(r => r.MiniBox)!;
                 BoxLocked = boxfiles.result.Where(r => r.BoxLocked).Any();
                 BoxOpen = boxfiles.result.Where(r => r.TdwBatch == 0).Any();
                 //rebox.RegType = "";

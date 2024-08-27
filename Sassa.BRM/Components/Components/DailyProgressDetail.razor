@@ -39,8 +39,8 @@
 <Pager Paged="OnPaged" TotalSize="@DayDetail.count" PageSize="16"></Pager>
 
 @code {
-    [Parameter]  
-    public PagedResult<DayDetail> DayDetail { get; set; }
+    [Parameter]
+    public PagedResult<DayDetail> DayDetail { get; set; } = new();
 
     //UserOffice office;
     protected PagedResult<DayDetail> pagedDetail = new PagedResult<DayDetail>();

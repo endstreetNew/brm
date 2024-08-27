@@ -34,30 +34,22 @@
 
 @code {
     [Parameter]
-    public string GrantType { get; set; }
+    public string GrantType { get; set; } = "";
     [Parameter]
-    public string DocsPresent { get; set; }
+    public string DocsPresent { get; set; } = "";
     [Parameter]
     public EventCallback<string> DocsChanged { get; set; }
 
     int OddCol = 0;
     int EvenCol = 0;
 
-    private List<RequiredDocsView> docs { get; set; }
-    private List<string> _docspresent;
+    private List<RequiredDocsView> docs { get; set; } = new();
+    private List<string> _docspresent = new();
 
     protected override void OnInitialized()
     {
-        if (DocsPresent == null)
-        {
-            _docspresent = new List<string>();
-        }
-        else
-        {
-            _docspresent = DocsPresent.Split(';').ToList();
-            _docspresent = _docspresent.Distinct().Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-        }
-
+        _docspresent = DocsPresent.Split(';').ToList();
+        _docspresent = _docspresent.Distinct().Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
         docs = sservice.GetGrantDocuments(GrantType);
     }
 

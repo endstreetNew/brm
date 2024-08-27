@@ -19,7 +19,7 @@
             Are you Sure you want to close @selectedBatch.BatchNo ?
         </Modal>
     }
-    @if (DTBatch != null)
+    @if (DTBatch.count > 0)
     {
         <br />
         @if (editBatch)
@@ -192,19 +192,19 @@
 </div>
 
 @code {
-    protected PagedResult<DcBatch> DTBatch { get; set; }
+    protected PagedResult<DcBatch> DTBatch { get; set; } = new();
     protected DcBatch selectedBatch { get; set; } = new DcBatch();
 
-    protected string filterStatus;
+    protected string filterStatus ="";
 
     protected bool showConfirmation;
     protected bool showMybatches;
 
     protected bool editBatch;
-    protected PagedResult<DcFile> items;
+    protected PagedResult<DcFile> items = new();
 
-    protected string BrmBarCode;
-    protected string searchBatch;
+    protected string BrmBarCode ="";
+    protected string searchBatch = "";
 
     int page = 1;
     int editPage = 1;
@@ -226,7 +226,6 @@
 
     protected async Task FindBatch()
     {
-        DTBatch = new();
         page = 1;
         try
         {
@@ -266,8 +265,7 @@
 
     protected async Task FilterStatus(ChangeEventArgs args)
     {
-        filterStatus = args.Value.ToString();
-        DTBatch = new();
+        filterStatus = args.Value!.ToString()!;
         page = 1;
         try
         {
@@ -283,7 +281,6 @@
     protected async Task FilterUser(ChangeEventArgs args)
     {
         showMybatches = (bool)args.Value!;
-        DTBatch = new();
         page = 1;
         try
         {
@@ -440,10 +437,7 @@
 
     public void Dispose()
     {
-        DTBatch = new();
-        items = new();
-        selectedBatch = new();
-        GC.Collect();
+
     }
 
 }

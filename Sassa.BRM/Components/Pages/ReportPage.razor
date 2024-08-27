@@ -238,13 +238,13 @@
 @code
 {
     [Parameter]
-    public string param { get; set; }
+    public string param { get; set; } = "";
 
-    protected UserOffice office;
-    string rIndex;
-    string fromQuarter;
-    string toQuarter;
-    string forMonth;
+    protected UserOffice office = new();
+    string rIndex = "";
+    string fromQuarter ="";
+    string toQuarter ="";
+    string forMonth ="";
 
     //string customSql;
 
@@ -256,13 +256,13 @@
     //DateTime ToDate = DateTime.Now;
     //List<MissingSummary> dashboardData;
 
-    Dictionary<string, string> reportList;
-    Dictionary<string, ReportPeriod> quarterList;
+    Dictionary<string, string> reportList = new();
+    Dictionary<string, ReportPeriod> quarterList = new();
 
-    PagedResult<CsvListItem> files;
+    PagedResult<CsvListItem> files = new();
     PagedResult<DcSocpen> missingFiles = new PagedResult<DcSocpen>();
 
-    string GrantType;
+    string GrantType = "";
     int page;
     int missingpage;
 

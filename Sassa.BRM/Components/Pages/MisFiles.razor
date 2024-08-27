@@ -16,7 +16,7 @@
 </div>
 
 <div id="MisGrid">
-    @if (misFiles != null)
+    @if (misFiles.Any())
     {
         <table class="table table-sm" style="font-size:small;">
             <thead>
@@ -63,8 +63,8 @@
 
 @code {
 
-    protected List<MisLivelinkTbl> misFiles;
-    protected string searchId;
+    protected List<MisLivelinkTbl> misFiles = new();
+    protected string searchId = "";
 
     protected async Task SearchMis()
     {

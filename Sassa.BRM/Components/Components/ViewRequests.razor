@@ -134,14 +134,14 @@ else
 
 @code {
 
-    PagedResult<DcFileRequest> fileRequests;
+    PagedResult<DcFileRequest> fileRequests = new();
     bool filterUser = false;
     bool filterOffice = true;
     string filterStatus = "";
     string filterReason = "";
 
-    PieData piedata;
-    PieData regiondata;
+    PieData piedata = new();
+    PieData regiondata = new();
 
     int page;
     int requestCount = 500;
@@ -180,7 +180,7 @@ else
     {
         fileRequests = db.GetFileRequests(filterUser, filterOffice, page, filterStatus, filterReason);
         piedata = db.GetRequestPieData();
-        regiondata = db.GetRequestPieData(sessionservice.session!.Office!.RegionId);
+        regiondata = db.GetRequestPieData(sessionservice.session.Office.RegionId);
         return Task.CompletedTask;
     }
 

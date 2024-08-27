@@ -138,7 +138,7 @@
 
 @code {
     [Parameter]
-    public Application br { get; set; }
+    public Application br { get; set; } = new();
 
     [Parameter]
     public string TargetBoxType { get; set; } = "";
@@ -150,7 +150,7 @@
     public EventCallback<bool> ManualBrmSave { get; set; }
 
     bool grantTypeVisible;
-    Dictionary<string, string> grantTypes;
+    Dictionary<string, string> grantTypes = new();
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;
@@ -161,7 +161,7 @@
 
         grantTypeVisible = false;
         childIdVisible = false;
-        if (br == null) return;
+        if (string.IsNullOrEmpty(br.Id))return;
         br.IsNew = true;
         if (br.GrantType == "0") //Old Age Grant : •	Be able to capture GIA where the system only reflects OA.
         {
@@ -320,6 +320,6 @@
     {
         // br = null;
         // grantTypes.Clear();
-        GC.Collect();
+        // GC.Collect();
     }
 }

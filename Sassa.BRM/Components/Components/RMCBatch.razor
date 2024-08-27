@@ -19,7 +19,7 @@
             Are you Sure you want to close @selectedBatch.BatchNo ?
         </Modal>
     }
-    @if (DTBatch != null)
+    @if (DTBatch.count >0)
     {
         <br />
         @if (editBatch)
@@ -205,11 +205,11 @@
     protected bool showConfirmation;
 
     protected bool editBatch;
-    protected PagedResult<DcFile> items;
+    protected PagedResult<DcFile> items = new();
 
     //PagedResult<ReboxListItem> boxfiles;
 
-    protected string BrmBarCode;
+    protected string BrmBarCode ="";
 
     int page = 1;
     int editPage = 1;

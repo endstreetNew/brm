@@ -5,7 +5,7 @@
 
 @using Sassa.BRM.Components.Components
 
-@if (file != null)
+@if (!string.IsNullOrEmpty(file.BrmBarcode))
 {
 <p>
     <div class="printme row">
@@ -82,16 +82,15 @@
 }
 
 @code {
-
     [Parameter]
-    public string BrmBarCode { get; set; }
+    public string BrmBarCode { get; set; } = "";
 
-    protected DcFile file;
+    protected DcFile file = new();
 
-    protected string QrCode;
-    protected string IdBarCode;
-    protected string ClmBarCode;
-    protected string BarCode;
+    protected string QrCode = "";
+    protected string IdBarCode = "";
+    protected string ClmBarCode = "";
+    protected string BarCode = "";
 
     protected override async Task OnInitializedAsync()
     {

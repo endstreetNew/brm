@@ -162,7 +162,7 @@ namespace Sassa.Brm.Common.Services
         }
         public string GetRegion(string regionId)
         {
-            if (regionId == null) return "Unknown";
+            if (string.IsNullOrEmpty(regionId)) return "Unknown";
             return StaticDataService.Regions!.Where(r => r.RegionId == regionId).First().RegionName;
         }
         public string GetRegionCode(string regionId)

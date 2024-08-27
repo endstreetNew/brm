@@ -13,7 +13,7 @@ namespace Sassa.BRM.Services
         string brmcs;
         public RawSqlService(IConfiguration config)
         {
-            brmcs = config.GetConnectionString("BrmConnection");
+            brmcs = config.GetConnectionString("BrmConnection")!;
         }
 
         public async Task<string> GetNextAltbox(string regionCode)

@@ -1,5 +1,5 @@
 ﻿<div class="whiteArea">
-    @if (Model.result != null)
+    @if (pagedTable.Rows.Count > 0)
     {
 
         <strong>@Model.Title</strong>
@@ -42,9 +42,9 @@
 @code {
 
     [Parameter]
-    public ReportViewModel Model { get; set; }
+    public ReportViewModel Model { get; set; } = new();
 
-    DataTable pagedTable;
+    DataTable pagedTable = new();
     int page = 1;
     protected override void OnInitialized()
     {

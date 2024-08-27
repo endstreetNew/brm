@@ -127,15 +127,15 @@
 </div>
 
 @code {
-    protected UserOffice office;
-    string fromMonth;
-    string toMonth;
+    protected UserOffice office = new();
+    string fromMonth = "";
+    string toMonth ="";
     bool IsDashboardLoaded;
 
     string expandedClass = "";//"oi caret-bottom";
     string expandedText = "+";
 
-    List<MonthDetail> dashboardData;
+    List<MonthDetail> dashboardData = new();
 
     protected override void OnInitialized()
     {

@@ -12,7 +12,7 @@
 {
     <Confirmation Title="Confirmation" Message="@Message" Cancel="OnCancelClick" Ok="OnReceiptOkClick"></Confirmation>
 }
-@if (waybills != null)
+@if (waybills.Any())
 {
     <table class="table table-sm" style="font-size:small;">
         <thead>
@@ -64,11 +64,11 @@
 
 @code {
 
-    List<Waybill> waybills;
-    Waybill selectedWaybill;
+    protected List<Waybill> waybills = new();
+    protected Waybill? selectedWaybill;
 
     //string filterStatus;
-    string Message;
+    string Message = "";
     bool showDispatch;
     bool showReceipt;
 
@@ -124,6 +124,7 @@
         try
         {
             showReceipt = false;
+            if (selectedWaybill == null) throw new Exception("No waybill selected.");
             await db.ReceiveWaybill(selectedWaybill.BrmWaybill, "Received");
             waybills = await db.GetBatchWaybills();
             toast.Success($"Transport Waybill Received.");

@@ -36,16 +36,15 @@
 
 
 @code {
-
     [Parameter]
-    public string RegionId { get; set; }
+    public string RegionId { get; set; } = "";
     [Parameter]
     public EventCallback Ok { get; set; }
     [Parameter]
     public EventCallback Cancel { get; set; }
 
-    protected DcFixedServicePoint servicePoint {get;set;}
-    protected List<DcLocalOffice> regionOffices;
+    protected DcFixedServicePoint servicePoint { get; set; } = new();
+    protected List<DcLocalOffice> regionOffices = new();
 
 
     protected bool IsLoaded = false;

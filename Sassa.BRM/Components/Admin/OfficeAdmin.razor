@@ -104,14 +104,14 @@
 </div>
 
 @code {
-    protected List<RegionOffice> regionOffices;
-    protected string regionId;
+    protected List<RegionOffice> regionOffices = new();
+    protected string regionId = "";
     protected bool IsLoaded = false;
     //protected decimal linkResCode;
     //protected decimal linkbrmId;
 
-    protected List<RegionOffice> unlinkedSpOffices;
-    protected List<RegionOffice> BrmOffices;
+    protected List<RegionOffice> unlinkedSpOffices =new();
+    protected List<RegionOffice> BrmOffices = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,6 +128,10 @@
     protected async Task GetRegionOffices()
     {
         List<CustRescode> ResCodes = await ss.GetResCodes(regionId);
+        if(!ResCodes.Any())
+        {
+            throw new Exception($"No ResCodes found for region {regionId}");
+        }
         regionOffices = StaticDataService.LocalOffices.Where(o => o.RegionId == regionId).OrderBy(o => o.OfficeName).Select(o =>
         new RegionOffice
         {
@@ -135,7 +139,7 @@
             RegionId = regionId,
             OfficeName = o.OfficeName,
             Status = o.ActiveStatus,
-            ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault().ResCode : 0
+            ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault()!.ResCode : 0
         }).ToList();
         BrmOffices = regionOffices.OrderBy(o => o.OfficeName).ToList();
 

@@ -114,7 +114,7 @@
 
 @code {
     [Parameter]
-    public Application br { get; set; }
+    public Application br { get; set; } = new();
     [Parameter]
     public string TargetBoxType { get; set; } = "";
 
@@ -125,7 +125,7 @@
     public EventCallback<bool> BrmSave { get; set; }
 
     bool grantTypeVisible;
-    Dictionary<string, string> grantTypes;
+    Dictionary<string, string> grantTypes = new();
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;

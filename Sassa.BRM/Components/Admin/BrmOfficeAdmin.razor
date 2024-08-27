@@ -97,14 +97,14 @@
 </div>
 
 @code {
-    protected List<RegionOffice> regionOffices;
-    protected string regionId;
+    protected List<RegionOffice> regionOffices = new();
+    protected string regionId = "";
     protected bool IsLoaded = false;
     protected int SelectedOfficeId;
-    protected string fromOfficeId;
+    protected string fromOfficeId = "";
 
     protected bool showOfficeConfirmation;
-    protected string OfficeConfirmationMessage;
+    protected string OfficeConfirmationMessage ="";
 
     protected override async Task OnInitializedAsync()
     {

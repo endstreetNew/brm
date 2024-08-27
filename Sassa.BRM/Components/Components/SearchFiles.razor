@@ -64,15 +64,14 @@ else
 
 
     SearchModel sm = new SearchModel();
-    Dictionary<string, string>
-    Tdwgrants;
-    Dictionary<string, string> folderItems;
+    Dictionary<string, string> Tdwgrants = new();
+    Dictionary<string, string> folderItems = new();
     bool showRequestModal = false;
     bool showpreview = false;
-    string viewSource;
+    string viewSource ="";
     int viewIndex;
-    TreeNode node;
-    List<TreeNode> files;
+    TreeNode? node;
+    List<TreeNode> files = new();
 
     protected async Task btnRequest_Click()
     {
@@ -190,7 +189,10 @@ else
 
     void GotoNewPage()
     {
-        viewSource = files.Skip(viewIndex - 1).First().NodeName;
+        if (files.Any())
+        {
+            viewSource = files.Skip(viewIndex - 1).First().NodeName!;
+        }
     }
 
 }
