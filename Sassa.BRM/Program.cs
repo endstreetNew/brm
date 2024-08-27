@@ -18,6 +18,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+
         //Authentication Services
         //builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
         builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
