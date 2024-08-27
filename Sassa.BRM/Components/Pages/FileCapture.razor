@@ -84,8 +84,8 @@
     [Parameter]
     public EventCallback<bool> SocpenChanged { get; set; }
 
-    string txtSearchId;
-    string txtSearchSRD;
+    string txtSearchId ="";
+    string txtSearchSRD ="";
     bool chkSearchFull;
     bool chkRefresh;
 
@@ -94,7 +94,7 @@
     protected bool searchById = true;
 
     //For manual capture
-    Application SelectedApplication;
+    Application SelectedApplication = new();
 
     // string regionChangeMessage = "";
     string txtManualGrantType = "";
@@ -103,7 +103,7 @@
     // bool showBrmModal = false;
     bool showManualCapture = false;
 
-    protected List<Application> DTSocPen;
+    protected List<Application> DTSocPen = new();
     // protected List<Application> DTBrm;
     // protected List<Application> DTBrmParents;
     // protected List<Application> DTMerged;
@@ -176,7 +176,7 @@
         try
         {
             //Clear previous results
-            DTSocPen = null;
+            DTSocPen.Clear();
 
             //Searching on ID
             if (!searchById)
@@ -192,7 +192,7 @@
         }
         catch (Exception ex)
         {
-            DTSocPen = null;
+            DTSocPen.Clear();
             toast.Error(ex.Message);
         }
     }
@@ -228,17 +228,19 @@
             toast.Error("a Srd record requires an SRD no.");
             return;
         }
-        SelectedApplication = new Application();
-        SelectedApplication.TRANS_TYPE = 0;
-        SelectedApplication.TDW_BOXNO = rebox.BoxNo;
-        SelectedApplication.MiniBox = rebox.MiniBox;
-        SelectedApplication.GrantType = txtManualGrantType;
-        SelectedApplication.RegionId = sessionservice.session.Office.RegionId;
-        SelectedApplication.Id = txtSearchId;
-        SelectedApplication.Srd_No = txtSearchSRD;
-        SelectedApplication.LcType = "0";
-        SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
-        SelectedApplication.AppStatus = "MAIN";
+        SelectedApplication = new Application
+        {
+            TRANS_TYPE = 0,
+            TDW_BOXNO = rebox.BoxNo,
+            MiniBox = rebox.MiniBox,
+            GrantType = txtManualGrantType,
+            RegionId = sessionservice.session.Office.RegionId,
+            Id = txtSearchId,
+            Srd_No = txtSearchSRD,
+            LcType = "0",
+            AppDate = DateTime.Now.ToStandardDateString(),
+            AppStatus = "MAIN"
+        };
 
         showManualCapture = true;
     }
@@ -255,7 +257,7 @@
 
     private async Task OnModalClosed()
     {
-        SelectedApplication = null;
+        SelectedApplication = new();
         showManualCapture = false;
         await Task.CompletedTask;
     }

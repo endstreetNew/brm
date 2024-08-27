@@ -352,7 +352,7 @@
         SelectedApplication.Id = txtSearchId;
         SelectedApplication.Srd_No = txtSearchSRD;
         SelectedApplication.LcType = "0";
-        SelectedApplication.AppDate = ((DateTime?)DateTime.Now).ToStandardDateString();
+        SelectedApplication.AppDate = DateTime.Now.ToStandardDateString();
         SelectedApplication.AppStatus = "MAIN";
 
         showManualCapture = true;

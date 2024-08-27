@@ -410,7 +410,7 @@
             if (rebox.MiniBox > 5) throw new Exception("Only 5 Miniboxes allowed.");
             rebox.BrmBarcode = string.Empty;
             DcFile file = await AddFile();
-            
+
         }
         catch (Exception ex)
         {
@@ -478,8 +478,9 @@
     protected void RegTypeChange(ChangeEventArgs e)
     {
 
-        if (string.IsNullOrEmpty((string)e.Value)) return;
-        rebox.SelectedType = (string)e.Value;
+
+        rebox.SelectedType = e.Value == null ? "" : e.Value.ToString();
+        if (string.IsNullOrEmpty(rebox.SelectedType)) return;
         transferHidden = !(sservice.GetBoxTypes()[rebox.SelectedType]).Contains("Transfer");
         archiveHidden = !(sservice.GetBoxTypes()[rebox.SelectedType]).Contains("Archive");
         if (!string.IsNullOrEmpty(rebox.RegType))
@@ -513,16 +514,18 @@
                 DcFile file = await db.GetBRMRecord(rebox.BrmNo);
 
                 docs = sservice.GetGrantDocuments(file.GrantType);
-                string lcType = null;
-                if (file.Lctype != null && file.Lctype > 0) lcType = sservice.GetLcType((decimal)file.Lctype);
-                sb.Append(BulkPrint.CreateFileCover(file, sservice.GetGrantType(file.GrantType), sservice.GetRegion(file.RegionId), NavigationM.BaseUri, lcType, docs));
+                if (file.Lctype != null && file.Lctype > 0)
+                {
+                    string lcType = sservice.GetLcType((decimal)file.Lctype);
+                    sb.Append(BulkPrint.CreateFileCover(file, sservice.GetGrantType(file.GrantType), sservice.GetRegion(file.RegionId), NavigationM.BaseUri, lcType, docs));
+                }
             }
 
             sb.Append(BulkPrint.Footer());
             toast.Success($"Box :{rebox.BoxNo} Coversheets queued.");
 
             await rd.SaveHtmlReport(sb.ToString(), helper.GetFileName($"Box_{rebox.BoxNo}",sessionservice.session));
-            sheets = null;
+            sheets = new();
 
         }
         catch (Exception ex)

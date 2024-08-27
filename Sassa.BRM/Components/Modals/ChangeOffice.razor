@@ -57,17 +57,17 @@
     [Parameter]
     public EventCallback Cancel { get; set; }
 
-    protected UserOffice? office;
+    protected UserOffice office = new();
 
     protected override void OnInitialized()
     {
-        office = sessionservice.session!.Office!;
+        office = sessionservice.session.Office!;
     }
 
     protected async Task btnOk_Click()
     {
         //Update the office linq
-        await staticservice.UpdateUserLocalOffice(office!.OfficeId!, sessionservice.session!);
+        await staticservice.UpdateUserLocalOffice(office.OfficeId, sessionservice.session);
         //Update the User
         sessionservice.UpdateUserOffice();
         //office = staticservice.GetUserLocalOffice(sessionservice.session!.SamName);
@@ -83,7 +83,7 @@
 
     protected void SelectRegion(string regionid)
     {
-        office!.RegionId = regionid;
+        office.RegionId = regionid;
         office.OfficeId = staticservice.GetOffices(office.RegionId).First().OfficeId;
     }
 

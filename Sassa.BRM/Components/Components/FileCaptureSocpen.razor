@@ -17,7 +17,7 @@
 }
 
 <div id="SocpenGrid">
-            @if (DTSocPen != null)
+            @if (DTSocPen.Any())
             {
                 <table class="table table-sm" style="font-size:small;">
                     <thead>
@@ -70,17 +70,17 @@
 @code {
 
     [Parameter]
-    public string? txtSearchId { get; set; }
+    public string txtSearchId { get; set; } = "";
 
     [Parameter]
-    public Reboxing? rebox { get; set; }
+    public Reboxing rebox { get; set; } = new();
 
     [Parameter]
     public List<Application> DTSocPen { get; set; } = new List<Application>();
 
     //used to set parents etc on new brm
-    protected List<Application>? DTBrm;
-    protected Application? SelectedApplication;
+    protected List<Application> DTBrm = new();
+    protected Application SelectedApplication = new();
 
 
     bool showConfirmRegion = false;
@@ -165,10 +165,6 @@
 
     protected void Merge()
     {
-        if (DTSocPen == null && DTBrm == null)
-        {
-            return;
-        }
         if (!DTSocPen.Any() && !DTBrm.Any())
         {
             return;
@@ -189,21 +185,16 @@
                 row.RowType = "M";
             }
         }
-
-        DTBrm = DTBrm == null ? new List<Application>() : DTBrm.ToList();
     }
     private void OnModalClosed()
     {
-        SelectedApplication = null;
+        SelectedApplication = new();
         showBrmModal = false;
         StateHasChanged();
     }
 
     public void Dispose()
     {
-        DTSocPen.Clear();
-        DTBrm = null;
-        SelectedApplication = null;
-        GC.Collect();
+
     }
 }

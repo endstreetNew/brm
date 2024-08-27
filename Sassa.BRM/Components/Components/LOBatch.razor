@@ -226,7 +226,7 @@
 
     protected async Task FindBatch()
     {
-        DTBatch = null;
+        DTBatch = new();
         page = 1;
         try
         {
@@ -267,7 +267,7 @@
     protected async Task FilterStatus(ChangeEventArgs args)
     {
         filterStatus = args.Value.ToString();
-        DTBatch = null;
+        DTBatch = new();
         page = 1;
         try
         {
@@ -283,7 +283,7 @@
     protected async Task FilterUser(ChangeEventArgs args)
     {
         showMybatches = (bool)args.Value!;
-        DTBatch = null;
+        DTBatch = new();
         page = 1;
         try
         {
@@ -440,9 +440,9 @@
 
     public void Dispose()
     {
-        DTBatch = null;
-        items = null;
-        selectedBatch = null;
+        DTBatch = new();
+        items = new();
+        selectedBatch = new();
         GC.Collect();
     }
 

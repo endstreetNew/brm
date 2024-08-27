@@ -46,8 +46,7 @@
             </div>
             <div class="row">
                 <div class="whiteArea col">
-                    @if (boxfiles != null)
-                    {
+
                         if (boxfiles.count == 0)
                         {
                             <div class="row">
@@ -113,7 +112,6 @@
                                 <Pager Paged="OnPaged" TotalSize="@boxfiles.count" PageSize="20"></Pager>
                             </div>
                         }
-                    }
                 </div>
             </div>
 
@@ -144,8 +142,6 @@
                     </div>
                  </div> 
 
-        @if (batchedfiles != null)
-        {
             @if (batchedfiles.count > 0)
             {
                 <div class="row">
@@ -187,10 +183,9 @@
             {
                 <p> No Dispatched Files history</p>
             }
-        }
     </TabPage>
     <TabPage Text="Dispatch History" Id="3" Enabled = "true">
-        @if (files != null)
+        @if (files.count >0)
         {
             <div class="whiteArea col">
                 <div class="row">
@@ -233,13 +228,13 @@
 
 
 @code {
-    protected string boxSearch;
+    protected string boxSearch = "";
 
-    PagedResult<TdwBatchViewModel> batchedfiles;
-    PagedResult<TdwBatchViewModel> boxfiles;
-    PagedResult<CsvListItem> files;
+    PagedResult<TdwBatchViewModel> batchedfiles = new();
+    PagedResult<TdwBatchViewModel> boxfiles = new();
+    PagedResult<CsvListItem> files = new();
 
-    ReportPeriod period;
+    ReportPeriod period = new ReportPeriod() { FromDate = DateTime.Now.AddDays(-180), ToDate = DateTime.Now };
 
     int page = 1;
     int historypage = 1;
@@ -248,10 +243,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        period = new ReportPeriod(){FromDate = DateTime.Now.AddDays(-180) , ToDate = DateTime.Now};
         sessionservice.session.BookMark.BoxingTab = 4;
         await Task.CompletedTask;
-
     }
     //Loader boxes for batching tab
     protected async Task btnLoadBoxes_Click()
@@ -289,8 +282,8 @@
     protected async Task btnUnlock_Click(string boxNo)
     {
         await db.UnlockBox(boxNo);
-        boxSearch = null;
-        boxfiles = null;
+        boxSearch = "";
+        boxfiles = new();
         await OnPaged(page);
     }
 
@@ -299,15 +292,13 @@
     {
         try
         {
-
             historypage = _page;
             //todo:fix
             batchedfiles = await db.GetTdwBatches(historypage,period);
-
         }
         catch
         {
-
+            toast.Error("Error loading Batch History");
         }
 
     }

@@ -116,7 +116,7 @@
 
     private async Task OnDocsChanged(string docspresent)
     {
-        await db.SaveChanges(file!.UnqFileNo,docspresent);
+        await db.SaveDocuments(file!.UnqFileNo,docspresent);
     }
 
     private async Task btnPrint_Click()

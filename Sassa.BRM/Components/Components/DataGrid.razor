@@ -19,9 +19,9 @@
                     @foreach (DataRow row in pagedTable.Rows)
                     {
                         <tr>
-                            @foreach (object item in row.ItemArray)
+                            @foreach (object? item in row.ItemArray)
                             {
-                                <td scope="col">@item.ToString()</td>
+                                <td scope="col">@(item == null? "": item.ToString())</td>
                             }
                         </tr>
                     }

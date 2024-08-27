@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Extensions.Configuration;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
@@ -27,7 +28,12 @@ namespace Sassa.BRM.Services
                     String sql = $"select CAST(SEQ_DC_ALT_BOX_NO_{regionCode}.NEXTVAL AS NVARCHAR2(20)) from DUAL";
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
-                        result = (await command.ExecuteScalarAsync()).ToString();
+                        object? raw = await command.ExecuteScalarAsync();
+                        if (raw == null)
+                        {
+                            throw (new Exception($"Oracle failed to return sequence  SEQ_DC_ALT_BOX_NO_{regionCode}."));
+                        }
+                        result = raw.ToString()!;
                     }
 
                 }
@@ -114,7 +120,12 @@ namespace Sassa.BRM.Services
                     String sql = $"SELECT BRMWAYBIL.NEXTVAL from DUAL";
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
-                        result = command.ExecuteScalar().ToString();
+                        var raw = command.ExecuteScalar();
+                        if(raw == null)
+                        {
+                            throw (new Exception($"Oracle failed to return sequence BRMWAYBIL."));
+                        }
+                        result = raw.ToString()!;
                     }
 
                 }
@@ -147,9 +158,14 @@ namespace Sassa.BRM.Services
                     connection.Open();
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
-                        result = command.ExecuteScalar().ToString();
+                        object? raw = command.ExecuteScalar();
+                        if(raw == null)
+                        {
+                            throw (new Exception($"Oracle failed to return scalar."));
+                        }
+                        result = raw.ToString()!;
                     }
-
+                    
                 }
                 return result;
             }

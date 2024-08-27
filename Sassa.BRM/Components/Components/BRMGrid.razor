@@ -176,16 +176,16 @@
 
 @code {
     [Parameter]
-    public List<Application>? DTBrm { get; set; }
+    public List<Application> DTBrm { get; set; } = new();
     [Parameter]
-    public List<Application>? DTMerges { get; set; }
+    public List<Application> DTMerges { get; set; } = new();
     [Parameter]
     public EventCallback<int> Changed { get; set; }
 
     protected string deleteReason = "";
     protected bool showConfirmation;
     protected bool showEditBarcodeConfirmation;
-    protected Application? selectedApp;
+    protected Application selectedApp = new();
 
     protected string? NewBarCode;
 
@@ -297,9 +297,6 @@
 
     public void Dispose()
     {
-
-        DTBrm = null;
-        DTMerges = null;
     }
 
 }

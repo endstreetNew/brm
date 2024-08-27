@@ -116,7 +116,7 @@
     [Parameter]
     public Application br { get; set; }
     [Parameter]
-    public string TargetBoxType { get; set; } = null;
+    public string TargetBoxType { get; set; } = "";
 
     [Parameter]
     public EventCallback ModalClosed { get; set; }
@@ -129,7 +129,7 @@
     bool childIdVisible;
     bool ready = false;
     bool showOverWrite = false;
-    DateTime? SelectedAppDate;
+    DateTime SelectedAppDate;
 
     protected override void OnInitialized()
     {

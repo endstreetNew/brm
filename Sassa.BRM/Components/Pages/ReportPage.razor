@@ -304,7 +304,7 @@
 
     protected void SelectRegion(ChangeEventArgs e)
     {
-
+        if (e.Value == null) return;
         office.RegionId = (string)e.Value;
         office.OfficeId = sservice.GetOffices(office.RegionId).First().OfficeId;
     }

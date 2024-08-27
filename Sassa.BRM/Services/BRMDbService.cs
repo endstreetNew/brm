@@ -89,7 +89,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 {
                     var parent = parents.Where(p => p.TDW_BOXNO == null).First();
 
-                    DcMerge merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault();
+                    DcMerge? merge = _context.DcMerges.Where(k => k.BrmBarcode == app.Brm_BarCode).FirstOrDefault();
 
                     if (merge == null)//No existing merge create one
                     {
@@ -105,8 +105,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                         merge.ParentBrmBarcode = parent.Brm_BarCode;
                         app.Brm_Parent = parent.Brm_BarCode;
                     }
-
-
                 }
                 else
                 {
@@ -122,11 +120,12 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
         }
     }
-    public async Task SaveChanges(string unqFileNo, string docsPresent)
+    public async Task SaveDocuments(string unqFileNo, string docsPresent)
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            DcFile original = await _context.DcFiles.FindAsync(unqFileNo);
+            DcFile? original = await _context.DcFiles.FindAsync(unqFileNo);
+            if(original == null) throw new Exception($"File {unqFileNo} not found.");
             original.DocsPresent = docsPresent;
             await _context.SaveChangesAsync();
         }
@@ -800,7 +799,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             //Todo:
             if (status == "Closed") throw new Exception("Feature in dev. Kofax data will set status");
             if (fr.Status == "Requested") throw new Exception("Request is with TDW, can't change status now.");
-            DcFileRequest req = await _context.DcFileRequests.FindAsync(fr.IdNo, fr.GrantType);
+            DcFileRequest? req = await _context.DcFileRequests.FindAsync(fr.IdNo, fr.GrantType);
+            if (req == null) throw new Exception($"Request {fr.IdNo}/{fr.GrantType} not found.");
             req.Status = status;
             await _context.SaveChangesAsync();
         }
@@ -855,7 +855,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            DcPicklist pl = await _context.DcPicklists.FindAsync(pi.UnqPicklist);
+            DcPicklist? pl = await _context.DcPicklists.FindAsync(pi.UnqPicklist);
+            if (pl == null) throw new Exception($"Picklist {pi.UnqPicklist} not found.");
             pl.Status = pi.nextStatus;
             await _context.SaveChangesAsync();
         }
@@ -895,7 +896,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         using (var _context = _contextFactory.CreateDbContext())
         {
             var GrantId = _staticService.GetGrantId(item.GrantType);
-            DcFileRequest fileReq = await _context.DcFileRequests.FindAsync(item.IdNumber, GrantId);
+            DcFileRequest? fileReq = await _context.DcFileRequests.FindAsync(item.IdNumber, GrantId);
             if (fileReq == null) return;
             if (fileReq.Status == "Received") return;//skip nochange...
             fileReq.Status = "Received";
@@ -1005,7 +1006,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             //Get the picklist
             var pl = await _context.DcPicklists.Where(p => p.UnqPicklist == tpl.UnqPickList).FirstAsync();
             ///Send mails
-            string tomail = pl.RequestedByAd.GetADEmail();
+            string? tomail = pl.RequestedByAd.GetADEmail();
             if (string.IsNullOrEmpty(tomail)) return; //Skip if no tomail address
             try
             {
@@ -1198,7 +1199,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 SurName = d.Surname,
                 GrantType = d.GrantType,
                 GrantName = StaticDataService.GrantTypes![d.GrantType],
-                AppDate = d.ApplicationDate.ToStandardDateString(),
+                AppDate = d.ApplicationDate == null? DateTime.Now.ToStandardDateString() : ((DateTime)d.ApplicationDate).ToStandardDateString(),
                 OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
                 RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
@@ -1225,7 +1226,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     SurName = d.Surname,
                     GrantType = d.GrantType,
                     GrantName = StaticDataService.GrantTypes[d.GrantType],
-                    AppDate = d.ApplicationDate.ToStandardDateString(),
+                    AppDate = d.ApplicationDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)d.ApplicationDate).ToStandardDateString(),
                     OfficeId = _userSession.Office.OfficeId,
                     RegionId = d.RegionId,
                     RegionCode = StaticDataService.RegionCode(d.RegionId),
@@ -1265,7 +1266,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 SurName = d.Surname,
                 GrantType = d.GrantType,
                 GrantName = StaticDataService.GrantTypes![d.GrantType],
-                AppDate = d.ApplicationDate.ToStandardDateString(),
+                AppDate = d.ApplicationDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)d.ApplicationDate).ToStandardDateString(),
                 OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
                 RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
@@ -1300,7 +1301,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 SurName = f.file.UserLastname,
                 GrantType = f.file.GrantType,
                 GrantName = StaticDataService.GrantTypes![f.file.GrantType],
-                AppDate = f.file.TransDate.ToStandardDateString(),
+                AppDate = f.file.TransDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)f.file.TransDate).ToStandardDateString(),
                 OfficeId = f.file.OfficeId,
                 RegionId = f.file.RegionId,
                 DocsPresent = f.file.DocsPresent,
@@ -1318,7 +1319,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 Brm_BarCode = f.file.BrmBarcode,
                 Clm_No = f.file.UnqFileNo,
                 LcType = f.file.Lctype.ToString(),
-                LastReviewDate = f.file.Lastreviewdate.ToStandardDateString(),
+                LastReviewDate = f.file.Lastreviewdate == null ? "" : ((DateTime)f.file.Lastreviewdate).ToStandardDateString(),
                 IsCombinationCandidate = false,
                 IsMergeCandidate = false,
                 IsNew = false,
@@ -1644,7 +1645,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             }
         }
-        CreateActivity("Batching",null,0, $"Status {newStatus}");
+        CreateActivity("Batching","",0, $"Status {newStatus}");
     }
     public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
     {
@@ -1816,7 +1817,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 }
 
                 string brmWaybill = "";
-                Waybill waybill = null;
+                Waybill waybill = new();
                 foreach (var batch in batches.OrderBy(b => b.BrmWaybill))
                 {
                     if (string.IsNullOrEmpty(batch.BrmWaybill)) continue;
@@ -2368,9 +2369,10 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     private async Task<int> GetExclusionBatch(string destructionYear)
     {
-        DcExclusionBatch exclusionb;
+        
         using (var _context = _contextFactory.CreateDbContext())
         {
+            DcExclusionBatch? exclusionb;
             if (string.IsNullOrEmpty(destructionYear)) throw new System.Exception("Destruction Year is required");
             //if there is a batch for this year , use it.
             exclusionb = await _context.DcExclusionBatches.Where(eb => eb.RegionId == decimal.Parse(_userSession.Office.RegionId) && eb.ExclusionYear == destructionYear.Replace(" ", "")).FirstOrDefaultAsync();
@@ -2404,7 +2406,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 if (!exlusions.Any()) return;
                 foreach (var excl in exlusions.ToList())
                 {
-                    DcDestruction dd = _context.DcDestructions.Where(d => d.PensionNo == excl.IdNo).FirstOrDefault();
+                    DcDestruction? dd = _context.DcDestructions.Where(d => d.PensionNo == excl.IdNo).FirstOrDefault();
                     if (dd != null)
                     {
                         dd.ExclusionbatchId = batchId;
@@ -2482,7 +2484,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            DcExclusionBatch batch = _context.DcExclusionBatches.Find(batchId);
+            DcExclusionBatch? batch = _context.DcExclusionBatches.Find(batchId);
             if (batch == null) throw new Exception("Batch not Found");
             batch.ApprovedBy = _userSession.SamName;
             batch.ApprovedDate = System.DateTime.Now.ToString("yyyyMMdd");

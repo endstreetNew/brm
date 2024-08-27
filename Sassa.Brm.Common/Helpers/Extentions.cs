@@ -73,15 +73,14 @@ namespace Sassa.Brm.Common.Helpers
         //    return monthpart + "/" + daypart + "/" + yearpart;
         //}
 
-        public static DateTime? ToDate(this string date, string fromFormat)
+        public static DateTime ToDate(this string date, string fromFormat)
         {
-            if (string.IsNullOrEmpty(date)) return null;
+            if (string.IsNullOrEmpty(date)) return DateTime.Now;
             return DateTime.ParseExact(date, fromFormat, CultureInfo.InvariantCulture);
         }
 
-        public static string ToStandardDateString(this DateTime? fromdate)
+        public static string ToStandardDateString(this DateTime fromdate)
         {
-            if (fromdate == null) return "";
             return ((DateTime)fromdate).ToString("dd/MMM/yy");
         }
         //public static string ToStandardDateString(this string fromdate, string fromformat)

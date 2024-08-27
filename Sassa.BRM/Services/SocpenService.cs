@@ -40,7 +40,12 @@ public class SocpenService(IDbContextFactory<SocpenContext> dbContextFactory)
     {
         using (var spctx = dbContextFactory.CreateDbContext())
         {
-            CustRescode lo = await spctx.CustRescodes.FindAsync(rescode);
+            var result = await spctx.CustRescodes.FindAsync(rescode);
+            if(result == null)
+            {
+                throw new Exception($"Rescode {rescode} not found");
+            }
+            CustRescode lo = result;
             lo.OfficeId = officeId;
             lo.Status = "A";
             await spctx.SaveChangesAsync();

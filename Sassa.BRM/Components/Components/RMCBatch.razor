@@ -482,8 +482,8 @@
             await rd.SaveHtmlReport(sb.ToString(), FileName);
             //files.Dispose();
             //toast.Success($"Batch cover :{batch.BatchNo} queued.");
-            files = null;
-            sb = null;
+            files.Clear();
+            sb = new();
             await Js.InvokeVoidAsync("open", $"{NavigationM.BaseUri}batchcover/{batch.BatchNo}", "_blank");
 
         }
@@ -498,12 +498,7 @@
 
     public void Dispose()
     {
-        DTBatch = null;
-        items = null;
-        selectedBatch = null;
-        GC.Collect();
     }
-
 }
 
 

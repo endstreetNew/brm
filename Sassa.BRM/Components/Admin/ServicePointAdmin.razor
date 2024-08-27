@@ -1,6 +1,6 @@
 ﻿@inject SessionService sessionservice
 @inject BRMDbService db
-@inject StaticService sservice
+@inject StaticService staticservice
 @inject SocpenService ss
 @namespace Sassa.BRM.Components.Admin
 @using Sassa.Socpen.Data
@@ -17,7 +17,7 @@
             <span class="input-group-text">Region</span>
             <select class="form-select" @bind="regionId">
                 <option value="" selected></option>
-                @foreach (var region in sservice.GetRegions())
+                @foreach (var region in staticservice.GetRegions())
                 {
                     <option value="@region.Key">@region.Value</option>
                 }
@@ -89,9 +89,9 @@
 </div>
 
 @code {
-    protected List<RegionOffice>? regionOffices;
+    protected List<RegionOffice> regionOffices = new();
     protected List<DcFixedServicePoint>? regionServicePoints;
-    protected string? regionId;
+    protected string regionId = "";
     protected bool IsLoaded = false;
     protected bool IsAdding = false;
 
@@ -110,17 +110,9 @@
     protected async Task GetRegionOffices()
     {
         List<CustRescode> ResCodes = await ss.GetResCodes(regionId);
-        regionOffices = StaticDataService.LocalOffices!.Where(o => o.RegionId == regionId).Select(o =>
-        new RegionOffice
-        {
-            OfficeId = int.Parse(o.OfficeId),
-            OfficeName = o.OfficeName,
-            Status = o.ActiveStatus
-            //ResCode = ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).Any() ? ResCodes.Where(r => r.OfficeId == decimal.Parse(o.OfficeId)).FirstOrDefault().ResCode : 0
-        }).ToList();
-
+        regionOffices = staticservice.GetRegionOffices(regionId);
         regionOffices = regionOffices.OrderBy(o => o.OfficeName).ToList();
-        regionServicePoints = sservice.GetServicePoints(regionId);
+        regionServicePoints = staticservice.GetServicePoints(regionId);
         IsLoaded = true;
     }
 
@@ -153,7 +145,7 @@
     protected async void  btnUpdate_Click(DcFixedServicePoint u)
     {
         
-        await sservice.UpdateServicePoint(u);
+        await staticservice.UpdateServicePoint(u);
         IsLoaded = false;
         await GetRegionOffices();
     }

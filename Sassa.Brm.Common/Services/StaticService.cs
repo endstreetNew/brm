@@ -177,6 +177,17 @@ namespace Sassa.Brm.Common.Services
         {
             return StaticDataService.LocalOffices!.Where(o => o.RegionId == regionId).ToList();
         }
+
+        public List<RegionOffice> GetRegionOffices(string regionId)
+        {
+            return StaticDataService.LocalOffices!.Where(o => o.RegionId == regionId).Select(o =>
+            new RegionOffice
+            {
+                OfficeId = int.Parse(o.OfficeId),
+                OfficeName = o.OfficeName,
+                Status = o.ActiveStatus
+            }).ToList();
+        }
         public async Task ChangeOfficeStatus(string officeId, string status)
         {
             using(var context = _contextFactory.CreateDbContext())
