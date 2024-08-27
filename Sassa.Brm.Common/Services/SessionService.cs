@@ -1,46 +1,48 @@
-﻿using Sassa.Brm.Common.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Components.Authorization;
+using Sassa.Brm.Common.Models;
+using System.Diagnostics;
+using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
+using System.Security.Claims;
+using System.Security.Principal;
+using Sassa.Brm.Common.Helpers;
 
 namespace Sassa.Brm.Common.Services;
 
-public class SessionService(StaticService _staticservice)
+public class SessionService(StaticService _staticservice,AuthenticationStateProvider auth)
 {
+
     private UserSession _session = new UserSession("", "", "", ""); 
     public UserSession session {
         get
         {
             if (!_session.IsLoggedIn())
             {
-                _session = GetUserSessionFromLDAP(); 
+                GetUserSession().Wait(); 
             }
             return _session;
         } 
     }
     public event EventHandler? UserOfficeChanged;
 
-    public UserSession GetUserSessionFromLDAP()
+    public async Task GetUserSession()
     {
-        // get the user from the environment
-        string? userName = Environment.UserName;
-        if (string.IsNullOrEmpty(userName)) return _session;
-        // set up domain context
-        PrincipalContext ctx = new PrincipalContext(ContextType.Domain);
-        // find the user
-        UserPrincipal user = UserPrincipal.FindByIdentity(ctx, userName);
-        // set user session values
-        _session = new UserSession(user.Name, user.Surname, user.SamAccountName, user.EmailAddress);
-        _session.Roles = user.GetGroups().Select(x => x.Name).ToList();
-
+        ClaimsPrincipal claimsPrincipal = (await auth.GetAuthenticationStateAsync()).User;
+        //Get user details
+        _session = claimsPrincipal.GetSession();
+        //Get user region and office link
         UpdateUserOffice();
-
-        return _session;
     }
 
     public void UpdateUserOffice()
     {
-        _session!.Office = _staticservice.GetUserLocalOffice(_session.SamName);
+        while (!_staticservice.IsInitialized)
+        {
+            //wait here on startup
+        }
+        _session.Office = _staticservice.GetUserLocalOffice(_session.SamName);
         //Trigger the change for UI update
         UserOfficeChanged?.Invoke(this, EventArgs.Empty);
     }
-
 }

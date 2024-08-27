@@ -34,7 +34,7 @@
         }
         public bool IsBrmUser()
         {
-            return Roles.Any(r => r.Contains("GRP_BRM"));
+            return Roles.Contains("GRP_BRM_User");
         }
 
         public bool IsLoggedIn()

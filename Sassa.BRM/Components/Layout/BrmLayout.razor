@@ -31,9 +31,9 @@
             <ToastAlert />
             @if (@Status == "")
             {
-@*                 <AuthorizeView> *@
+               <AuthorizeView>
                 @Body
-@*                 </AuthorizeView> *@
+               </AuthorizeView> 
             }
             else
             {
@@ -54,7 +54,7 @@
 
         try
         {
-            if (sessionservice.session!.IsBrmUser())
+            if (sessionservice.session.IsBrmUser())
             {
                 //sessionservice.session.Office = await staticservice.GetUserLocalOffice(sessionservice.session.SamName, sessionservice.session.IsInRole("GRP_BRM_Supervisors") ? "Y" : "N");
                 Status = "";

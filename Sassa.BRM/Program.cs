@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +25,20 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        //Authentication Services
+        //builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
+        builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.FallbackPolicy = options.DefaultPolicy;
+        });
+        builder.Services.AddCascadingAuthenticationState();
+        builder.Services.AddScoped<AuthenticationStateProvider, WindowsAuthenticationStateProvider>();
+        builder.Services.AddHttpContextAccessor();
         // Add services to the container.
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
         string BrmConnection = builder.Configuration.GetConnectionString("BrmConnection")!;
         string CsConnection = builder.Configuration.GetConnectionString("CsConnection")!;
-
-        //builder.Services.AddAuthentication(IISDefaults.AuthenticationScheme);
         //Factory pattern
         builder.Services.AddDbContextFactory<ModelContext>(options =>
         options.UseOracle(BrmConnection));

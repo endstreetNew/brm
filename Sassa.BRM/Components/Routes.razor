@@ -1,4 +1,4 @@
-﻿@* <CascadingAuthenticationState> *@
+﻿<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(BrmLayout)" />
@@ -9,4 +9,4 @@
             </LayoutView>
         </NotFound>
     </Router>
-@* </CascadingAuthenticationState> *@
+</CascadingAuthenticationState>
