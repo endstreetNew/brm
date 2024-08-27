@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sassa.Brm.Common.Helpers;
 using Sassa.BRM.Models;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 

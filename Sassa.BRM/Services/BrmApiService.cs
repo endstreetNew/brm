@@ -1,12 +1,5 @@
-﻿using System.Diagnostics;
-using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Configuration;
-using Sassa.Brm.Common.Models;
-using Sassa.BRM.Models;
-using System.Threading.Tasks;
+﻿using Sassa.BRM.Models;
+using System.Diagnostics;
 using System.Text.Json;
 
 
@@ -23,7 +16,7 @@ public class BrmApiService(IHttpClientFactory _httpClientFactory, IConfiguration
         {
             WriteIndented = true,
             IgnoreReadOnlyProperties = true,
-            IgnoreReadOnlyFields =true
+            IgnoreReadOnlyFields = true
         };
         var result = await client.PostAsJsonAsync(_brmApiUrl + "Application", application, serializationOptions);
         return await result.Content.ReadFromJsonAsync<DcFile>();

@@ -1,17 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 using Oracle.ManagedDataAccess.Client;
 using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.eDocs.CS;
 using Sassa.eDocs.CSDocuments;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
 {

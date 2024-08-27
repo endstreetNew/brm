@@ -1,12 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Negotiate;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using razor.Components;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Models;
@@ -15,7 +9,6 @@ using Sassa.BRM.Components;
 using Sassa.BRM.Models;
 using Sassa.BRM.Services;
 using Sassa.Socpen.Data;
-using System;
 
 namespace Sassa.BRM;
 

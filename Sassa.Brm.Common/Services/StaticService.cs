@@ -62,7 +62,6 @@ namespace Sassa.Brm.Common.Services
             }
             IsInitialized = true;
         }
-
         public string GetTransactionType(int key)
         {
             return StaticDataService.TransactionTypes![key];
@@ -95,8 +94,6 @@ namespace Sassa.Brm.Common.Services
             return office;
 
         }
-
-
         public DcLocalOffice GetLocalOffice(string officeId)
         {
             return StaticDataService.LocalOffices!.Where(lo => lo.OfficeId == officeId).FirstOrDefault()!;
@@ -118,7 +115,6 @@ namespace Sassa.Brm.Common.Services
             }
             return "";
         }
-
         public async Task<bool> UpdateUserLocalOffice(string officeId, UserSession session)
         {
             DcOfficeKuafLink officeLink;
@@ -177,7 +173,6 @@ namespace Sassa.Brm.Common.Services
         {
             return StaticDataService.LocalOffices!.Where(o => o.RegionId == regionId).ToList();
         }
-
         public List<RegionOffice> GetRegionOffices(string regionId)
         {
             return StaticDataService.LocalOffices!.Where(o => o.RegionId == regionId).Select(o =>

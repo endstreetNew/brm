@@ -1,12 +1,7 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.AspNetCore.Components.Authorization;
-using Sassa.Brm.Common.Models;
-using System.Diagnostics;
-using System.DirectoryServices;
-using System.DirectoryServices.AccountManagement;
-using System.Security.Claims;
-using System.Security.Principal;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using Sassa.Brm.Common.Helpers;
+using Sassa.Brm.Common.Models;
+using System.Security.Claims;
 
 namespace Sassa.Brm.Common.Services;
 

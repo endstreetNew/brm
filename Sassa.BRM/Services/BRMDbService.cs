@@ -40,7 +40,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             DcFile file = await _context.DcFiles.Where(d => d.BrmBarcode == brm.Brm_BarCode).FirstAsync();
             file.BrmBarcode = barCode;
             await _context.SaveChangesAsync();
-            CreateActivity("Update " ,file.SrdNo, file.Lctype, "Update BRM Barcode", file.UnqFileNo);
+            CreateActivity("Update ", file.SrdNo, file.Lctype, "Update BRM Barcode", file.UnqFileNo);
         }
 
     }
@@ -54,7 +54,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             decimal batch = 0;
             var office = _context.DcLocalOffices.Where(o => o.OfficeId == application.OfficeId).First();
             if (office.ManualBatch != "A")
-             {
+            {
                 string batchType = application.Id.StartsWith("S") ? "SrdNoId" : application.AppStatus;
                 batch = string.IsNullOrEmpty(application.TDW_BOXNO) ? await CreateBatchForUser(batchType) : 0;
             }
@@ -66,7 +66,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             DcFile? file = await brmApiService.PostApplication(application);
 
-            if(file?.UnqFileNo == null) throw new Exception("Error creating BRM record");
+            if (file?.UnqFileNo == null) throw new Exception("Error creating BRM record");
             return file;
         }
     }
@@ -125,7 +125,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         using (var _context = _contextFactory.CreateDbContext())
         {
             DcFile? original = await _context.DcFiles.FindAsync(unqFileNo);
-            if(original == null) throw new Exception($"File {unqFileNo} not found.");
+            if (original == null) throw new Exception($"File {unqFileNo} not found.");
             original.DocsPresent = docsPresent;
             await _context.SaveChangesAsync();
         }
@@ -161,9 +161,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             return result;
         }
     }
-
-
-
     public async Task<PagedResult<ReboxListItem>> SearchBox(string boxNo, int page, string searchText)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -242,7 +239,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-
     public async Task<List<ReboxListItem>> GetAllFilesByBoxNo(string boxNo, bool notScanned = false)
     {
 
@@ -277,7 +273,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }).ToList();
         }
     }
-
     public async Task SetBulkReturned(string boxNo, bool sendTDWMail)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -339,7 +334,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     Firstname = parent.UserFirstname,
                     Surname = parent.UserLastname,
                     ID_Number = parent.ApplicantNo,
-                    Year = parent.UpdatedDate == null? "" : parent.UpdatedDate.Value.ToString("YYYY"),
+                    Year = parent.UpdatedDate == null ? "" : parent.UpdatedDate.Value.ToString("YYYY"),
                     Location = parent.TdwBoxno,
                     Reg = parent.RegType,
                     //Bin  = parent. ,
@@ -430,9 +425,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             return false;
         }
     }
-
-
-
     public async Task<DcFile> GetReboxCandidate(Reboxing rebox)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -548,7 +540,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 boxedFile.FromDcFile(file);
 
                 await _context.SaveChangesAsync();
-                CreateActivity("Reboxing",file.SrdNo, file.Lctype, "Rebox file", file.UnqFileNo);
+                CreateActivity("Reboxing", file.SrdNo, file.Lctype, "Rebox file", file.UnqFileNo);
             }
             catch //(Exception ex)
             {
@@ -586,7 +578,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
         }
     }
-
     public async Task AddValidRequest(RequestModel fr)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -629,17 +620,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             else
             {
                 req = reqs.First();
-                //if (req.Status  == "TDWPicklist")
-                //{
-                //    //Refresh the date
-                //    req.RequestedByAd = session.SamName;
-                //    req.RequestedOfficeId = session.Office.OfficeId;
-                //    req.RequestedDate = DateTime.Now;
-                //    req.RegionId = session.Office.RegionId;
-
-                //    await _context.SaveChangesAsync();
-                //}
-
             }
             //req.AppDate
             req.Stakeholder = decimal.Parse(fr.Category);
@@ -663,7 +643,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             await _context.SaveChangesAsync();
         }
     }
-
     public async Task<string> GetSearchId(SearchModel sm)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -771,22 +750,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
     }
 
-    //public async Task<PagedResult<DcFileRequest>> GetFilrR()
-    //{
-    //    PagedResult<DcFileRequest> result = new PagedResult<DcFileRequest>();
-    //    var query = _context.DcFileRequests.AsQueryable();
-    //    var requests = _context.DcFileRequests.AsQueryable();
-    //    var reasons = _context.DcReqCategoryTypes.AsQueryable();
-    //    var innerJoin = requests.Join(// outer sequence 
-    //              reasons,  // inner sequence 
-    //              request => request.ReqCategoryType,    // outerKeySelector
-    //              reason => reason.TypeId,  // innerKeySelector
-    //              (request, reason) => new DcFileRequest// result selector
-    //              {
-    //                  Reason = reason.TypeDescr
-    //              });
-    //}
-
     /// <summary>
     /// Deprecated for now Compliant and NonCompliant status to be set by Kofax data
     /// </summary>
@@ -839,13 +802,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         using (var _context = _contextFactory.CreateDbContext())
         {
             PagedResult<DcPicklist> result = new PagedResult<DcPicklist>();
-
             var query = _context.DcPicklists.OrderByDescending(o => o.PicklistDate).AsQueryable();
-
-
             query = query.Where(r => r.UnqPicklist.ToLower().Contains(searchTxt.ToLower()));
-
-
             result.count = query.Where(r => r.RegionId == _userSession.Office.RegionId).Count();
             result.result = await query.Where(r => r.RegionId == _userSession.Office.RegionId).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
             return result;
@@ -893,7 +851,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             _mail.SendTDWReceipt(_userSession, StaticDataService.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
         }
     }
-
     internal async Task SyncFileRequestStatusReceived(DcPicklistItem item)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -947,7 +904,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             var interim = await _context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).ToListAsync();
             if (interim.Any()) return;
             DcPicklist? picklist = _context.DcPicklists.Find(unqPicklist);
-            if(picklist == null) return;
+            if (picklist == null) return;
             picklist.Status = status;
             await _context.SaveChangesAsync();
             if (status == "Received")
@@ -1029,39 +986,45 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             TDWPicklist tpl = new TDWPicklist();
             try
             {
-                var candidates = await (from tdw in _context.TdwFileLocations
-                                        join fr in _context.DcFileRequests
-                                        on tdw.Description equals fr.IdNo
-                                        where fr.Status == "TDWPicklist" && fr.RegionId == _userSession.Office.RegionId && tdw.GrantType == fr.GrantType
-                                        orderby fr.RequestedDate descending
-                                        select new TDWRequestMain
-                                        {
-                                            BRM_No = tdw.FilefolderCode,
-                                            CLM_No = tdw.FilefolderAltcode.Length == 12 ? tdw.FilefolderAltcode : null,
-                                            Folder_ID = tdw.FilefolderAltcode.Length != 12 ? tdw.FilefolderAltcode : null,
-                                            Grant_Type = tdw.GrantType.Trim(),
-                                            Firstname = fr.Name,
-                                            Surname = fr.Surname,
-                                            ID_Number = tdw.Description,
-                                            Reg = "U",
-                                            Location = tdw.ContainerCode,
-                                            UserPicked = ""
-
-                                        }).AsNoTracking().Take(maxRecords).ToListAsync();
+                var candidates = await _context.TdwFileLocations
+                    .Join(_context.DcFileRequests,
+                        tdw => tdw.Description,
+                        fr => fr.IdNo,
+                        (tdw, fr) => new { Tdw = tdw, Fr = fr })
+                    .Where(x => x.Fr.Status == "TDWPicklist" && x.Fr.RegionId == _userSession.Office.RegionId && x.Tdw.GrantType == x.Fr.GrantType)
+                    .OrderByDescending(x => x.Fr.RequestedDate)
+                    .Select(x => new TDWRequestMain
+                    {
+                        BRM_No = x.Tdw.FilefolderCode,
+                        CLM_No = x.Tdw.FilefolderAltcode.Length == 12 ? x.Tdw.FilefolderAltcode : null,
+                        Folder_ID = x.Tdw.FilefolderAltcode.Length != 12 ? x.Tdw.FilefolderAltcode : null,
+                        Grant_Type = x.Tdw.GrantType.Trim(),
+                        Firstname = x.Fr.Name,
+                        Surname = x.Fr.Surname,
+                        ID_Number = x.Tdw.Description,
+                        Reg = "U",
+                        Location = x.Tdw.ContainerCode,
+                        UserPicked = ""
+                    })
+                    .AsNoTracking()
+                    .Take(maxRecords)
+                    .ToListAsync();
                 //Get filerequest Candidates
                 if (!candidates.Any()) throw new Exception("No files to request !");
                 //Create a picklist for every selected fr
 
                 //Create new PICKList
-                DcPicklist pl = new DcPicklist();
-                pl.UnqPicklist = string.Empty;
-                pl.PicklistDate = DateTime.Now;
-                pl.Status = "Requested";
-                pl.RegionId = _userSession.Office.RegionId;
-                pl.RegistryType = "U";
-                pl.RequestedByAd = _userSession.SamName;
-                pl.UpdatedBy = _userSession.SamName;
-                pl.PicklistStatus = "N";
+                DcPicklist pl = new DcPicklist
+                {
+                    UnqPicklist = string.Empty,
+                    PicklistDate = DateTime.Now,
+                    Status = "Requested",
+                    RegionId = _userSession.Office.RegionId,
+                    RegistryType = "U",
+                    RequestedByAd = _userSession.SamName,
+                    UpdatedBy = _userSession.SamName,
+                    PicklistStatus = "N"
+                };
                 _context.ChangeTracker.Clear();
                 _context.DcPicklists.Add(pl);
                 await _context.SaveChangesAsync();
@@ -1073,24 +1036,26 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 {
                     item.Grant_Type = _staticService.GetGrantType(item.Grant_Type);
                     tpl.result.Add(item);
-                    DcPicklistItem pi = new DcPicklistItem();
-                    pi.UnqPicklist = pl.UnqPicklist;
-                    pi.IdNumber = item.ID_Number;
-                    pi.FolderId = item.Folder_ID;
-                    pi.GrantType = item.Grant_Type;
-                    pi.Bin = item.Bin;
-                    pi.BrmNo = item.BRM_No;
-                    pi.ClmNo = item.CLM_No;
-                    pi.Firstname = item.Firstname;
-                    pi.Surname = item.Surname;
-                    pi.Status = "Requested";
-                    pi.Year = item.Year;
-                    pi.Reg = item.Reg;
-                    pi.Position = item.Pos;
-                    pi.Minibox = "";
-                    pi.LooseCorrespondenceId = "";//Todo:
-                    pi.Location = item.Location;
-                    pi.LcType = "";//Todo:
+                    DcPicklistItem pi = new DcPicklistItem
+                    {
+                        UnqPicklist = pl.UnqPicklist,
+                        IdNumber = item.ID_Number,
+                        FolderId = item.Folder_ID,
+                        GrantType = item.Grant_Type,
+                        Bin = item.Bin,
+                        BrmNo = item.BRM_No,
+                        ClmNo = item.CLM_No,
+                        Firstname = item.Firstname,
+                        Surname = item.Surname,
+                        Status = "Requested",
+                        Year = item.Year,
+                        Reg = item.Reg,
+                        Position = item.Pos,
+                        Minibox = "",
+                        LooseCorrespondenceId = "",
+                        Location = item.Location,
+                        LcType = ""
+                    };
 
                     _context.DcPicklistItems.Add(pi);
                     await _context.SaveChangesAsync();
@@ -1202,7 +1167,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 SurName = d.Surname,
                 GrantType = d.GrantType,
                 GrantName = StaticDataService.GrantTypes![d.GrantType],
-                AppDate = d.ApplicationDate == null? DateTime.Now.ToStandardDateString() : ((DateTime)d.ApplicationDate).ToStandardDateString(),
+                AppDate = d.ApplicationDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)d.ApplicationDate).ToStandardDateString(),
                 OfficeId = _userSession.Office!.OfficeId,
                 RegionId = d.RegionId,
                 RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
@@ -1275,7 +1240,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 RegionCode = StaticDataService.RegionCode(d.RegionId ?? _userSession.Office.RegionId),
                 RegionName = StaticDataService.RegionName(d.RegionId ?? _userSession.Office.RegionId),
                 AppStatus = d.StatusCode.ToUpper() == "ACTIVE" ? "MAIN" : "ARCHIVE",
-                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)(d.ApplicationDate??DateTime.Now)).ToString("yyyy"),
+                ARCHIVE_YEAR = d.StatusCode.ToUpper() == "ACTIVE" ? null : ((DateTime)(d.ApplicationDate ?? DateTime.Now)).ToString("yyyy"),
                 ChildId = d.ChildId,
                 LcType = "0",
                 IsRMC = _userSession.Office.OfficeType == "RMC" ? "Y" : "N",
@@ -1296,44 +1261,44 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             return await _context.DcFiles
                 .Where(f => f.ApplicantNo == SearchId)
-                .GroupJoin(_context.DcMerges, fgm => fgm.BrmBarcode, merge => merge.BrmBarcode, (fgm, merge) => new { file = fgm,merge = merge })
+                .GroupJoin(_context.DcMerges, fgm => fgm.BrmBarcode, merge => merge.BrmBarcode, (fgm, merge) => new { file = fgm, merge = merge })
                 .SelectMany(x => x.merge.DefaultIfEmpty(), (f, merge) => new Application
-            {
-                Id = f.file.ApplicantNo,
-                Name = f.file.UserFirstname,
-                SurName = f.file.UserLastname,
-                GrantType = f.file.GrantType,
-                GrantName = StaticDataService.GrantTypes![f.file.GrantType],
-                AppDate = f.file.TransDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)f.file.TransDate).ToStandardDateString(),
-                OfficeId = f.file.OfficeId,
-                RegionId = f.file.RegionId,
-                DocsPresent = f.file.DocsPresent,
-                AppStatus = f.file.ApplicationStatus,
-                StatusDate = null,
-                Child_App_Date = null,
-                Child_Status_Code = null,
-                Child_Status_Date = null,
-                TDW_BOXNO = f.file.TdwBoxno,
-                MiniBox = (int)(f.file.MiniBoxno ?? 0),
-                BatchNo = (decimal)(f.file.BatchNo ?? 0),
-                Srd_No = f.file.SrdNo,
-                ChildId = f.file.ChildIdNo,
-                Brm_Parent = merge == null ? "" : merge.ParentBrmBarcode,
-                Brm_BarCode = f.file.BrmBarcode,
-                Clm_No = f.file.UnqFileNo,
-                LcType = f.file.Lctype.ToString(),
-                LastReviewDate = f.file.Lastreviewdate == null ? "" : ((DateTime)f.file.Lastreviewdate).ToStandardDateString(),
-                IsCombinationCandidate = false,
-                IsMergeCandidate = false,
-                IsNew = false,
-                IsRMC = _userSession.Office!.OfficeType == "RMC" ? "Y" : "N",
-                SocpenIsn = 0,
-                Prim_Status = "",
-                Sec_Status = "",
-                RowType = "",
-                ARCHIVE_YEAR = f.file.ArchiveYear,
-                DateApproved = null
-            }).AsNoTracking().ToListAsync();
+                {
+                    Id = f.file.ApplicantNo,
+                    Name = f.file.UserFirstname,
+                    SurName = f.file.UserLastname,
+                    GrantType = f.file.GrantType,
+                    GrantName = StaticDataService.GrantTypes![f.file.GrantType],
+                    AppDate = f.file.TransDate == null ? DateTime.Now.ToStandardDateString() : ((DateTime)f.file.TransDate).ToStandardDateString(),
+                    OfficeId = f.file.OfficeId,
+                    RegionId = f.file.RegionId,
+                    DocsPresent = f.file.DocsPresent,
+                    AppStatus = f.file.ApplicationStatus,
+                    StatusDate = null,
+                    Child_App_Date = null,
+                    Child_Status_Code = null,
+                    Child_Status_Date = null,
+                    TDW_BOXNO = f.file.TdwBoxno,
+                    MiniBox = (int)(f.file.MiniBoxno ?? 0),
+                    BatchNo = (decimal)(f.file.BatchNo ?? 0),
+                    Srd_No = f.file.SrdNo,
+                    ChildId = f.file.ChildIdNo,
+                    Brm_Parent = merge == null ? "" : merge.ParentBrmBarcode,
+                    Brm_BarCode = f.file.BrmBarcode,
+                    Clm_No = f.file.UnqFileNo,
+                    LcType = f.file.Lctype.ToString(),
+                    LastReviewDate = f.file.Lastreviewdate == null ? "" : ((DateTime)f.file.Lastreviewdate).ToStandardDateString(),
+                    IsCombinationCandidate = false,
+                    IsMergeCandidate = false,
+                    IsNew = false,
+                    IsRMC = _userSession.Office!.OfficeType == "RMC" ? "Y" : "N",
+                    SocpenIsn = 0,
+                    Prim_Status = "",
+                    Sec_Status = "",
+                    RowType = "",
+                    ARCHIVE_YEAR = f.file.ArchiveYear,
+                    DateApproved = null
+                }).AsNoTracking().ToListAsync();
         }
     }
 
@@ -1415,7 +1380,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     dcfile.FileComment = reason;
                     await BackupDcFileEntry(dcfile);
                     _context.DcFiles.Remove(dcfile);
-                    CreateActivity("Delete",dcfile.SrdNo, dcfile.Lctype, "Delete BRM Record", dcfile.UnqFileNo);
+                    CreateActivity("Delete", dcfile.SrdNo, dcfile.Lctype, "Delete BRM Record", dcfile.UnqFileNo);
 
                 }
             }
@@ -1648,7 +1613,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             }
         }
-        CreateActivity("Batching","",0, $"Status {newStatus}");
+        CreateActivity("Batching", "", 0, $"Status {newStatus}");
     }
     public async Task<string> GetNextOpenBrmWaybill(decimal? batchId)
     {
@@ -1681,7 +1646,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             }
         }
     }
-
     public async Task RemoveFileFromBatch(string brmBarCode)
     {
         decimal batchNo;
@@ -1690,15 +1654,14 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             _context.ChangeTracker.Clear();
             file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
-            batchNo =((decimal)(file.BatchNo??0));
+            batchNo = ((decimal)(file.BatchNo ?? 0));
             file.BatchNo = 0;
             await _context.SaveChangesAsync();
         }
-        CreateActivity("Batching",file.SrdNo, file.Lctype, "Remove File", file.UnqFileNo);
+        CreateActivity("Batching", file.SrdNo, file.Lctype, "Remove File", file.UnqFileNo);
         if (batchNo != 0) await SetBatchCount(batchNo);
 
     }
-
     public async Task AddFileToBatch(string brmBarCode, decimal batchNo)
     {
         try
@@ -1716,7 +1679,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     {
                         throw new Exception($"This file is in closed batch: {file.BatchNo} and cant be added.");
                     }
-                    sourceBatch = (decimal)(file.BatchNo??0);
+                    sourceBatch = (decimal)(file.BatchNo ?? 0);
                 }
                 var batch = await _context.DcBatches.Where(b => b.BatchNo == batchNo && b.BatchStatus == "Open").FirstAsync();
                 if (file.RegType != batch.RegType)
@@ -1728,7 +1691,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 await _context.SaveChangesAsync();
             }
-            CreateActivity("Batching",file.SrdNo, file.Lctype, "Add File", file.UnqFileNo);
+            CreateActivity("Batching", file.SrdNo, file.Lctype, "Add File", file.UnqFileNo);
             await SetBatchCount(batchNo);
             if (sourceBatch != 0) await SetBatchCount(sourceBatch);
         }
@@ -1737,7 +1700,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             throw;
         }
     }
-
     public async Task<List<DcFile>> GetAllFilesByBatchNo(decimal BatchId)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -1841,7 +1803,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                         waybill.UpdatedDate = batch.UpdatedDate;//DateTime.Now;
 
                     }
-                    waybill.NoOfFiles = waybill.NoOfFiles + (int)(batch.NoOfFiles??0);
+                    waybill.NoOfFiles = waybill.NoOfFiles + (int)(batch.NoOfFiles ?? 0);
                     waybill.NoOfBatches++;
                 }
                 if (waybill != null)
@@ -1989,17 +1951,17 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 throw new Exception("Duplicate Brm Record please delete duplicate first.");
             }
             DcFile file = dcfiles.First();
-            CreateActivity("Enquiry",file.SrdNo, file.Lctype, "Enquiry", file.UnqFileNo);
+            CreateActivity("Enquiry", file.SrdNo, file.Lctype, "Enquiry", file.UnqFileNo);
 
             var merged = await _context.DcMerges.Where(m => m.BrmBarcode == brmBarCode).ToListAsync();
 
             result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
             result.ApplicantNo = file.ApplicantNo;
-            result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
+            result.AppType = _staticService.GetTransactionType((int)(file.TransType ?? 0));
             result.BrmBarCode = brmBarCode;
             result.MisFileNo = file.FileNumber;
             result.BrmRecord = true;
-            result.CaptureDate = (DateTime)(file.BatchAddDate?? DateTime.Now);
+            result.CaptureDate = (DateTime)(file.BatchAddDate ?? DateTime.Now);
             result.CsgStatus = "";
             result.GrantType = _staticService.GetGrantType(file.GrantType);
             result.LastAction = file.UpdatedDate;
@@ -2054,11 +2016,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
                 result.ApplicantNo = file.ApplicantNo;
-                result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
+                result.AppType = _staticService.GetTransactionType((int)(file.TransType ?? 0));
                 result.BrmBarCode = file.BrmBarcode;
                 result.MisFileNo = file.FileNumber;
                 result.BrmRecord = true;
-                result.CaptureDate = (DateTime)(file.BatchAddDate??DateTime.Now);
+                result.CaptureDate = (DateTime)(file.BatchAddDate ?? DateTime.Now);
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
@@ -2136,11 +2098,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
                 result.ApplicantNo = file.ApplicantNo;
-                result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
+                result.AppType = _staticService.GetTransactionType((int)(file.TransType ?? 0));
                 result.BrmBarCode = file.BrmBarcode;
                 result.MisFileNo = file.FileNumber;
                 result.BrmRecord = true;
-                result.CaptureDate = (DateTime)(file.BatchAddDate??DateTime.Now);
+                result.CaptureDate = (DateTime)(file.BatchAddDate ?? DateTime.Now);
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
@@ -2329,7 +2291,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 throw new System.Exception("Invalid Exclusion type");
             }
             //Check if duplicate
-            var interim = await  _context.DcExclusions.Where(d => d.IdNo == pension_no).ToListAsync();
+            var interim = await _context.DcExclusions.Where(d => d.IdNo == pension_no).ToListAsync();
             if (interim.Any())
             {
 
@@ -2372,7 +2334,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
     private async Task<int> GetExclusionBatch(string destructionYear)
     {
-        
+
         using (var _context = _contextFactory.CreateDbContext())
         {
             DcExclusionBatch? exclusionb;
@@ -2527,23 +2489,23 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         File.WriteAllText(StaticDataService.ReportFolder + $@"{FileName}.csv", dt.ToCSV());
     }
 
-    public async Task RefreshFromSocPenData(string year)
-    {
-        string sql = @"INSERT INTO DC_DESTRUCTION d (PENSION_NO, DESTRUCTIO_DATE, STATUS_DATE, STATUS ) " +
-                       "SELECT DISTINCT PENSION_NO, '" + year + "0101" + "', TO_CHAR(SYSDATE,'YYYYMMDD'),'Selected' " +
-                        "FROM DC_DESTRUCTION_LIST dl " +
-                        "WHERE PENSION_NO NOT IN(SELECT PENSION_NO FROM DC_DESTRUCTION) " +
-                        "AND SUBSTR(STATUS_DATE,1,4) = '" + year + "'";
-        await _raw.ExecuteNonQuery(sql);
-        string updateregionSQL = "Update DC_DESTRUCTION D " +
-                        "SET Region_ID = " +
-                        "(select r.Region_ID from TDW_FILE_LOCATION F " +
-                        "Join DC_REGION R on LOWER(TRIM(R.Region_Name)) = LOWER(TRIM(F.region)) " +
-                        "Join DC_DESTRUCTION D ON F.DESCRIPTION = D.PENSION_NO " +
-                        "WHERE ROWNUM = 1)";
-        await _raw.ExecuteNonQuery(updateregionSQL);
+    //public async Task RefreshFromSocPenData(string year)
+    //{
+    //    string sql = @"INSERT INTO DC_DESTRUCTION d (PENSION_NO, DESTRUCTIO_DATE, STATUS_DATE, STATUS ) " +
+    //                   "SELECT DISTINCT PENSION_NO, '" + year + "0101" + "', TO_CHAR(SYSDATE,'YYYYMMDD'),'Selected' " +
+    //                    "FROM DC_DESTRUCTION_LIST dl " +
+    //                    "WHERE PENSION_NO NOT IN(SELECT PENSION_NO FROM DC_DESTRUCTION) " +
+    //                    "AND SUBSTR(STATUS_DATE,1,4) = '" + year + "'";
+    //    await _raw.ExecuteNonQuery(sql);
+    //    string updateregionSQL = "Update DC_DESTRUCTION D " +
+    //                    "SET Region_ID = " +
+    //                    "(select r.Region_ID from TDW_FILE_LOCATION F " +
+    //                    "Join DC_REGION R on LOWER(TRIM(R.Region_Name)) = LOWER(TRIM(F.region)) " +
+    //                    "Join DC_DESTRUCTION D ON F.DESCRIPTION = D.PENSION_NO " +
+    //                    "WHERE ROWNUM = 1)";
+    //    await _raw.ExecuteNonQuery(updateregionSQL);
 
-    }
+    //}
 
     #endregion
 
@@ -2554,9 +2516,9 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     /// <param name="Area"></param>
     /// <param name="Activity"></param>
     /// <returns></returns>
-    public void CreateActivity(string action,string srdNo, decimal? lcType, string Activity, string UniqueFileNo = "")
+    public void CreateActivity(string action, string srdNo, decimal? lcType, string Activity, string UniqueFileNo = "")
     {
-        brmApiService.CreateActivity(action, srdNo, lcType, Activity, _userSession.Office!.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession!.SamName!,UniqueFileNo);
+        brmApiService.CreateActivity(action, srdNo, lcType, Activity, _userSession.Office!.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession!.SamName!, UniqueFileNo);
     }
     #endregion
 }

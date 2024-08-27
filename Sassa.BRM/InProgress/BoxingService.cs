@@ -5,14 +5,7 @@ using Sassa.Brm.Common.Models;
 using Sassa.Brm.Common.Services;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
@@ -436,7 +429,7 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, RawS
                 boxedFile.FromDcFile(file);
 
                 await _context.SaveChangesAsync();
-                brmApiService.CreateActivity("Reboxing",file.SrdNo, file.Lctype, "Rebox file",_userSession.Office.RegionId,decimal.Parse(_userSession.Office.OfficeId),_userSession.SamName, file.UnqFileNo);
+                brmApiService.CreateActivity("Reboxing", file.SrdNo, file.Lctype, "Rebox file", _userSession.Office.RegionId, decimal.Parse(_userSession.Office.OfficeId), _userSession.SamName, file.UnqFileNo);
             }
             catch //(Exception ex)
             {

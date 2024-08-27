@@ -6,12 +6,7 @@ using Sassa.Brm.Common.Services;
 using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 
 namespace Sassa.BRM.Services;
@@ -86,7 +81,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
                    {
                        BoxNo = box,
                        Region = _staticService.GetRegion(_session.Office.RegionId!),
-                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno??0),
+                       MiniBoxes = (int)dcFiles.Sum(f => f.MiniBoxno ?? 0),
                        Files = dcFiles.Count(),
                        User = _session.SamName,
                        TdwSendDate = dcFiles.First().TdwBatchDate,
@@ -323,7 +318,7 @@ public class TdwBatchService(IDbContextFactory<ModelContext> _contextFactory, St
             //if (!Environment.MachineName.ToLower().Contains("prod")) return;
             _mail.SendTDWIncoming(_session, tdwBoxNo, null, StaticDataService.ReportFolder + fileName);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             //ignore confirmation errors
             Debug.WriteLine(ex.Message);

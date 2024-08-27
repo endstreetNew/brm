@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
-using System.Security.Principal;
 
 namespace Sassa.BRM.Services
 {
@@ -17,7 +16,7 @@ namespace Sassa.BRM.Services
 
             return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity!)));
             //return Task.FromResult(new AuthenticationState(new WindowsIdentity(_httpContextAccessor.HttpContext!.User.Identity.Name)));
-            
+
         }
     }
 }

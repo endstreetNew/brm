@@ -1,9 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.Extensions.Configuration;
-using Oracle.ManagedDataAccess.Client;
-using System;
+﻿using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
 {
@@ -58,7 +54,7 @@ namespace Sassa.BRM.Services
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
                         var raw = await command.ExecuteScalarAsync();
-                        if(raw == null)
+                        if (raw == null)
                         {
                             throw (new Exception($"Oracle failed to return sequence SEQ_TDW_BATCH."));
                         }
@@ -126,7 +122,7 @@ namespace Sassa.BRM.Services
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
                         var raw = command.ExecuteScalar();
-                        if(raw == null)
+                        if (raw == null)
                         {
                             throw (new Exception($"Oracle failed to return sequence BRMWAYBIL."));
                         }
@@ -164,13 +160,13 @@ namespace Sassa.BRM.Services
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
                         object? raw = command.ExecuteScalar();
-                        if(raw == null)
+                        if (raw == null)
                         {
                             throw (new Exception($"Oracle failed to return scalar."));
                         }
                         result = raw.ToString()!;
                     }
-                    
+
                 }
                 return result;
             }

@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sassa.Socpen.Data;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services;
 
@@ -10,7 +7,7 @@ public class SocpenService(IDbContextFactory<SocpenContext> dbContextFactory)
 {
     public async Task<List<CustRescode>> GetResCodes(string RegionId)
     {
-        using(var spctx = dbContextFactory.CreateDbContext())
+        using (var spctx = dbContextFactory.CreateDbContext())
         {
             return await spctx.CustRescodes.Where(r => r.RegionCode == decimal.Parse(RegionId)).ToListAsync();
         }
@@ -19,7 +16,7 @@ public class SocpenService(IDbContextFactory<SocpenContext> dbContextFactory)
 
     public async Task ChangeOfficeStatus(decimal rescode, string status)
     {
-        using(var spctx = dbContextFactory.CreateDbContext())
+        using (var spctx = dbContextFactory.CreateDbContext())
         {
             CustRescode lo = await spctx.CustRescodes.Where(o => o.ResCode == rescode).FirstAsync();
             lo.Status = status;
@@ -28,7 +25,7 @@ public class SocpenService(IDbContextFactory<SocpenContext> dbContextFactory)
     }
     public async Task ChangeOfficeName(decimal rescode, string name)
     {
-        using(var spctx = dbContextFactory.CreateDbContext())
+        using (var spctx = dbContextFactory.CreateDbContext())
         {
             CustRescode lo = await spctx.CustRescodes.Where(o => o.ResCode == rescode).FirstAsync();
             lo.LocalOffice = name;
@@ -41,7 +38,7 @@ public class SocpenService(IDbContextFactory<SocpenContext> dbContextFactory)
         using (var spctx = dbContextFactory.CreateDbContext())
         {
             var result = await spctx.CustRescodes.FindAsync(rescode);
-            if(result == null)
+            if (result == null)
             {
                 throw new Exception($"Rescode {rescode} not found");
             }

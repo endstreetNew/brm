@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Oracle.ManagedDataAccess.Client;
+﻿using Oracle.ManagedDataAccess.Client;
 using razor.Components.Models;
 using Sassa.Brm.Common.Helpers;
 using Sassa.Brm.Common.Services;
@@ -8,12 +6,7 @@ using Sassa.BRM.Data.ViewModels;
 using Sassa.BRM.Models;
 using Sassa.BRM.ViewModels;
 //using Sassa.eDocs.Data.Migrations;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sassa.BRM.Services
 {
@@ -21,14 +14,14 @@ namespace Sassa.BRM.Services
     {
 
         private string connectionString = string.Empty;
-       // private string reportFolder;
+        // private string reportFolder;
         public Dictionary<string, string> reportList;
 
         ProgressService _ogs;
         //BRMDbService db;
         StaticService sservice;
 
-        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs,  StaticService Sservice)
+        public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs, StaticService Sservice)
         {
             connectionString = config.GetConnectionString("BrmConnection")!;
             sservice = Sservice;

@@ -1,8 +1,4 @@
 ﻿//using HtmlToPDFCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-
 namespace Sassa.BRM.Services
 {
     public class FileService
