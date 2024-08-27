@@ -12,8 +12,8 @@ namespace Sassa.BRM.Services
 
         public FileService(IConfiguration config, IWebHostEnvironment env)
         {
-            connectionString = config.GetConnectionString("BrmConnection");
-            reportFolder = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"));
+            connectionString = config.GetConnectionString("BrmConnection")!;
+            reportFolder = Path.Combine(env.WebRootPath, Path.Combine("brmfiles"))!;
         }
 
         //public async Task SaveFile(string uploadFileName)

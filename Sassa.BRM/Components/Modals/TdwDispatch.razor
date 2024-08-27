@@ -44,7 +44,7 @@
 
 @code {
     [Parameter]
-    public Waybill waybill { get; set; }
+    public Waybill waybill { get; set; } = new();
 
     [Parameter]
     public EventCallback Ok { get; set; }

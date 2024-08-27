@@ -28,7 +28,7 @@ namespace Sassa.BRM.Services
         public long NodeId;
 
         private DocumentManagementClient docClient = new DocumentManagementClient();
-        string? idNumber;
+        string idNumber = "";
 
 
 
@@ -206,7 +206,7 @@ namespace Sassa.BRM.Services
             {
                 if (doc.Type != null && doc.Csnode != null && !(bool)doc.Type)
                 {
-                    folders.Add(doc.Csnode.ToString(), doc.Filename);
+                    folders.Add(doc.Csnode.ToString()!, doc.Filename);
                 }
             }
 

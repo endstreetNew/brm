@@ -209,7 +209,7 @@
                                         <td>@u.ChildId</td>
                                         <td>@u.Name</td>
                                         <td>@u.Surname</td>
-                                        <td>@DateTime.Now.Subtract((DateTime)u.ApplicationDate).Days</td>
+                                    <td>@DateTime.Now.Subtract(u.ApplicationDate == null ? DateTime.Now : (DateTime)u.ApplicationDate).Days</td>
                                     </tr>
                                 }
 

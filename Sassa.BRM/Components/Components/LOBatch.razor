@@ -380,11 +380,8 @@
 
     protected void chkSelect(ChangeEventArgs e, DcBatch batch)
     {
-        var selected = (bool)e.Value;
-        //foreach (DcBatch batch in DTBatch.result)
-        //{
+        var selected = (bool)(e.Value??false);
         batch.isSelected = selected;
-        //}
     }
 
     protected async Task btnClose_Click()

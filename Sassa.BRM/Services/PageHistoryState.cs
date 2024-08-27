@@ -48,7 +48,7 @@ namespace Sassa.BRM.Services
 
         // .. All other navigation methods.
 
-        private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+        private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
             EnsureSize();
             _history.Add(e.Location);

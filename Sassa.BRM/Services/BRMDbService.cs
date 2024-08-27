@@ -339,7 +339,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                     Firstname = parent.UserFirstname,
                     Surname = parent.UserLastname,
                     ID_Number = parent.ApplicantNo,
-                    Year = parent.UpdatedDate.Value.ToString("YYYY"),
+                    Year = parent.UpdatedDate == null? "" : parent.UpdatedDate.Value.ToString("YYYY"),
                     Location = parent.TdwBoxno,
                     Reg = parent.RegType,
                     //Bin  = parent. ,
@@ -1136,14 +1136,14 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             TreeNode node = new TreeNode();
             var intermediate = await _context.DcDocumentImages.AsNoTracking().Where(d => d.IdNo == idNo).ToListAsync();
-            var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(bool)d.Type));
+            var files = intermediate.Where(d => (d.Filename.ToLower().EndsWith(".pdf") || !(d.Type ?? false)));
             foreach (var file in files)
             {
                 TreeNode child = new TreeNode
                 {
                     ParentId = file.Parentnode == null ? 0 : (int)file.Parentnode,
-                    Id = (int)file.Csnode,
-                    NodeType = (bool)file.Type,
+                    Id = ((int)(file.Csnode ?? 0)),
+                    NodeType = file.Type ?? false,
                     NodeName = file.Filename,
                     NodeContent = file.Image
                 };
@@ -1153,7 +1153,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 }
                 else //Rootnode
                 {
-                    node.Add((int)file.Csnode, child);
+                    node.Add(((int)(file.Csnode ?? 0)), child);
                 }
 
             }
@@ -1391,7 +1391,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                 }
                 else
                 {
-                    return null;
+                    return "";
                 }
             }
         }
@@ -1690,7 +1690,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             _context.ChangeTracker.Clear();
             file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
-            batchNo = (decimal)file.BatchNo;
+            batchNo =((decimal)(file.BatchNo??0));
             file.BatchNo = 0;
             await _context.SaveChangesAsync();
         }
@@ -1709,14 +1709,14 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             {
                 file = await _context.DcFiles.Where(f => f.BrmBarcode == brmBarCode).FirstAsync();
 
-                if ((decimal)file.BatchNo != 0)
+                if ((decimal)(file.BatchNo ?? 0) != 0)
                 {
                     var interim = await _context.DcBatches.Where(b => b.BatchNo == file.BatchNo && b.BatchStatus != "Open").ToListAsync();
                     if (interim.Any())
                     {
                         throw new Exception($"This file is in closed batch: {file.BatchNo} and cant be added.");
                     }
-                    sourceBatch = (decimal)file.BatchNo;
+                    sourceBatch = (decimal)(file.BatchNo??0);
                 }
                 var batch = await _context.DcBatches.Where(b => b.BatchNo == batchNo && b.BatchStatus == "Open").FirstAsync();
                 if (file.RegType != batch.RegType)
@@ -1841,7 +1841,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
                         waybill.UpdatedDate = batch.UpdatedDate;//DateTime.Now;
 
                     }
-                    waybill.NoOfFiles = waybill.NoOfFiles + (int)batch.NoOfFiles;
+                    waybill.NoOfFiles = waybill.NoOfFiles + (int)(batch.NoOfFiles??0);
                     waybill.NoOfBatches++;
                 }
                 if (waybill != null)
@@ -1995,11 +1995,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
             result.ApplicantNo = file.ApplicantNo;
-            result.AppType = _staticService.GetTransactionType((int)file.TransType);
+            result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
             result.BrmBarCode = brmBarCode;
             result.MisFileNo = file.FileNumber;
             result.BrmRecord = true;
-            result.CaptureDate = (DateTime)file.BatchAddDate;
+            result.CaptureDate = (DateTime)(file.BatchAddDate?? DateTime.Now);
             result.CsgStatus = "";
             result.GrantType = _staticService.GetGrantType(file.GrantType);
             result.LastAction = file.UpdatedDate;
@@ -2054,11 +2054,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
                 result.ApplicantNo = file.ApplicantNo;
-                result.AppType = _staticService.GetTransactionType((int)file.TransType);
+                result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
                 result.BrmBarCode = file.BrmBarcode;
                 result.MisFileNo = file.FileNumber;
                 result.BrmRecord = true;
-                result.CaptureDate = (DateTime)file.BatchAddDate;
+                result.CaptureDate = (DateTime)(file.BatchAddDate??DateTime.Now);
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;
@@ -2136,11 +2136,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
                 result.AppDate = file.TransDate == null ? "" : ((DateTime)file.TransDate).ToString("dd/MMM/yy");
                 result.ApplicantNo = file.ApplicantNo;
-                result.AppType = _staticService.GetTransactionType((int)file.TransType);
+                result.AppType = _staticService.GetTransactionType((int)(file.TransType??0));
                 result.BrmBarCode = file.BrmBarcode;
                 result.MisFileNo = file.FileNumber;
                 result.BrmRecord = true;
-                result.CaptureDate = (DateTime)file.BatchAddDate;
+                result.CaptureDate = (DateTime)(file.BatchAddDate??DateTime.Now);
                 result.CsgStatus = "";
                 result.GrantType = _staticService.GetGrantType(file.GrantType);
                 result.LastAction = file.UpdatedDate;

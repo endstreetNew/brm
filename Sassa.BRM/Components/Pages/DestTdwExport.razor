@@ -47,7 +47,7 @@
         {
             <tr>
                 <td>@p.BatchId</td>
-                <td>@sservice.GetRegion(p.RegionId.ToString())</td>
+                <td>@sservice.GetRegion((p.RegionId??0).ToString())</td>
                 <td>@p.CreatedBy</td>
                 <td>@p.ApprovedBy</td>
                 <td>@p.ApprovedDate</td>

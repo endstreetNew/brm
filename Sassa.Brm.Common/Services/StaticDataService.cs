@@ -42,7 +42,7 @@ public static class StaticDataService
     public static List<DcBoxType> BoxTypes { get; set; } = new();
     public static List<DcReqCategory> RequestCategories { get; set; } = new();
     public static List<DcStakeholder> StakeHolders { get; set; } = new();
-    public static List<DcReqCategoryType>? RequestCategoryTypes { get; set; }
+    public static List<DcReqCategoryType> RequestCategoryTypes { get; set; } = new();
     public static List<DcReqCategoryTypeLink> RequestCategoryTypeLinks { get; set; } = new();
     public static Dictionary<string, string> RegionEmails { get; set; } = new();
     public static Dictionary<string, string> RegionIDEmails { get; set; } = new();
