@@ -30,7 +30,7 @@ namespace Sassa.BRM.Services
 
         public ReportDataService(IConfiguration config, IWebHostEnvironment env, ProgressService ogs,  StaticService Sservice)
         {
-            connectionString = config.GetConnectionString("BrmConnection");
+            connectionString = config.GetConnectionString("BrmConnection")!;
             sservice = Sservice;
             //reportFolder = config.GetSection("Folders").GetChildren().GetValue("Reports");
             //reportFolder = Path.Combine(env.ContentRootPath, $@"\wwwroot\{config["Folders:Reports"]}");

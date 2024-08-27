@@ -449,10 +449,12 @@ public class BoxingService(IDbContextFactory<ModelContext> _contextFactory, RawS
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            var interim = await _context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).ToListAsync();
-            if (interim.Any()) return;
-            var picklist = _context.DcPicklists.Find(unqPicklist);
+            DcPicklist? picklist = _context.DcPicklists.Find(unqPicklist);
+            if (picklist == null) return;
             picklist.Status = status;
+            await _context.SaveChangesAsync();
+            var items = await _context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).ToListAsync();
+            if (items.Any()) return;
             await _context.SaveChangesAsync();
             if (status == "Received")
             {

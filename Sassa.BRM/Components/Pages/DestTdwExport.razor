@@ -84,12 +84,14 @@
         if (loadedFiles.Any())
         {
             <p>Processing..</p>
-            var file = loadedFiles.FirstOrDefault();
             <ul>
+            @foreach(var file in loadedFiles)
+            {
                 <li>Name: @file.Name</li>
-            <li>Last modified: @file.LastModified.ToString()</li>
-            <li>Size (bytes): @file.Size</li>
-            <li>Content type: @file.ContentType</li>
+                <li>Last modified: @file.LastModified.ToString()</li>
+                <li>Size (bytes): @file.Size</li>
+                <li>Content type: @file.ContentType</li>
+            }
         </ul>
         }
     }

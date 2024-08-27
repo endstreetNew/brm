@@ -57,7 +57,12 @@ namespace Sassa.BRM.Services
                     String sql = $"select CAST(SEQ_TDW_BATCH.NEXTVAL AS INTEGER) from DUAL";
                     using (OracleCommand command = new OracleCommand(sql, connection))
                     {
-                        result = int.Parse((await command.ExecuteScalarAsync()).ToString());
+                        var raw = await command.ExecuteScalarAsync();
+                        if(raw == null)
+                        {
+                            throw (new Exception($"Oracle failed to return sequence SEQ_TDW_BATCH."));
+                        }
+                        result = int.Parse(raw.ToString()!);
                     }
 
                 }

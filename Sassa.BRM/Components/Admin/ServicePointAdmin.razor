@@ -90,7 +90,7 @@
 
 @code {
     protected List<RegionOffice> regionOffices = new();
-    protected List<DcFixedServicePoint>? regionServicePoints;
+    protected List<DcFixedServicePoint> regionServicePoints = new();
     protected string regionId = "";
     protected bool IsLoaded = false;
     protected bool IsAdding = false;
@@ -116,21 +116,6 @@
         IsLoaded = true;
     }
 
-    //protected async void  btnActive_Click(RegionOffice u)
-    //{
-    //    //toggle current Status
-    //    string status  = u.Status == "A" ? "I" : "A";
-    //    if (u.OfficeId > 0)
-    //    {
-    //        await db.ChangeOfficeStatus(u.OfficeId.ToString(),status);
-    //    }
-    //    if (u.ResCode > 0)
-    //    {
-    //        await ss.ChangeOfficeStatus(u.ResCode,status);
-    //    }
-    //    IsLoaded = false;
-    //    await GetRegionOffices();
-    //}
     protected void OnOkClick()
     {
         IsAdding = false;

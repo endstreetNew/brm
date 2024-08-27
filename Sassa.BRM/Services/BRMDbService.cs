@@ -286,16 +286,17 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             IQueryable query = _context.DcMerges.AsNoTracking();
             foreach (string parent in parentlist)
             {
-                var item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();
+                DcPicklistItem? item = await _context.DcPicklistItems.Where(i => i.BrmNo == parent).FirstOrDefaultAsync();
                 if (item == null) continue;
                 item.Status = "Returned";
+                await _context.SaveChangesAsync();
                 List<string> childlist = await _context.DcMerges.AsNoTracking().Where(bn => bn.ParentBrmBarcode == parent).Select(c => c.BrmBarcode).ToListAsync();
-
+                if (!childlist.Any()) continue;
                 foreach (string child in childlist)
                 {
-                    item = await _context.DcPicklistItems.Where(i => i.BrmNo == child).FirstOrDefaultAsync();
-                    if (item == null || item.Status == "Returned") continue;
-                    item.Status = "Returned";
+                    DcPicklistItem? citem = await _context.DcPicklistItems.Where(i => i.BrmNo == child).FirstOrDefaultAsync();
+                    if (citem == null || citem.Status == "Returned") continue;
+                    citem.Status = "Returned";
                 }
                 await _context.SaveChangesAsync();
                 await SyncPicklistFromItems(item.UnqPicklist, "Returned");
@@ -877,15 +878,17 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
+            DcPicklist? picklist = _context.DcPicklists.Find(unq_picklist);
+            if (picklist == null) return;
+            picklist.Status = "Received";
+            await _context.SaveChangesAsync();
             var items = _context.DcPicklistItems.Where(p => p.UnqPicklist == unq_picklist).ToList();
+            if (!items.Any()) return;
             foreach (DcPicklistItem item in items)
             {
-
                 item.Status = "Received";
                 await SyncFileRequestStatusReceived(item);
             }
-            var picklist = _context.DcPicklists.Find(unq_picklist);
-            picklist.Status = "Received";
             await _context.SaveChangesAsync();
             _mail.SendTDWReceipt(_userSession, StaticDataService.RegionIDEmails[picklist.RegionId], picklist.UnqPicklist, new List<string>());
         }
@@ -907,12 +910,11 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            var item = _context.DcPicklistItems.Find(ItemId);
+            DcPicklistItem? item = _context.DcPicklistItems.Find(ItemId);
+            if (item == null) return;
             item.Status = item.nextStatus;
             await _context.SaveChangesAsync();
-
             //set picklist status if all items accounted for
-
             await SyncPicklistFromItems(item.UnqPicklist, item.Status);
             if (item.Status != "Received")
             {
@@ -944,7 +946,8 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             var interim = await _context.DcPicklistItems.Where(i => i.UnqPicklist == unqPicklist && i.Status != status).ToListAsync();
             if (interim.Any()) return;
-            var picklist = _context.DcPicklists.Find(unqPicklist);
+            DcPicklist? picklist = _context.DcPicklists.Find(unqPicklist);
+            if(picklist == null) return;
             picklist.Status = status;
             await _context.SaveChangesAsync();
             if (status == "Received")

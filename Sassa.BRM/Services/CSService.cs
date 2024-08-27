@@ -85,11 +85,11 @@ namespace Sassa.BRM.Services
                 con.Open();
                 tmp = GetResult(cmd);
                 if (tmp.Rows.Count == 0) return;
-                long PeriodId = long.Parse(tmp.Rows[0].ItemArray[0].ToString());
+                long PeriodId = long.Parse(tmp.Rows[0].ItemArray[0]!.ToString()!);
                 cmd.CommandText = $"select DATAID from dtree where name='{idNumber}' and parentid = {PeriodId}";
                 tmp = GetResult(cmd);
                 if (tmp.Rows.Count == 0) return;
-                NodeId = long.Parse(tmp.Rows[0].ItemArray[0].ToString());
+                NodeId = long.Parse(tmp.Rows[0].ItemArray[0]!.ToString()!);
             }
             //docClient = new DocumentManagementClient();
             try

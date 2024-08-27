@@ -177,7 +177,7 @@
     </Modal>
 }
 
-@if (idResults != null)
+@if (idResults.Any())
 {
     <table class="table table-sm" style="font-size:small;">
         <thead>
@@ -208,15 +208,14 @@
 }
 
 @code {
-
-    Enquiry e { get; set; }
-    List<DcActivity> activities;
-    List<Enquiry> idResults { get; set; }
-    List<DcFileDeleted> history;
+    Enquiry e { get; set; } = new();
+    List<DcActivity> activities = new();
+    List<Enquiry> idResults { get; set; } = new();
+    List<DcFileDeleted> history = new();
 
     //private CancellationTokenSource _cancellationTokenSource;
 
-    string txtSearchBrm;
+    string txtSearchBrm = "";
 
     bool showDetail;
 
@@ -286,6 +285,6 @@
 
     public void Dispose()
     {
-        GC.Collect();
+
     }
 }
