@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Sassa.BRM.Models;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sassa.BRM.Models;
 
@@ -9,7 +10,8 @@ public partial class ModelContext : DbContext
     {
     }
 
-    public ModelContext(DbContextOptions<ModelContext> options) : base(options)
+    public ModelContext(DbContextOptions<ModelContext> options)
+        : base(options)
     {
     }
 
@@ -65,7 +67,7 @@ public partial class ModelContext : DbContext
 
     public virtual DbSet<DcReqCategoryTypeLink> DcReqCategoryTypeLinks { get; set; }
 
-    public virtual DbSet<DcSocpen> DcSocpen { get; set; }
+    public virtual DbSet<DcSocpen> DcSocpens { get; set; }
 
     public virtual DbSet<DcStakeholder> DcStakeholders { get; set; }
 
@@ -75,19 +77,15 @@ public partial class ModelContext : DbContext
 
     public virtual DbSet<TdwFileLocation> TdwFileLocations { get; set; }
 
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //{ 
-    //   // To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //    //optionsBuilder.UseOracle("DATA SOURCE=10.117.123.20:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;");
-    //}
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseOracle("DATA SOURCE=10.117.123.20:1521/brmtrn;PERSIST SECURITY INFO=True;USER ID=CONTENTSERVER;Password=Password123;");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
             .HasDefaultSchema("CONTENTSERVER")
             .UseCollation("USING_NLS_COMP");
-        modelBuilder.Entity<IdResult>().HasNoKey();
-
-        //modelBuilder.Entity<Application>().HasNoKey();
 
         modelBuilder.Entity<DcActivity>(entity =>
         {
@@ -2092,5 +2090,5 @@ public partial class ModelContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    //partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

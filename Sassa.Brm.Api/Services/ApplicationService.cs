@@ -135,16 +135,16 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
             }
 
             //Remove existing Barcode for this id/grant from dc_socpen
-            _context.DcSocpen.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
+            _context.DcSocpens.Where(s => s.BrmBarcode == application.Brm_BarCode).ToList().ForEach(s => s.BrmBarcode = null);
             await _context.SaveChangesAsync();
             var result = new List<DcSocpen>();
             if (("C95".Contains(application.GrantType) && application.ChildId == application.ChildId))//child Grant
             {
-                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
+                result = await _context.DcSocpens.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.ChildId == application.ChildId).ToListAsync();
             }
             else
             {
-                result = await _context.DcSocpen.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd).ToListAsync();
+                result = await _context.DcSocpens.Where(s => s.BeneficiaryId == application.Id && s.GrantType == application.GrantType && s.SrdNo == srd).ToListAsync();
             }
 
             if (result.ToList().Any())
@@ -179,7 +179,7 @@ public class ApplicationService(IDbContextFactory<ModelContext> dbContextFactory
                 dc_socpen.Documents = file.DocsPresent;
 
 
-                _context.DcSocpen.Add(dc_socpen);
+                _context.DcSocpens.Add(dc_socpen);
             }
             try
             {

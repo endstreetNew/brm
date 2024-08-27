@@ -1135,7 +1135,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             if (!srdNo.IsNumeric()) throw new Exception("SRD is Invalid.");
 
             long srd = long.Parse(srdNo);
-            var result = await _context.DcSocpen.Where(s => s.SrdNo == srd).ToListAsync();
+            var result = await _context.DcSocpens.Where(s => s.SrdNo == srd).ToListAsync();
 
             if (!result.Any()) throw new Exception("SRD not found.");
 
@@ -1158,7 +1158,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         {
             List<Application> idquery;
             List<Application> oldidquery = new List<Application>();
-            idquery = await _context.DcSocpen.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
+            idquery = await _context.DcSocpens.Where(d => d.BeneficiaryId == SearchId).Select(d => new Application
             {
                 SocpenIsn = (long)d.Id,
                 Id = d.BeneficiaryId,
@@ -1185,7 +1185,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
 
             if (FullSearch)
             {
-                oldidquery = await _context.DcSocpen.Where(d => d.IdHistory.Contains(SearchId)).Select(d => new Application
+                oldidquery = await _context.DcSocpens.Where(d => d.IdHistory.Contains(SearchId)).Select(d => new Application
                 {
                     SocpenIsn = (long)d.Id,
                     Id = d.BeneficiaryId,
@@ -1225,7 +1225,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
     {
         using (var _context = _contextFactory.CreateDbContext())
         {
-            List<Application> srdsquery = await _context.DcSocpen.Where(d => d.SrdNo == srd).Select(d => new Application
+            List<Application> srdsquery = await _context.DcSocpens.Where(d => d.SrdNo == srd).Select(d => new Application
             {
                 SocpenIsn = (long)d.Id,
                 Id = d.BeneficiaryId,
@@ -1982,7 +1982,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             result.TdwRecord = tdwresult.Any();
 
             //SocPen
-            var socpenresult = await _context.DcSocpen.Where(s => s.BeneficiaryId == file.ApplicantNo && s.GrantType == file.GrantType).ToListAsync();//SearchSocpenId(file.ApplicantNo, false);
+            var socpenresult = await _context.DcSocpens.Where(s => s.BeneficiaryId == file.ApplicantNo && s.GrantType == file.GrantType).ToListAsync();//SearchSocpenId(file.ApplicantNo, false);
             if (socpenresult.Any())
             {
                 result.SocPenRecord = true;
@@ -2009,7 +2009,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             if (!dcfiles.Any()) throw new Exception("Applicant Id not found");
             var brmBarcodeList = dcfiles.Select(f => f.BrmBarcode).ToList();
             var merges = await _context.DcMerges.Where(m => brmBarcodeList.Contains(m.BrmBarcode)).ToListAsync();
-            var socpen = await _context.DcSocpen.Where(f => f.BeneficiaryId == idNumber).ToListAsync();
+            var socpen = await _context.DcSocpens.Where(f => f.BeneficiaryId == idNumber).ToListAsync();
             foreach (DcFile file in dcfiles)
             {
                 Enquiry result = new Enquiry();
@@ -2091,7 +2091,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             var dcfiles = await _context.DcFiles.Where(f => f.SrdNo.Contains(idNumber.Trim())).ToListAsync();
             if (!dcfiles.Any()) throw new Exception("SRD not found");
             var brmBarcodeList = dcfiles.Select(f => f.BrmBarcode).ToList();
-            var socpen = await _context.DcSocpen.Where(f => f.BeneficiaryId == idNumber || f.SrdNo.ToString() == idNumber.Trim()).ToListAsync();
+            var socpen = await _context.DcSocpens.Where(f => f.BeneficiaryId == idNumber || f.SrdNo.ToString() == idNumber.Trim()).ToListAsync();
             foreach (DcFile file in dcfiles)
             {
                 Enquiry result = new Enquiry();

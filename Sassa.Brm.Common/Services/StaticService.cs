@@ -24,7 +24,6 @@ namespace Sassa.Brm.Common.Services
 
         private void Initialize()
         {
-
             StaticDataService.TransactionTypes = new Dictionary<int, string>
             {
                 { 0, "Application" },

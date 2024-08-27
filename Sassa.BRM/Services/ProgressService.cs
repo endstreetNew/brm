@@ -21,8 +21,8 @@ namespace Sassa.BRM.Services
         public async Task<List<MissingFile>> MissingProgress(ReportPeriod from, ReportPeriod to, string regionId)
         {
             //List<ProcessedGrant> onlineGrants = await _econtext.ProcessedGrants.Where(d => d.ProcessDate >= from.FromDate && d.ProcessDate <= to.ToDate && d.RegionCode == StaticD.RegionCode(regionId)).AsNoTracking().ToListAsync();
-            int missingStart = await _context.DcSocpen.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null).AsNoTracking().CountAsync();
-            var records = await _context.DcSocpen.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null && s.EcmisFile == null).AsNoTracking().ToListAsync();
+            int missingStart = await _context.DcSocpens.Where(s => s.ApplicationDate <= from.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.CaptureDate == null && s.TdwRec == null).AsNoTracking().CountAsync();
+            var records = await _context.DcSocpens.Where(s => s.ApplicationDate >= from.FromDate && s.ApplicationDate <= to.ToDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null && s.EcmisFile == null).AsNoTracking().ToListAsync();
             List<MissingFile> result = new List<MissingFile>();
             foreach (ReportPeriod period in StaticDataService.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
             {
@@ -74,8 +74,8 @@ namespace Sassa.BRM.Services
         {
             PagedResult<DcSocpen> result = new PagedResult<DcSocpen>();
             //&& s.GrantType != "S" && s.MisFiles == null
-            result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().CountAsync();
-            result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
+            result.count = await _context.DcSocpens.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().CountAsync();
+            result.result = await _context.DcSocpens.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE" && s.MisFile == null).AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             //result.count = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().CountAsync();
             //result.result = await _context.DcSocpen.Where(s => s.CaptureReference == null && s.TdwRec == null && s.ApplicationDate >= period.FromDate && s.RegionId == regionId && s.StatusCode == "ACTIVE").AsNoTracking().OrderBy(s => s.ApplicationDate).Skip((page - 1) * 24).Take(24).ToListAsync();
             return result;
@@ -151,7 +151,7 @@ namespace Sassa.BRM.Services
                                     AND Application_date >= to_date('{from.FromDate.ToString("dd/MMM/yyyy")}')
                                     AND Application_date <= to_date('{to.ToDate.ToString("dd/MMM/yyyy")}')
                                     AND LOCALOFFICE_ID = '{office.OfficeId}'";
-                List<DcSocpen> records = await _context.DcSocpen.FromSqlRaw(sql).AsNoTracking().ToListAsync();
+                List<DcSocpen> records = await _context.DcSocpens.FromSqlRaw(sql).AsNoTracking().ToListAsync();
 
                 List<QuarterDetail> result = new List<QuarterDetail>();
                 foreach (ReportPeriod period in StaticDataService.QuarterList(from, to).Values.OrderBy(o => o.FromDate))
@@ -182,7 +182,7 @@ namespace Sassa.BRM.Services
         }
         public async Task<List<MonthDetail>> GetMonthDetail(DateTime fromDate, DateTime toDate, UserOffice office)
         {
-            List<DcSocpen> records = await _context.DcSocpen.Where(s => s.ApplicationDate >= fromDate && s.ApplicationDate <= toDate && (s.RegionId == office.RegionId || s.LocalofficeId == office.OfficeId) && s.StatusCode == "ACTIVE").AsNoTracking().ToListAsync();
+            List<DcSocpen> records = await _context.DcSocpens.Where(s => s.ApplicationDate >= fromDate && s.ApplicationDate <= toDate && (s.RegionId == office.RegionId || s.LocalofficeId == office.OfficeId) && s.StatusCode == "ACTIVE").AsNoTracking().ToListAsync();
             List<MonthDetail> result = new List<MonthDetail>();
             for (int year = fromDate.Year; year <= toDate.Year; year++)
             {

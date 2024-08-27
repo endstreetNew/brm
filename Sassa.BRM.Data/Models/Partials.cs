@@ -9,13 +9,13 @@ namespace Sassa.BRM.Models
 
         public virtual DbSet<IdResult> IdResults { get; set; }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
+        protected void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        {
 
-        //    modelBuilder.Entity<IdResult>().HasNoKey();
+            modelBuilder.Entity<IdResult>().HasNoKey();
 
-        //    modelBuilder.Entity<Application>().HasNoKey();
-        //}
+            modelBuilder.Entity<Application>().HasNoKey();
+        }
     }
     public partial class DcFileDeleted
     {
