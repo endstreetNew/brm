@@ -41,24 +41,24 @@ namespace Sassa.Brm.Common.Services
                 StaticDataService.LcTypes =  context.DcLcTypes.AsNoTracking().ToDictionary(key => key.Pk, value => value.Description);
                 StaticDataService.ServicePoints =  context.DcFixedServicePoints.AsNoTracking().ToList();
                 StaticDataService.DcOfficeKuafLinks =  context.DcOfficeKuafLinks.AsNoTracking().ToList();
-                StaticDataService.RequiredDocs =  (from reqDocGrant in context.DcGrantDocLinks
-                                                  join reqDoc in context.DcDocumentTypes on reqDocGrant.DocumentId equals reqDoc.TypeId
-                                                  where reqDocGrant.CriticalFlag == "Y"
-                                                  orderby reqDocGrant.Section, reqDoc.TypeId ascending
-                                                  select new RequiredDocsView
-                                                  {
-                                                      GrantType = reqDocGrant.GrantId,
-                                                      DOC_ID = reqDoc.TypeId,
-                                                      DOC_NAME = reqDoc.TypeName,
-                                                      DOC_SECTION = reqDocGrant.Section,
-                                                      DOC_CRITICAL = reqDocGrant.CriticalFlag
-                                                  }).Distinct().AsNoTracking().ToList();
+                StaticDataService.RequiredDocs = context.DcGrantDocLinks
+                    .Join(context.DcDocumentTypes, reqDocGrant => reqDocGrant.DocumentId, reqDoc => reqDoc.TypeId, (reqDocGrant, reqDoc) => new { reqDocGrant, reqDoc })
+                    .Where(joinResult => joinResult.reqDocGrant.CriticalFlag == "Y")
+                    .OrderBy(joinResult => joinResult.reqDocGrant.Section)
+                    .ThenBy(joinResult => joinResult.reqDoc.TypeId)
+                    .Select(joinResult => new RequiredDocsView
+                    {
+                        GrantType = joinResult.reqDocGrant.GrantId,
+                        DOC_ID = joinResult.reqDoc.TypeId,
+                        DOC_NAME = joinResult.reqDoc.TypeName,
+                        DOC_SECTION = joinResult.reqDocGrant.Section,
+                        DOC_CRITICAL = joinResult.reqDocGrant.CriticalFlag
+                    }).Distinct().AsNoTracking().ToList();
                 StaticDataService.BoxTypes =  context.DcBoxTypes.AsNoTracking().ToList();
                 StaticDataService.RequestCategoryTypeLinks =  context.DcReqCategoryTypeLinks.AsNoTracking().ToList();
                 StaticDataService.RequestCategoryTypes =  context.DcReqCategoryTypes.AsNoTracking().ToList();
                 StaticDataService.RequestCategories =  context.DcReqCategories.OrderBy(e => e.CategoryDescr).AsNoTracking().ToList();
                 StaticDataService.StakeHolders =  context.DcStakeholders.Distinct().AsNoTracking().ToList();
-                
             }
             IsInitialized = true;
         }
@@ -407,20 +407,21 @@ namespace Sassa.Brm.Common.Services
         /// <returns></returns>
         public Dictionary<string, string> GetBatchStatus(string officeType)
         {
-            Dictionary<string, string> batchStatus = new Dictionary<string, string>();
-            if (officeType == "LO")
+            return officeType switch
             {
-                batchStatus.Add("Open", "Open");
-                batchStatus.Add("Closed", "Closed");
-                batchStatus.Add("Transport", "Transport");
-            }
-            else
-            {
-                batchStatus.Add("Transport", "Transport");
-                batchStatus.Add("Received", "Received");
-                batchStatus.Add("RMCBatch", "RMCBatch");
-            }
-            return batchStatus;
+                "LO" => new Dictionary<string, string>
+                {
+                    { "Open", "Open" },
+                    { "Closed", "Closed" },
+                    { "Transport", "Transport" }
+                },
+                _ => new Dictionary<string, string>
+                {
+                    { "Transport", "Transport" },
+                    { "Received", "Received" },
+                    { "RMCBatch", "RMCBatch" }
+                }
+            };
         }
 
         #endregion

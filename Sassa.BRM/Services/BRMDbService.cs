@@ -1527,8 +1527,17 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             PagedResult<DcBatch> result = new PagedResult<DcBatch>();
             if (_userSession.IsRmc())
             {
-                result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == _userSession.Office.OfficeId).Count();
-                result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == _userSession.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                if (status == "" || status == "RMCBatch")
+                {
+                    result.count = _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == _userSession.Office.OfficeId).Count();
+                    result.result = await _context.DcBatches.Where(b => b.BatchStatus == "RMCBatch" && b.NoOfFiles > 0 && b.OfficeId == _userSession.Office.OfficeId).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                }
+                else
+                {
+                    List<string> regionOffices = _staticService.GetOfficeIds(_userSession.Office.RegionId);
+                    result.count = _context.DcBatches.Where(b => b.BatchStatus == status && b.NoOfFiles > 0 && regionOffices.Contains(b.OfficeId)).Count();
+                    result.result = await _context.DcBatches.Where(b => b.BatchStatus == status && b.NoOfFiles > 0 && regionOffices.Contains(b.OfficeId)).OrderByDescending(b => b.UpdatedDate).Skip((page - 1) * 12).Take(12).AsNoTracking().ToListAsync();
+                }
             }
             else
             {
@@ -1794,7 +1803,7 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             List<DcBatch> batches;
             using (var _context = _contextFactory.CreateDbContext())
             {
-                if (_userSession.Office.OfficeType == "RMC")
+                if (_userSession.IsRmc())
                 {
                     List<string> offices = _staticService.GetOfficeIds(_userSession.Office.RegionId);
 

@@ -13,11 +13,11 @@ namespace Sassa.Brm.Common.Services;
 
 public static class StaticDataService
 {
-    public static string? RsWeb { get; set; }
-    public static string? ReportFolder { get; set; }
-    public static string? DocumentFolder { get; set; }
-    public static Dictionary<int, string>? TransactionTypes { get; set; }
-    public static List<DcRegion>? Regions { get; set; }
+    public static string RsWeb { get; set; } = "";
+    public static string ReportFolder { get; set; } = "";
+    public static string DocumentFolder { get; set; } = "";
+    public static Dictionary<int, string> TransactionTypes { get; set; } = new();
+    public static List<DcRegion> Regions { get; set; } = new();
     public static string RegionCode(string RegionId)
     {
         if (RegionId == null) return "UKN";
@@ -28,25 +28,25 @@ public static class StaticDataService
         if (RegionId == null) return "Unknown";
         return Regions!.Where(r => r.RegionId == RegionId).First().RegionName;
     }
-    public static List<DcLocalOffice>? LocalOffices { get; set; }
-    public static List<DcFixedServicePoint>? ServicePoints { get; set; }
-    public static List<DcOfficeKuafLink>? DcOfficeKuafLinks { get; set; }
-    public static Dictionary<string, string>? GrantTypes { get; set; }
+    public static List<DcLocalOffice> LocalOffices { get; set; } = new();
+    public static List<DcFixedServicePoint> ServicePoints { get; set; } = new();
+    public static List<DcOfficeKuafLink> DcOfficeKuafLinks { get; set; } = new();
+    public static Dictionary<string, string> GrantTypes { get; set; } = new();
     public static string GrantName(string GrantId)
     {
         return GrantTypes![GrantId];
     }
-    public static Dictionary<decimal, string>? LcTypes { get; set; }
-    public static List<RequiredDocsView>? RequiredDocs { get; set; }
-    public static List<DcBatch>? ActiveBatches { get; set; }
-    public static List<DcBoxType>? BoxTypes { get; set; }
-    public static List<DcReqCategory>? RequestCategories { get; set; }
-    public static List<DcStakeholder>? StakeHolders { get; set; }
+    public static Dictionary<decimal, string> LcTypes { get; set; } = new();
+    public static List<RequiredDocsView> RequiredDocs { get; set; } = new();
+    public static List<DcBatch> ActiveBatches { get; set; } = new();
+    public static List<DcBoxType> BoxTypes { get; set; } = new();
+    public static List<DcReqCategory> RequestCategories { get; set; } = new();
+    public static List<DcStakeholder> StakeHolders { get; set; } = new();
     public static List<DcReqCategoryType>? RequestCategoryTypes { get; set; }
-    public static List<DcReqCategoryTypeLink>? RequestCategoryTypeLinks { get; set; }
-    public static Dictionary<string, string>? RegionEmails { get; set; }
-    public static Dictionary<string, string>? RegionIDEmails { get; set; }
-    public static Dictionary<string, List<FileEntity>>? UserBox { get; set; }
+    public static List<DcReqCategoryTypeLink> RequestCategoryTypeLinks { get; set; } = new();
+    public static Dictionary<string, string> RegionEmails { get; set; } = new();
+    public static Dictionary<string, string> RegionIDEmails { get; set; } = new();
+    public static Dictionary<string, List<FileEntity>> UserBox { get; set; } = new();
     public static string RegionId(string region)
     {
         switch (region.ToUpper())
