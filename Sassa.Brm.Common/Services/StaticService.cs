@@ -3,14 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Sassa.Brm.Common.Models;
 using Sassa.BRM.Models;
-using Sassa.BRM.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Sassa.Brm.Common.Services;
-using Microsoft.EntityFrameworkCore.Internal;
-using DocumentFormat.OpenXml.Bibliography;
+using System.Diagnostics;
 
 namespace Sassa.Brm.Common.Services
 {
@@ -32,10 +25,12 @@ namespace Sassa.Brm.Common.Services
         private void Initialize()
         {
 
-            StaticDataService.TransactionTypes = new Dictionary<int, string>();
-            StaticDataService.TransactionTypes.Add(0, "Application");
-            StaticDataService.TransactionTypes.Add(1, "Loose Correspondence");
-            StaticDataService.TransactionTypes.Add(2, "Review");
+            StaticDataService.TransactionTypes = new Dictionary<int, string>
+            {
+                { 0, "Application" },
+                { 1, "Loose Correspondence" },
+                { 2, "Review" }
+            };
 
             using (var context = _contextFactory.CreateDbContext())
             {
@@ -202,40 +197,40 @@ namespace Sassa.Brm.Common.Services
                 StaticDataService.LocalOffices = await context.DcLocalOffices.AsNoTracking().ToListAsync();
             }
         }
-        public async Task MoveOffice(string fromOfficeId, int toOfficeId)
+        public async Task MoveOffice(string fromOfficeId, string toOfficeId)
         {
             
             using(var context = _contextFactory.CreateDbContext())
             {
-                //DC_FIle
-                var oldOfficerecs = await context.DcFiles.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
-                foreach (var file in oldOfficerecs)
+                try
                 {
-                    file.OfficeId = toOfficeId.ToString();
-                }
-                await context.SaveChangesAsync();
-                //DC_FIXED_SERVICE_POINT
-                var oldFsprecs = await context.DcFixedServicePoints.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
-                foreach (var fsp in oldFsprecs)
-                {
-                    fsp.OfficeId = toOfficeId.ToString();
-                }
-                await context.SaveChangesAsync();
-                //DC_OFFICE_KUAF_LINK
-                var oldKuafrecs = await context.DcOfficeKuafLinks.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
-                foreach (var kuaf in oldKuafrecs)
-                {
-                    kuaf.OfficeId = toOfficeId.ToString();
-                }
-                await context.SaveChangesAsync();
+                    //DC_FIle
+                    (await context.DcFiles.Where(o => o.OfficeId == fromOfficeId).ToListAsync()).ForEach(o => o.OfficeId = toOfficeId);
+                    //DC_FIXED_SERVICE_POINT
+                    var oldFsprecs = await context.DcFixedServicePoints.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+                    foreach (var fsp in oldFsprecs)
+                    {
+                        fsp.OfficeId = toOfficeId.ToString();
+                    }
+                    //DC_OFFICE_KUAF_LINK
+                    var oldKuafrecs = await context.DcOfficeKuafLinks.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+                    foreach (var kuaf in oldKuafrecs)
+                    {
+                        kuaf.OfficeId = toOfficeId.ToString();
+                    }
 
-                //DC_Batches
-                var oldBatchRecs = await context.DcBatches.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
-                foreach (var batch in oldBatchRecs)
-                {
-                    batch.OfficeId = toOfficeId.ToString();
+                    //DC_Batches
+                    var oldBatchRecs = await context.DcBatches.Where(o => o.OfficeId == fromOfficeId).ToListAsync();
+                    foreach (var batch in oldBatchRecs)
+                    {
+                        batch.OfficeId = toOfficeId.ToString();
+                    }
+                    await context.SaveChangesAsync();
                 }
-                await context.SaveChangesAsync();
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
             }
             await DeleteLocalOffice(fromOfficeId);
         }
@@ -253,10 +248,13 @@ namespace Sassa.Brm.Common.Services
         {
             using(var context = _contextFactory.CreateDbContext())
             {
-                DcLocalOffice lo = await context.DcLocalOffices.Where(o => o.OfficeId == officeId).FirstAsync();
-                context.DcLocalOffices.Remove(lo);
-                await context.SaveChangesAsync();
-                StaticDataService.LocalOffices = await context.DcLocalOffices.AsNoTracking().ToListAsync();
+                var lol = await context.DcLocalOffices.Where(o => o.OfficeId == officeId).ToListAsync();
+                if(lol.Any())
+                {
+                    context.DcLocalOffices.RemoveRange(lol);
+                    await context.SaveChangesAsync();
+                    StaticDataService.LocalOffices = await context.DcLocalOffices.AsNoTracking().ToListAsync();
+                }
             }
         }
         public async Task UpdateServicePoint(DcFixedServicePoint s)

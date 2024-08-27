@@ -55,10 +55,9 @@
                                 <td>@u.OfficeId</td>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                   <input class="form-control form-control-sm" type="text" @bind="u.OfficeName"> 
-                                   <button class="btn btn-primary btn-sm active" @onclick="@(() => btnRename_Click(u))">Rename</button>
-                                   </div>
-                                    
+                                        <input class="form-control form-control-sm" type="text" @bind="u.OfficeName">
+                                        <button class="btn btn-primary btn-sm @(sessionservice.session.IsInRole("GRP_BRM_Office_Name_Change")?"enabled":"disabled")" @onclick="@(() => btnRename_Click(u))">Rename</button>
+                                    </div>
                                 </td>
                                 <td>@u.IsActive</td>
                                 <td>
@@ -183,10 +182,11 @@
     protected async void btnMove_Click()
     {
 
-        await sservice.MoveOffice(fromOfficeId, SelectedOfficeId);
+        await sservice.MoveOffice(fromOfficeId, SelectedOfficeId.ToString());
         IsLoaded = false;
-        await GetRegionOffices();
         showOfficeConfirmation = false;
+        await GetRegionOffices();
+        
     }
 
 

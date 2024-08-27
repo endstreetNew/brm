@@ -33,7 +33,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
         return result;
     }
-
     public async Task EditBarCode(Application brm, string barCode)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -45,7 +44,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
         }
 
     }
-
     public async Task<DcFile> CreateBRM(Application application, string reason)
     {
         //Moved to the Api
@@ -72,7 +70,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             return file;
         }
     }
-
     public async Task<DcFile> GetBRMRecord(string barcode)
     {
         using (var _context = _contextFactory.CreateDbContext())
@@ -80,7 +77,6 @@ public class BRMDbService(IDbContextFactory<ModelContext> _contextFactory, Stati
             return await _context.DcFiles.Where(f => f.BrmBarcode == barcode).FirstAsync();
         }
     }
-
     public async Task AutoMerge(Application app, List<Application> parents)
     {
         using (var _context = _contextFactory.CreateDbContext())
